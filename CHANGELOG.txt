@@ -6,6 +6,10 @@
 *					*
 *****************************************
 
+Update: October 6th 2015
+=========================================
+->Added OR & AND tree setup files
+
 Update: July 22nd 2015
 =========================================
 ->Added CHANGELOG.txt to project
