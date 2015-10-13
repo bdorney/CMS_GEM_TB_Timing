@@ -38,7 +38,7 @@ int main( int argc_, char * argv_[] ){
     
 
     //Verbose Printing Options
-    myTDCAnalyzer.setVerboseIO( false );
+    myTDCAnalyzer.setVerboseIO( true );
     myTDCAnalyzer.setSelection( vec_strInputArgs[1] );
     myTDCAnalyzer.applySelectionTDC( strOutputFileName );
 
