@@ -1,0 +1,11 @@
+MyROOTFileForAnalysis.root	setup_files/TreeSetupFile_Template.txt
+MyROOTFileForAnalysis_1.root
+MyROOTFileForAnalysis_2.root
+MyROOTFileForAnalysis_3.root
+#Hardware Change (not lines starting with a # are treated as a comment and are ignored)
+MyROOTFileForAnalysis_4.root	setup_files/TreeSetupFile_PostHardwareChange.txt
+MyROOTFileForAnalysis_5.root
+#Hardware Change
+MyROOTFileForAnalysis_6.root	setup_files/TreeSetupFile_PostHardareChange_2.txt
+#Hardware Change
+MyROOTFileForAnalysis_7.root	setup_files/TreeSetupFile_PostHardwareChange_3.txt

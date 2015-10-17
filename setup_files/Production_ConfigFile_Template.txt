@@ -1,5 +1,5 @@
 [BEGIN_PROD_INFO]
-	FitOption='<FIT OPTION>';
+	FitOption='<FIT OPTION>'; #We recommend <FIT OPTION> = NR
 	PFP_RawData='<PHYSICAL FILEPATH OF RAW DATA>';
 	PFN_RunList='<PHYSICAL FILENAME OF RUNE LIST>';
 	OutputRootFileName='<OUTPUT ROOT FILE NAME>';
