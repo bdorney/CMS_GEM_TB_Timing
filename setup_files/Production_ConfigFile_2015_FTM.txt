@@ -24,7 +24,9 @@
 	#OutputTreeName='FTM_AND';
 	#-----------------------------
 	VerboseMode_IO='false';
+	#VerboseMode_LUT='true';
 	VerboseMode_LUT='false';
+	#VerboseMode_Parsing='true';
 	VerboseMode_Parsing='false';
 	VerboseMode_PrintRuns='true';
 [END_PROD_INFO]
@@ -33,7 +35,7 @@
 	FTM
 	LayerBoth
 	#D1600
-	G1T1400
-	G1B800
-	G2T600
+	#G1T1400
+	#G1B800
+	#G2T600
 [END_IGNORED_IDENTIFIERS]

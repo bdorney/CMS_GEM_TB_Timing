@@ -324,16 +324,16 @@ void treeProducerTDC::printStoredData(TTree *inputTree){
     
     inputTree->SetBranchAddress("fTDC_NumDeconvo_TimeResp",&run.fTDC_NumDeconvo_TimeResp);
     
-    cout<<"Run Beam Mode DLY | iEta iPhi Imon VDrift Gain f_Ar f_CO f_CF4 | IPreAmpI IPreAmpF IPreAmpO IShaper IShaperFeed IComp MSPL Lat Thresh | Sigma_Histo Sigma_Gaus Sigma_Cont Sigma_Num | Pk1_Pos Pk1_Int Pk2_Pos Pk2_Int Pk3_Pos Pk3_Int\n";
+    cout<<"Run Beam Mode | VDrift VG1T VG1B VG2T VG2B f_Ar f_CO f_CF4 | Thresh | Sigma_Histo Sigma_Gaus\n";
     
     for (int i=0; i < inputTree->GetEntries(); ++i) { //Loop Over Tree Entries
         inputTree->GetEntry(i);
         
-        printf("%i %i %i %4.2f | ",run.iRun, run.iBeam_Type, run.iTrig_Mode, run.fTrig_Delay);
-        printf(" %i %i %4.2f %4.2f %4.2f %4.2f %4.2f %4.2f | ",run.iDet_Eta,run.iDet_Phi,run.fDet_Imon,run.fDet_VDrift,run.fDet_Gain,run.fDet_GasFrac_Ar,run.fDet_GasFrac_CO2,run.fDet_GasFrac_CF4);
-        printf("%i %i %i %i %i %i %i %i %4.2f | ",run.iVFAT_IPreAmpIn,run.iVFAT_IPreAmpFeed,run.iVFAT_IPreAmpOut,run.iVFAT_IShaper,run.iVFAT_IShaperFeed,run.iVFAT_IComp,run.iVFAT_MSPL,run.iVFAT_Latency,run.fVFAT_Thresh);
-        printf(" %4.2f %4.2f %4.2f %4.2f | ",run.fTDC_Histo_RMS,run.fTDC_Fit_Sigma,run.fTDC_Fit_Convo_Sigma,run.fTDC_NumDeconvo_TimeResp);
-        printf(" %4.2f %4.2f %4.2f %4.2f %4.2f %4.2f\n", run.fTDC_Histo_PkPos_1stMax, run.fTDC_Histo_PkInt_1stMax, run.fTDC_Histo_PkPos_2ndMax, run.fTDC_Histo_PkInt_2ndMax, run.fTDC_Histo_PkPos_3rdMax, run.fTDC_Histo_PkInt_3rdMax);
+        printf("%i %i %i | ",run.iRun, run.iBeam_Type, run.iTrig_Mode);
+        printf(" %i %i %4.2f %4.2f %4.2f %4.2f %4.2f %4.2f | ",run.fDet_VDrift,run.fDet_VG1_Top,run.fDet_VG1_Bot,run.fDet_VG2_Top,run.fDet_VG2_Bot,run.fDet_GasFrac_Ar,run.fDet_GasFrac_CO2,run.fDet_GasFrac_CF4);
+        printf(" %4.2f | ",run.fVFAT_Thresh);
+        printf(" %4.2f %4.2f\n",run.fTDC_Histo_RMS,run.fTDC_Fit_Sigma);
+        //printf(" %4.2f %4.2f %4.2f %4.2f %4.2f %4.2f\n", run.fTDC_Histo_PkPos_1stMax, run.fTDC_Histo_PkInt_1stMax, run.fTDC_Histo_PkPos_2ndMax, run.fTDC_Histo_PkInt_2ndMax, run.fTDC_Histo_PkPos_3rdMax, run.fTDC_Histo_PkInt_3rdMax);
     } //End Loop Over Tree Entries
     
     return;

@@ -42,26 +42,14 @@ TDC_CH_NUMBER(int)=9:301;
 [AUTO]
 Run(int)=TDCRun:1;
 Beam(string)=Muon:2;
-#TRIG_MODE(string)=<Trig Mode Identifier>:3;
-#TRIG_DELAY(float)=<Trig Delay Identifier>:4;
-#DET_IMON(float)=<Curren Identifier>:104;
-#VFAT_IPREAMPIN(int)=<VFAT IPreampIn Identifier>:204;
-#VFAT_IPREAMPFEED(int)=<VFAT IPreampFeed Identifier>:205;
-#VFAT_IPREAMPOUT(int)=<VFAT IPreampOut Identifier>:206;
-#VFAT_ISHAPERFEED(int)=<VFAT IShaperFeed Identifier>:208;
-#VFAT_ISHAPER(int)=<VFAT IShaper Identifier>:207;
-#VFAT_IComp(int)=<VFAT IComp Identifier>:209;
-#VFAT_MSPL(int)=<VFAT MSPL Identifier>:210;
-#VFAT_THRESH(int)=<VFAT Threshold Identifier>:212;
+DET_VDRIFT(float)=D:105;
+DET_VGEM1_TOP(float)=G1T:115;
+DET_VGEM1_BOT(float)=G1B:116;
+DET_VGEM2_TOP(float)=G2T:117;
 #---------------------------------------------------------------
 [MAN]
 TRIG_MODE(string)=Async:3;
-#TURBO_ID(int)=<Manual Entry Value>:201;
-#VFAT_POS(int)=<Manual Entry Value>:202;
-#VFAT_ID(string)=<Manual Entry Value>:203;
-#VFAT_IPREAMPIN(int)=<Manual Entry Value>:204;
-#DET_ETA(int)=<Manual Entry Value>:102;
-#DET_PHI(int)=<Manual Entry Value>:103;
+DET_VGEM2_BOT(float)=0:118;
 DET_GASFRAC_AR(float)=70:107;
 DET_GASFRAC_CO2(float)=30:108;
 DET_GASFRAC_CF4(float)=0:109;
