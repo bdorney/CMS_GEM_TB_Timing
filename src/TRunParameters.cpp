@@ -256,6 +256,13 @@ void TRunParameters::setParameter(float input, int methodIdx){
         case 111: setDetGainConstErr(input); break;           //float
         case 112: setDetGainSlope(input); break;              //float
         case 113: setDetGainSlopeErr(input); break;           //float
+        
+        case 115: setDetGEM1TopV(input); break;    //float
+        case 116: setDetGEM1BotV(input); break;    //float
+        case 117: setDetGEM2TopV(input); break;    //float
+        case 118: setDetGEM2BotV(input); break;    //float
+        case 119: setDetGEM3TopV(input); break;    //float
+        case 120: setDetGEM3BotV(input); break;    //float
             
         //VFAT Methods
             

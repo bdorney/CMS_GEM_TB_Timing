@@ -92,6 +92,12 @@ void treeProducerTDC::writeTree(string inputTreeName, string outputDataFile){
     
     outputTDCTree->Branch("fDet_Imon",&run.fDet_Imon,"fDet_Imon/F");
     outputTDCTree->Branch("fDet_VDrift",&run.fDet_VDrift,"fDet_VDrift/F");
+    outputTDCTree->Branch("fDet_VG1_Top",&run.fDet_VG1_Top,"fDet_VG1_Top/F");
+    outputTDCTree->Branch("fDet_VG1_Bot",&run.fDet_VG1_Bot,"fDet_VG1_Bot/F");
+    outputTDCTree->Branch("fDet_VG2_Top",&run.fDet_VG2_Top,"fDet_VG2_Top/F");
+    outputTDCTree->Branch("fDet_VG2_Bot",&run.fDet_VG2_Bot,"fDet_VG2_Bot/F");
+    outputTDCTree->Branch("fDet_VG3_Top",&run.fDet_VG3_Top,"fDet_VG3_Top/F");
+    outputTDCTree->Branch("fDet_VG3_Bot",&run.fDet_VG3_Bot,"fDet_VG3_Bot/F");
     
     outputTDCTree->Branch("fDet_Gain",&run.fDet_Gain,"fDet_Gain/F");
     outputTDCTree->Branch("fDet_Gain_Err",&run.fDet_Gain_Err,"fDet_Gain_Err/F");
@@ -254,6 +260,12 @@ void treeProducerTDC::printStoredData(TTree *inputTree){
     
     inputTree->SetBranchAddress("fDet_Imon",&run.fDet_Imon);
     inputTree->SetBranchAddress("fDet_VDrift",&run.fDet_VDrift);
+    inputTree->SetBranchAddress("fDet_VG1_Top",&run.fDet_VG1_Top);
+    inputTree->SetBranchAddress("fDet_VG1_Bot",&run.fDet_VG1_Bot);
+    inputTree->SetBranchAddress("fDet_VG2_Top",&run.fDet_VG2_Top);
+    inputTree->SetBranchAddress("fDet_VG2_Bot",&run.fDet_VG2_Bot);
+    inputTree->SetBranchAddress("fDet_VG3_Top",&run.fDet_VG3_Top);
+    inputTree->SetBranchAddress("fDet_VG3_Bot",&run.fDet_VG3_Bot);
     
     inputTree->SetBranchAddress("fDet_Gain",&run.fDet_Gain);
     inputTree->SetBranchAddress("fDet_Gain_Err",&run.fDet_Gain_Err);

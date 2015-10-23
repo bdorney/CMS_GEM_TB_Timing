@@ -44,6 +44,12 @@
  case 112: setDetGainSlope(input); break;   //float
  case 113: setDetGainSlopeErr(input); break;//float
  case 114: setDetGainIndepVarIsCurrent(input); break;   //boolean
+ case 115: setDetGEM1TopV(input); break;    //float
+ case 116: setDetGEM1BotV(input); break;    //float
+ case 117: setDetGEM2TopV(input); break;    //float
+ case 118: setDetGEM2BotV(input); break;    //float
+ case 119: setDetGEM3TopV(input); break;    //float
+ case 120: setDetGEM3BotV(input); break;    //float
  
  //VFAT Methods
  case 201: setTURBOID(input); break;         //int
@@ -114,6 +120,12 @@ struct Run{
     
     float fDet_Imon = -1;    //Current through the Divider
     float fDet_VDrift = -1;  //Potential on the Drift
+    float fDet_VG1_Top = -1;    //Potential on GEM1 Top
+    float fDet_VG1_Bot = -1;    //Potential on GEM1 Bot
+    float fDet_VG2_Top = -1;    //"             "2 Top
+    float fDet_VG2_Bot = -1;
+    float fDet_VG3_Top = -1;
+    float fDet_VG3_Bot = -1;
     
     float fDet_Gain;            //Gain, given by f(x) = exp(Const + Slope * x)
     float fDet_Gain_Err;        //Gain Error
@@ -230,6 +242,13 @@ public:
     virtual float getDetGainSlope(){ return run.fDet_Gain_Slope;};    //Gain assumed to be exp(P0+P1*x)
     virtual bool getDetGainIndepVarIsCurrent(){ return run.bDet_Gain_IndepVar_Imon;};
     
+    virtual float setDetGEM1TopV(){ return run.fDet_VG1_Top;};
+    virtual float setDetGEM1BotV(){ return run.fDet_VG1_Bot;};
+    virtual float setDetGEM2TopV(){ return run.fDet_VG2_Top;};
+    virtual float setDetGEM2BotV(){ return run.fDet_VG2_Bot;};
+    virtual float setDetGEM3TopV(){ return run.fDet_VG3_Top;};
+    virtual float setDetGEM3BotV(){ return run.fDet_VG3_Bot;};
+    
         //New Methods are added below pre-existing ones to preserve backwards compatibile numbering
     
     //VFAT Methods - These are methods 201 to 300
@@ -316,8 +335,14 @@ public:
     virtual void setDetPhi(int input){run.iDet_Phi = input; return;};
     
     virtual void setDetCurrent(float input){
-        run.fDet_Imon = input;
-        run.fDet_VDrift = input * 1e-6 * (1.125e6 + 563e3 + 438e3 + 550e3 + 875e3 + 525e3 + 625e3);
+        if (run.bDet_Gain_IndepVar_Imon) {
+            run.fDet_Imon = input;
+            run.fDet_VDrift = input * 1e-6 * (1.125e6 + 563e3 + 438e3 + 550e3 + 875e3 + 525e3 + 625e3);
+        }
+        else{
+            run.fDet_Imon = input;
+        }
+        
         return;
     };
     virtual void setDetDriftV(float input){run.fDet_VDrift = input; return;};
@@ -334,6 +359,13 @@ public:
     virtual void setDetGainSlopeErr(float input){ run.fDet_Gain_Slope_Err = input; return;};
     
     virtual void setDetGainIndepVarIsCurrent(bool input){ run.bDet_Gain_IndepVar_Imon = input; return;};
+    
+    virtual void setDetGEM1TopV(float input){ run.fDet_VG1_Top = input; return;};
+    virtual void setDetGEM1BotV(float input){ run.fDet_VG1_Bot = input; return;};
+    virtual void setDetGEM2TopV(float input){ run.fDet_VG2_Top = input; return;};
+    virtual void setDetGEM2BotV(float input){ run.fDet_VG2_Bot = input; return;};
+    virtual void setDetGEM3TopV(float input){ run.fDet_VG3_Top = input; return;};
+    virtual void setDetGEM3BotV(float input){ run.fDet_VG3_Bot = input; return;};
     
         //New Methods are added below pre-existing ones to preserve backwards compatibile numbering
     
