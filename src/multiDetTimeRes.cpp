@@ -20,6 +20,12 @@
 #include "TROOT.h"
 #include "TTree.h"
 
+#ifdef __MAKECINT__
+//#pragma link C++ class vector<int>+;
+//#pragma link C++ class vector<float>+;
+#pragma link C++ class map<string,int>+;
+#endif
+
 //My Includes
 
 
@@ -70,14 +76,14 @@ int main( int argc_, char * argv_[]){
     
     //size_t iLfBrace, iRtBrace, iComma;  //Position of left brace "{", right brace "}", and comma ","
     
-    std::map<std::string,float> map_fTDCData;
+    std::map<std::string,int> map_fTDCData;
     
     std::string strName_InputRootFile;
     std::string strName_tree;           //TTree found in strName_InputRootFile
     std::string strCh, strChannels;
     //std::string strTDCChanHisto = "TDC_Ch";
     
-    //std::vector<float> vec_fTDCData;
+    //std::vector<int> vec_fTDCData;
     
     std::vector<std::string> vec_strInputArgs;
     std::vector<std::string> vec_strTDCChan;
@@ -177,7 +183,7 @@ int main( int argc_, char * argv_[]){
     
     //Check to see if data file opened successfully, if so load the tree
     //------------------------------------------------------
-    if ( !file_ROOT->IsOpen() || !file_ROOT->IsZombie() ) {
+    if ( !file_ROOT->IsOpen() || file_ROOT->IsZombie() ) {
         perror( ("main() - error while opening file: " + strName_InputRootFile ).c_str() );
         std::cout << "Input ROOT File Status:\n";
         std::cout << "\tIsOpen() = " << file_ROOT->IsOpen() << endl;
@@ -212,14 +218,25 @@ int main( int argc_, char * argv_[]){
         cout<<"Ch"<<vec_strTDCChan[i]<<"\t";
         
         //This is a hack...?
-        float fData = -1;
-        //vec_fTDCData.push_back(fData);
-        map_fTDCData[vec_strTDCChan[i]]=fData;
+        //vec_fTDCData.push_back(-1.);
+        map_fTDCData[vec_strTDCChan[i]];
         
-        tree_Input->SetBranchAddress( ("TDC_Ch" + vec_strTDCChan[i]).c_str(), &map_fTDCData[vec_strTDCChan[i]].second);
+        //tree_Input->SetBranchAddress( ("TDC_Ch" + vec_strTDCChan[i]).c_str(), &(map_fTDCData[vec_strTDCChan[i]]) );
     } //End Loop Over vec_strTDCChan
     cout<<endl;
-    
+
+    /*for(int i=0; i < vec_fTDCData.size(); ++i){
+	tree_Input->SetBranchAddress( ("TDC_Ch" + vec_strTDCChan[i]).c_str(), &vec_fTDCData[i] );
+    }*/
+
+    for(int i=0; i < vec_strTDCChan.size(); ++i){
+	tree_Input->SetBranchAddress( ("TDC_Ch" + vec_strTDCChan[i]).c_str(), &(map_fTDCData[vec_strTDCChan[i]]) );
+    }    
+
+    int dummy;
+    cout<<"Awaiting input\n";
+    std::cin>>dummy;
+
     //Loop Over Input Data
     //------------------------------------------------------
     for (int i=0; i < tree_Input->GetEntries(); ++i) {
@@ -227,8 +244,8 @@ int main( int argc_, char * argv_[]){
         
         cout<<i<<"\t";
         
-        //for (int j=0; j<vec_strTDCChan.size(); ++j) {
-            //cout<<vec_strTDCChan[j]<<"\t";
+        //for (int j=0; j<vec_fTDCData.size(); ++j) {
+          //  cout<<vec_fTDCData[j]<<"\t";
         //}
         
         for (auto chIter = map_fTDCData.begin(); chIter != map_fTDCData.end(); ++chIter) {
