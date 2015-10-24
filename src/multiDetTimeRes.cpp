@@ -9,6 +9,7 @@
 //C++ Includes
 #include <algorithm>
 #include <iostream>
+#include <map>
 #include <stdio.h>
 #include <sstream>
 #include <string>
@@ -17,6 +18,7 @@
 //ROOT Includes
 #include "TFile.h"
 #include "TROOT.h"
+#include "TTree.h"
 
 //My Includes
 
@@ -24,6 +26,13 @@
  * 
  * multiDetTimeRes <Input Root File> <Tree Name> {comma separated list of channel numbers}
  *
+ * Return Codes:
+ *  1 -> Help menu called
+ *  0 -> Completed Successfully
+ * -1 ->
+ * -2 -> Correct number of parameters; but argument not understood (boolean variable)
+ * -3 -> Incorrect number of parameters
+ * -4 -> Input ROOT file does not open successfully
  */
 
 using std::cout;
@@ -58,12 +67,16 @@ int main( int argc_, char * argv_[]){
     
     float fVersion = 1.0;
     
-    size_t iLfBrace, iRtBrace, iComma;  //Position of left brace "{", right brace "}", and comma ","
+    //size_t iLfBrace, iRtBrace, iComma;  //Position of left brace "{", right brace "}", and comma ","
+    
+    std::map<std::string,float> map_fTDCData;
     
     std::string strName_InputRootFile;
     std::string strName_tree;           //TTree found in strName_InputRootFile
     std::string strCh, strChannels;
-    std::string strTDCChanHisto = "TDC_Ch";
+    //std::string strTDCChanHisto = "TDC_Ch";
+    
+    //std::vector<float> vec_fTDCData;
     
     std::vector<std::string> vec_strInputArgs;
     std::vector<std::string> vec_strTDCChan;
@@ -80,9 +93,9 @@ int main( int argc_, char * argv_[]){
         std::cout<<"For help menu:\n";
         std::cout<<"\t./multiDetTimeRes -h\n";
         std::cout<<"Offline Analysis of multi detector time response:\n";
-        std::cout<<"\t./multiDetTimeRes <Input Root File> <Tree Name> {comma separated list of channel numbers; no spaces} <verbose mode true/false>\n";
+        std::cout<<"\t./multiDetTimeRes <Input Root File> <Tree Name> <comma separated list of channel numbers; no spaces> <verbose mode true/false>\n";
         std::cout<<"\tExample:\n";
-        std::cout<<"\t\t./mulitDetTimeResp myRootFile.root myTreeName {5,6,3} false\n;";
+        std::cout<<"\t\t./multiDetTimeRes myRootFile.root myTreeName 5,6,3 false\n;";
         std::cout<<"\tExiting\n";
         
         return 1;
@@ -91,9 +104,9 @@ int main( int argc_, char * argv_[]){
         std::cout<<"multiDetTimeRes v"<<fVersion<<endl;
         std::cout<<"Author: Brian L. Dorney\n";
         std::cout<<"Offline Analysis of multi detector time response:\n";
-        std::cout<<"\t./multiDetTimeRes <Input Root File> <Tree Name> {comma separated list of channel numbers} <verbose mode true/false>\n";
+        std::cout<<"\t./multiDetTimeRes <Input Root File> <Tree Name> <comma separated list of channel numbers> <verbose mode true/false>\n";
         std::cout<<"\tExample:\n";
-        std::cout<<"\t\t./mulitDetTimeResp myRootFile.root myTreeName {5,6,3} false\n;";
+        std::cout<<"\t\t./multiDetTimeRes myRootFile.root myTreeName 5,6,3 false\n;";
         std::cout<<"\tExiting\n";
         
         //Right now this is a duplicate omultiDetTimeRespf above, maybe I add additional functionality later
@@ -127,10 +140,11 @@ int main( int argc_, char * argv_[]){
         }
         
         if ( std::string::npos == strChannels.find_first_of(",") ) { //Case: Single Channel
-            iLfBrace    = strChannels.find("{");
-            iRtBrace    = strChannels.find("}");
+            //iLfBrace    = strChannels.find("{");
+            //iRtBrace    = strChannels.find("}");
             
-            vec_strTDCChan.push_back(strChannels.substr(iLfBrace+1,iRtBrace-iLfBrace) );
+            //vec_strTDCChan.push_back(strChannels.substr(iLfBrace+1,iRtBrace-iLfBrace) );
+            vec_strTDCChan.push_back(strChannels);
         } //End Case: Single Channel
         else{
             //std::stringstream strStream(strChannels);
@@ -140,7 +154,8 @@ int main( int argc_, char * argv_[]){
             
             while ( strStream.good() ) {
                 getline( strStream, strCh, ',');
-                vec_strTDCChan.push_back( strCh );
+                
+                if (strCh.length() > 0 ) vec_strTDCChan.push_back( strCh );
             }
         } //End Case: Multi Channels
     } //End Case: Analysis Mode
@@ -155,7 +170,33 @@ int main( int argc_, char * argv_[]){
         return -3;
     } //End Case: Input Not Understood
     
-    //Analyze Requested Channels
+    //Open input root file
+    //------------------------------------------------------
+    TFile *file_ROOT = new TFile(strName_InputRootFile.c_str(), "READ", "", 1);
+    
+    //Check to see if data file opened successfully, if so load the tree
+    //------------------------------------------------------
+    if ( !file_ROOT->IsOpen() || !file_ROOT->IsZombie() ) {
+        perror( ("main() - error while opening file: " + strName_InputRootFile ).c_str() );
+        std::cout << "Input ROOT File Status:\n";
+        std::cout << "\tIsOpen() = " << file_ROOT->IsOpen() << endl;
+        std::cout << "\tIsZombie() = " << file_ROOT->IsZombie() << endl;
+        std::cout << "Exiting!!!\n";
+        
+        return -4;
+    }
+    
+    TTree *tree_Input = (TTree*) file_ROOT->Get( strName_tree.c_str() );
+    
+    if ( nullptr == tree_Input ) {
+        std::cout<<"main() - error while fetching: " << strName_tree.c_str() << endl;
+        std::cout<<"\tTree Returns nullptr; tree_Input = " << tree_Input << endl;
+        std::cout<<"Exiting!!!\n";
+        
+        return -4;
+    }
+    
+    //Get Requested Channels
     //------------------------------------------------------
     if (bVerboseMode) {
         cout<<"main() - Analyzing Channels:\n";
@@ -164,6 +205,32 @@ int main( int argc_, char * argv_[]){
             cout<<"Ch \t" << vec_strTDCChan[i] << endl;
         }
     }
+    
+    cout<<"Evt\t"<<endl;
+    for(int i=0; i < vec_strTDCChan.size(); ++i){
+        cout<<"Ch"<<vec_strTDCChan[i]<<"\t";
+        
+        //This is a hack...?
+        float fData = -1;
+        //vec_fTDCData.push_back(fData);
+        
+        tree_Input->SetBranchAddress( ("TDC_Ch" + vec_strTDCChan[i]).c_str(), &vec_fTDCData[i]);
+    } //End Loop Over vec_strTDCChan
+    cout<<endl;
+    
+    //Loop Over Input Data
+    //------------------------------------------------------
+    for (int i=0; i < tree_Input->GetEntries(); ++i) {
+        tree_Input->GetEntry(i);
+        
+        cout<<i<<"\t";
+        
+        for (int j=0; j<vec_strTDCChan.size(); ++j) {
+            cout<<vec_strTDCChan[j]<<"\t";
+        }
+        
+        cout<<endl;
+    } //End Loop Over tree_Input
     
     return 0;
 } //End main()
