@@ -205,7 +205,7 @@ void getProdInfo(ifstream &file_Input, ProdInfo &pInfo, bool bVerboseMode){
                         //cout<<  "\t Ambient T = " << pInfo.strTemp << endl;
                     } //End Case: User Requested Verbose Input/Output
                     
-		    bInfoHeaderEnd = true;
+                    bInfoHeaderEnd = true;
                     break;
                 } //End Case: End of Info Header
                 
@@ -226,13 +226,13 @@ void getProdInfo(ifstream &file_Input, ProdInfo &pInfo, bool bVerboseMode){
                         cout<<"getProInfo() - Unrecognized field!!!\n";
                         cout<<("getProInfo() - " + pair_Param.first + " = " + pair_Param.second ).c_str() << endl;
                         //cout<<"getProInfo() - Please cross-check input file:" << strInputFileName << endl;
-			cout<<"getProInfo() - Please cross-check config file\n";
+                        cout<<"getProInfo() - Please cross-check config file\n";
                     } //End Case: Input Not Recognized
                 } //End Case: Parameter Fetched Successfully
             } //End Loop Through Info Header
         } //End Case: Info Header Found!
 
-	if (bInfoHeaderEnd) break;
+        if (bInfoHeaderEnd) break;
     } //End Loop Over Input File
     if ( file_Input.bad() && bVerboseMode) {
         //perror( ("getProInfo(): error while reading file: " + strInputFileName).c_str() );
@@ -279,7 +279,7 @@ int main( int argc_, char * argv_[]){
         std::cout<<"For CMS GEM test beam production:\n";
         std::cout<<"\t./produceTree <Input_Config_File> <Verbose Mode true/false>\n";
 
-	return 1;
+        return 1;
     } //End Case: Usage
     else if (vec_strInputArgs.size() == 2 && vec_strInputArgs[1].compare("-h") == 0) { //Case: Help Menu
         std::cout<<"produceTree v"<<fVersion<<endl;
@@ -317,6 +317,7 @@ int main( int argc_, char * argv_[]){
         bool bExitSuccess = false;
         
         //Set input config file
+        //The below is never actually running...
         if (bVerboseMode) { //Case: User Requested Verbose Error Messages - I/O
             cout<< "main(): trying to open and read: " << vec_strInputArgs[1] << endl;
         } //End Case: User Requested Verbose Error Messages - I/O
