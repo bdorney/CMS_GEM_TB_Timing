@@ -17,6 +17,7 @@
 
 //ROOT Includes
 #include "TFile.h"
+#include "TH1F.h"
 #include "TROOT.h"
 #include "TTree.h"
 
@@ -68,6 +69,12 @@ bool convert2bool(string str, bool &bExitSuccess){
     return (str.compare("T")==0 || str.compare("TRUE")==0 || str.compare("1")==0);
 } //End convert2bool()
 
+struct cmp_chan{
+    bool operator()(const string &str1, const string &str2) const{
+        return stoi(str1.substr(str1.find_first_not_of("TDC_Ch"), str1.length() - str1.find_first_not_of("TDC_Ch") ) ) > stoi(str2.substr(str2.find_first_not_of("TDC_Ch"), str2.length() - str2.find_first_not_of("TDC_Ch") ) );
+    }
+};
+
 int main( int argc_, char * argv_[]){
     //Variable Declaration
     bool bVerboseMode;
@@ -77,6 +84,7 @@ int main( int argc_, char * argv_[]){
     //size_t iLfBrace, iRtBrace, iComma;  //Position of left brace "{", right brace "}", and comma ","
     
     std::map<std::string,int> map_fTDCData;
+    std::map<std::string,TH1F*,cmp_chan> map_fTDCHistos;
     
     std::string strName_InputRootFile;
     std::string strName_tree;           //TTree found in strName_InputRootFile
@@ -209,33 +217,23 @@ int main( int argc_, char * argv_[]){
         cout<<"main() - Analyzing Channels:\n";
         
         for (int i=0; i < vec_strTDCChan.size(); ++i) {
-            cout<<"Ch \t" << vec_strTDCChan[i] << endl;
+            cout<<"Ch \t" << vec_strTDCChan[i];
+            cout<<stoi(str1.substr(str1.find_first_not_of("TDC_Ch"), str1.length() - str1.find_first_not_of("TDC_Ch") ) ) <<endl;
         }
     }
     
-    cout<<"Evt\t"<<endl;
     for(int i=0; i < vec_strTDCChan.size(); ++i){
-        cout<<"Ch"<<vec_strTDCChan[i]<<"\t";
-        
         //This is a hack...?
-        //vec_fTDCData.push_back(-1.);
+        //Yes, you need to initialize all entries in the map so they have memory addresses.
+        //Then below in a separate loop you set them as a branch address
         map_fTDCData[vec_strTDCChan[i]];
         
         //tree_Input->SetBranchAddress( ("TDC_Ch" + vec_strTDCChan[i]).c_str(), &(map_fTDCData[vec_strTDCChan[i]]) );
     } //End Loop Over vec_strTDCChan
-    cout<<endl;
-
-    /*for(int i=0; i < vec_fTDCData.size(); ++i){
-	tree_Input->SetBranchAddress( ("TDC_Ch" + vec_strTDCChan[i]).c_str(), &vec_fTDCData[i] );
-    }*/
 
     for(int i=0; i < vec_strTDCChan.size(); ++i){
-	tree_Input->SetBranchAddress( ("TDC_Ch" + vec_strTDCChan[i]).c_str(), &(map_fTDCData[vec_strTDCChan[i]]) );
+        tree_Input->SetBranchAddress( ("TDC_Ch" + vec_strTDCChan[i]).c_str(), &(map_fTDCData[vec_strTDCChan[i]]) );
     }    
-
-    int dummy;
-    cout<<"Awaiting input\n";
-    std::cin>>dummy;
 
     //Loop Over Input Data
     //------------------------------------------------------
@@ -243,16 +241,15 @@ int main( int argc_, char * argv_[]){
         tree_Input->GetEntry(i);
         
         cout<<i<<"\t";
-        
         //for (int j=0; j<vec_fTDCData.size(); ++j) {
           //  cout<<vec_fTDCData[j]<<"\t";
         //}
-        
         for (auto chIter = map_fTDCData.begin(); chIter != map_fTDCData.end(); ++chIter) {
             cout<<(*chIter).second<<"\t";
         }
-        
         cout<<endl;
+        
+        
     } //End Loop Over tree_Input
     
     return 0;
