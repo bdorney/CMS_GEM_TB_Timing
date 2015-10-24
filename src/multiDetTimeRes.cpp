@@ -106,7 +106,7 @@ int main( int argc_, char * argv_[]){
         std::cout<<"Offline Analysis of multi detector time response:\n";
         std::cout<<"\t./multiDetTimeRes <Input Root File> <Tree Name> <comma separated list of channel numbers> <verbose mode true/false>\n";
         std::cout<<"\tExample:\n";
-        std::cout<<"\t\t./multiDetTimeRes myRootFile.root myTreeName 5,6,3 false\n;";
+        std::cout<<"\t\t./multiDetTimeRes myRootFile.root myTreeName 5,6,3 false\n";
         std::cout<<"\tExiting\n";
         
         //Right now this is a duplicate omultiDetTimeRespf above, maybe I add additional functionality later
@@ -213,8 +213,9 @@ int main( int argc_, char * argv_[]){
         //This is a hack...?
         float fData = -1;
         //vec_fTDCData.push_back(fData);
+        map_fTDCData[vec_strTDCChan[i]]=fData;
         
-        tree_Input->SetBranchAddress( ("TDC_Ch" + vec_strTDCChan[i]).c_str(), &vec_fTDCData[i]);
+        tree_Input->SetBranchAddress( ("TDC_Ch" + vec_strTDCChan[i]).c_str(), &map_fTDCData[vec_strTDCChan[i]].second);
     } //End Loop Over vec_strTDCChan
     cout<<endl;
     
@@ -225,8 +226,12 @@ int main( int argc_, char * argv_[]){
         
         cout<<i<<"\t";
         
-        for (int j=0; j<vec_strTDCChan.size(); ++j) {
-            cout<<vec_strTDCChan[j]<<"\t";
+        //for (int j=0; j<vec_strTDCChan.size(); ++j) {
+            //cout<<vec_strTDCChan[j]<<"\t";
+        //}
+        
+        for (auto chIter = map_fTDCData.begin(); chIter != map_fTDCData.end(); ++chIter) {
+            cout<<(*chIter).second<<"\t";
         }
         
         cout<<endl;
