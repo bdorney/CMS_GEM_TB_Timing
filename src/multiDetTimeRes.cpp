@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <sstream>
 #include <string>
-#include <vector>
+//#include <vector>
 
 //ROOT Includes
 #include "TFile.h"
@@ -28,7 +28,7 @@
 #endif
 
 //My Includes
-
+#include "multiDetTimeResp.h"
 
 /*Usage:
  *
@@ -46,6 +46,8 @@
 using std::cout;
 using std::endl;
 using std::string;
+
+/*namespace{
 
 bool convert2bool(string str, bool &bExitSuccess){
     //convert to upper case
@@ -71,43 +73,77 @@ bool convert2bool(string str, bool &bExitSuccess){
 
 struct cmp_chan{
     bool operator()(const string &str1, const string &str2) const{
-        std::string alphabet = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz";
-        
-        cout<<"===========OPERATION===========\n";
-        //return std::stoi(str1.substr(str1.find_first_not_of("TDC_Ch"), str1.length() - str1.find_first_not_of("TDC_Ch") ) ) > std::stoi(str2.substr(str2.find_first_not_of("TDC_Ch"), str2.length() - str2.find_first_not_of("TDC_Ch") ) );
-        cout<<"str1.find_first_not_of(alphabet)=" << str1.find_first_not_of(alphabet) << endl;
-        cout<<"str1.length() - str1.find_first_not_of(alphabet)=" << str1.length() - str1.find_first_not_of(alphabet) << endl;
-        cout<<"std::stoi(str1.substr(str1.find_first_not_of(alphabet), str1.length() - str1.find_first_not_of(alphabet) ) )=" << std::stoi(str1.substr(str1.find_first_not_of(alphabet), str1.length() - str1.find_first_not_of(alphabet) ) ) << endl;
-        
-        cout<<"str2.find_first_not_of(alphabet)=" << str2.find_first_not_of(alphabet) << endl;
-        cout<<"str2.length() - str2.find_first_not_of(alphabet)=" << str2.length() - str2.find_first_not_of(alphabet) << endl;
-        cout<<"str2.substr(str2.find_first_not_of(alphabet), str2.length() - str2.find_first_not_of(alphabet) )=" << str2.substr(str2.find_first_not_of(alphabet), str2.length() - str2.find_first_not_of(alphabet) ) << endl;
-        cout<<"std::stoi(str2.substr(str2.find_first_not_of(alphabet), str2.length() - str2.find_first_not_of(alphabet) ) )=" << std::stoi(str2.substr(str2.find_first_not_of(alphabet), str2.length() - str2.find_first_not_of(alphabet) ) ) << endl;
+        std::string alphabet = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz_";
         
         return std::stoi(str1.substr(str1.find_first_not_of(alphabet), str1.length() - str1.find_first_not_of(alphabet) ) ) > std::stoi(str2.substr(str2.find_first_not_of(alphabet), str2.length() - str2.find_first_not_of(alphabet) ) );
     }
 };
 
-/*struct cmp_mappedVal{
-    bool operator()(std::map<std::string,int> map1, std::map<std::string,int> map2) const{
-        return map1.second < map2.second;
-    }
-};*/
-
-typedef std::pair<std::string, int> MyPairType;
-struct CompareSecond
+typedef std::pair<std::string, int> PairType_Str_Int;
+struct CompareSecond_Min
 {
-    bool operator()(const MyPairType& left, const MyPairType& right) const
+    bool operator()(const PairType_Str_Int& left, const PairType_Str_Int& right) const
     {
         return left.second < right.second;
     }
 };
-
-int getMin(std::map<std::string, int> mymap)
+struct CompareSecond_Max
 {
-    std::pair<std::string, int> min = *min_element(mymap.begin(), mymap.end(), CompareSecond());
+    bool operator()(const PairType_Str_Int& left, const PairType_Str_Int& right) const
+    {
+        //return left.second > right.second;
+	return left.second < right.second;
+    }
+};
+
+int getMinForChannelOR(std::map<std::string, int> inputMap){
+    //Variable Declaration
+    std::map<std::string, int>::iterator iterMap = inputMap.begin();
+    std::map<std::string, int>::iterator iterMapEnd = inputMap.end();
+
+    while(iterMap != iterMapEnd){
+	if( 0 == (*iterMap).second){
+		std::map<std::string, int>::iterator iterTemp = iterMap;
+		++iterMap;
+		inputMap.erase(iterTemp);
+
+		iterMapEnd = inputMap.end(); //??
+
+		if(iterMap == iterMapEnd) break;
+	}
+	else{
+		++iterMap;
+
+		if(iterMap == iterMapEnd) break;
+	}
+    }
+    
+    std::pair<std::string, int> min = *min_element(inputMap.begin(), inputMap.end(), CompareSecond_Min());
+    
     return min.second;
 }
+
+int getMaxForChannelAND(std::map<std::string, int> inputMap){
+    //Variable Declaration
+    int iRetVal;
+    
+    //Require
+    if ( getMinForChannelOR(inputMap) > 0 ) {
+        std::pair<std::string, int> max = *max_element(inputMap.begin(), inputMap.end(), CompareSecond_Max() );
+        
+        //iRetVal = getMaxForChannelAND(inputMap);
+        iRetVal = max.second;
+    }
+    else{
+        //One or more channels off
+        iRetVal = -1;
+    }
+    
+    return iRetVal;
+} //End getMaxForChannel
+
+} //End namespace
+*/
 
 int main( int argc_, char * argv_[]){
     //Variable Declaration
@@ -223,21 +259,21 @@ int main( int argc_, char * argv_[]){
     
     //Open input root file
     //------------------------------------------------------
-    TFile *file_ROOT = new TFile(strName_InputRootFile.c_str(), "READ", "", 1);
+    TFile *file_InputROOTFile = new TFile(strName_InputRootFile.c_str(), "READ", "", 1);
     
     //Check to see if data file opened successfully, if so load the tree
     //------------------------------------------------------
-    if ( !file_ROOT->IsOpen() || file_ROOT->IsZombie() ) {
+    if ( !file_InputROOTFile->IsOpen() || file_InputROOTFile->IsZombie() ) {
         perror( ("main() - error while opening file: " + strName_InputRootFile ).c_str() );
         std::cout << "Input ROOT File Status:\n";
-        std::cout << "\tIsOpen() = " << file_ROOT->IsOpen() << endl;
-        std::cout << "\tIsZombie() = " << file_ROOT->IsZombie() << endl;
+        std::cout << "\tIsOpen() = " << file_InputROOTFile->IsOpen() << endl;
+        std::cout << "\tIsZombie() = " << file_InputROOTFile->IsZombie() << endl;
         std::cout << "Exiting!!!\n";
         
         return -4;
     }
     
-    TTree *tree_Input = (TTree*) file_ROOT->Get( strName_tree.c_str() );
+    TTree *tree_Input = (TTree*) file_InputROOTFile->Get( strName_tree.c_str() );
     
     if ( nullptr == tree_Input ) {
         std::cout<<"main() - error while fetching: " << strName_tree.c_str() << endl;
@@ -274,9 +310,12 @@ int main( int argc_, char * argv_[]){
         map_fTDCHistos[vec_strTDCChan[i]]->Sumw2();
     }
     
-    map_fTDCHistos[strTDCOR] = new TH1F( "TDC_ChOR","Timing",1200,0,1200);      map_fTDCHistos[strTDCOR]->Sumw2();
-    map_fTDCHistos[strTDCAND] = new TH1F( "TDC_ChAND","Timing",1200,0,1200);    map_fTDCHistos[strTDCAND]->Sumw2();
+    //map_fTDCHistos[strTDCOR] = new TH1F( "TDC_ChOR","Timing",1200,0,1200);      map_fTDCHistos[strTDCOR]->Sumw2();
+    //map_fTDCHistos[strTDCAND] = new TH1F( "TDC_ChAND","Timing",1200,0,1200);    map_fTDCHistos[strTDCAND]->Sumw2();
     
+    TH1F *hTDC_ChOR = new TH1F( "TDC_ChOR","Timing - Channel OR",1200,0,1200);      hTDC_ChOR->Sumw2();
+    TH1F *hTDC_ChAND = new TH1F( "hTDC_ChAND","Timing - Channel AND",1200,0,1200);  hTDC_ChAND->Sumw2();
+
     //Loop Over Input Data
     //------------------------------------------------------
     for (int i=0; i < tree_Input->GetEntries(); ++i) {
@@ -290,11 +329,26 @@ int main( int argc_, char * argv_[]){
             cout<<(*mapIter).second<<"\t";
         }
         
-        cout<<"getMin(map_fTDCData) = " << getMin(map_fTDCData) << endl;
+        cout<<"getMinForChannelOR(map_fTDCData) = " << getMinForChannelOR(map_fTDCData) << "\t";
+        cout<<"getMaxForChannelAND(map_fTDCData) = " <<getMaxForChannelAND(map_fTDCData) << endl;
         
         //Fill OR && AND
-        map_fTDCHistos[strTDCOR]->Fill( getMin(map_fTDCData) );
+        hTDC_ChOR->Fill( getMinForChannelOR(map_fTDCData) );
+        hTDC_ChAND->Fill( getMaxForChannelAND(map_fTDCData) );
     } //End Loop Over tree_Input
+    
+    //Create Output File
+    //------------------------------------------------------
+    TFile *file_OutputROOTFile = new TFile("Output","RECREATE","",1);
+    
+    /*for (auto mapIter=map_fTDCHistos.begin(); mapIter!=map_fTDCHistos.end(); ++mapIter) {
+        ( (*mapIter).second )->Write();
+    }*/
+
+    for (int i=0; i < vec_strTDCChan.size(); ++i) {map_fTDCHistos[vec_strTDCChan[i]]->Write();}
+    
+    hTDC_ChOR->Write();
+    hTDC_ChAND->Write();
     
     return 0;
 } //End main()
