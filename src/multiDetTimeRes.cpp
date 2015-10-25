@@ -1,6 +1,6 @@
 //
 //  timeResponse_OR_AND.cpp
-//  
+//
 //
 //  Created by Brian L Dorney on 24/10/15.
 //
@@ -31,7 +31,7 @@
 
 
 /*Usage:
- * 
+ *
  * multiDetTimeRes <Input Root File> <Tree Name> {comma separated list of channel numbers}
  *
  * Return Codes:
@@ -71,9 +71,69 @@ bool convert2bool(string str, bool &bExitSuccess){
 
 struct cmp_chan{
     bool operator()(const string &str1, const string &str2) const{
-        return stoi(str1.substr(str1.find_first_not_of("TDC_Ch"), str1.length() - str1.find_first_not_of("TDC_Ch") ) ) > stoi(str2.substr(str2.find_first_not_of("TDC_Ch"), str2.length() - str2.find_first_not_of("TDC_Ch") ) );
+        std::string alphabet = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz_";
+        
+        cout<<"===========OPERATION===========\n";
+        //return std::stoi(str1.substr(str1.find_first_not_of("TDC_Ch"), str1.length() - str1.find_first_not_of("TDC_Ch") ) ) > std::stoi(str2.substr(str2.find_first_not_of("TDC_Ch"), str2.length() - str2.find_first_not_of("TDC_Ch") ) );
+        //cout<<"str1.find_first_not_of(alphabet)=" << str1.find_first_not_of(alphabet) << endl;
+        //cout<<"str1.length() - str1.find_first_not_of(alphabet)=" << str1.length() - str1.find_first_not_of(alphabet) << endl;
+        //cout<<"std::stoi(str1.substr(str1.find_first_not_of(alphabet), str1.length() - str1.find_first_not_of(alphabet) ) )=" << std::stoi(str1.substr(str1.find_first_not_of(alphabet), str1.length() - str1.find_first_not_of(alphabet) ) ) << endl;
+        
+        //cout<<"str2.find_first_not_of(alphabet)=" << str2.find_first_not_of(alphabet) << endl;
+        //cout<<"str2.length() - str2.find_first_not_of(alphabet)=" << str2.length() - str2.find_first_not_of(alphabet) << endl;
+        //cout<<"str2.substr(str2.find_first_not_of(alphabet), str2.length() - str2.find_first_not_of(alphabet) )=" << str2.substr(str2.find_first_not_of(alphabet), str2.length() - str2.find_first_not_of(alphabet) ) << endl;
+        //cout<<"std::stoi(str2.substr(str2.find_first_not_of(alphabet), str2.length() - str2.find_first_not_of(alphabet) ) )=" << std::stoi(str2.substr(str2.find_first_not_of(alphabet), str2.length() - str2.find_first_not_of(alphabet) ) ) << endl;
+        
+        return std::stoi(str1.substr(str1.find_first_not_of(alphabet), str1.length() - str1.find_first_not_of(alphabet) ) ) > std::stoi(str2.substr(str2.find_first_not_of(alphabet), str2.length() - str2.find_first_not_of(alphabet) ) );
     }
 };
+
+/*struct cmp_mappedVal{
+    bool operator()(std::map<std::string,int> map1, std::map<std::string,int> map2) const{
+        return map1.second < map2.second;
+    }
+};*/
+
+typedef std::pair<std::string, int> PairType_Str_Int;
+struct CompareSecond_Min
+{
+    bool operator()(const PairType_Str_Int& left, const PairType_Str_Int& right) const
+    {
+        return left.second < right.second;
+    }
+};
+struct CompareSecond_Max
+{
+    bool operator()(const PairType_Str_Int& left, const PairType_Str_Int& right) const
+    {
+        return left.second > right.second;
+    }
+};
+
+int getMinForChannelOR(std::map<std::string, int> inputMap)
+{
+    std::pair<std::string, int> min = *min_element(inputMap.begin(), inputMap.end(), CompareSecond_Min());
+    
+    return min.second;
+}
+
+int getMaxForChannelAND(std::map<std::string, int> inputMap){
+    int iRetVal;
+    
+    //Require
+    if ( getMinForChannelOR(inputMap) > 0 ) {
+        std::pair<std::string, int> max = *max_element(inputMap.begin(), inputMap.end(), CompareSecond_Max() );
+        
+        //iRetVal = getMaxForChannelAND(inputMap);
+        iRetVal = max.second;
+    }
+    else{
+        //One or more channels off
+        iRetVal = -1;
+    }
+    
+    return iRetVal;
+} //End getMaxForChannel
 
 int main( int argc_, char * argv_[]){
     //Variable Declaration
@@ -89,6 +149,8 @@ int main( int argc_, char * argv_[]){
     std::string strName_InputRootFile;
     std::string strName_tree;           //TTree found in strName_InputRootFile
     std::string strCh, strChannels;
+    std::string strTDCOR = "TDC_ChOR";
+    std::string strTDCAND = "TDC_ChAND";
     //std::string strTDCChanHisto = "TDC_Ch";
     
     //std::vector<int> vec_fTDCData;
@@ -100,7 +162,7 @@ int main( int argc_, char * argv_[]){
     //------------------------------------------------------
     vec_strInputArgs.resize(argc_);
     std::copy(argv_, argv_ + argc_, vec_strInputArgs.begin() );
-
+    
     //Check input arguments
     if(vec_strInputArgs.size() == 1 ){ //Case: Usage
         std::cout<<"multiDetTimeRes v"<<fVersion<<endl;
@@ -187,21 +249,21 @@ int main( int argc_, char * argv_[]){
     
     //Open input root file
     //------------------------------------------------------
-    TFile *file_ROOT = new TFile(strName_InputRootFile.c_str(), "READ", "", 1);
+    TFile *file_InputROOTFile = new TFile(strName_InputRootFile.c_str(), "READ", "", 1);
     
     //Check to see if data file opened successfully, if so load the tree
     //------------------------------------------------------
-    if ( !file_ROOT->IsOpen() || file_ROOT->IsZombie() ) {
+    if ( !file_InputROOTFile->IsOpen() || file_InputROOTFile->IsZombie() ) {
         perror( ("main() - error while opening file: " + strName_InputRootFile ).c_str() );
         std::cout << "Input ROOT File Status:\n";
-        std::cout << "\tIsOpen() = " << file_ROOT->IsOpen() << endl;
-        std::cout << "\tIsZombie() = " << file_ROOT->IsZombie() << endl;
+        std::cout << "\tIsOpen() = " << file_InputROOTFile->IsOpen() << endl;
+        std::cout << "\tIsZombie() = " << file_InputROOTFile->IsZombie() << endl;
         std::cout << "Exiting!!!\n";
         
         return -4;
     }
     
-    TTree *tree_Input = (TTree*) file_ROOT->Get( strName_tree.c_str() );
+    TTree *tree_Input = (TTree*) file_InputROOTFile->Get( strName_tree.c_str() );
     
     if ( nullptr == tree_Input ) {
         std::cout<<"main() - error while fetching: " << strName_tree.c_str() << endl;
@@ -218,7 +280,10 @@ int main( int argc_, char * argv_[]){
         
         for (int i=0; i < vec_strTDCChan.size(); ++i) {
             cout<<"Ch \t" << vec_strTDCChan[i];
-            cout<<stoi(str1.substr(str1.find_first_not_of("TDC_Ch"), str1.length() - str1.find_first_not_of("TDC_Ch") ) ) <<endl;
+            //cout<<"\t"<<vec_strTDCChan[i].find_first_not_of("TDC_Ch");
+            //cout<<"\t"<<vec_strTDCChan[i].length() - vec_strTDCChan[i].find_first_not_of("TDC_Ch");
+            //cout<<"\t"<<vec_strTDCChan[i].substr(vec_strTDCChan[i].find_first_not_of("TDC_Ch"), vec_strTDCChan[i].length() - vec_strTDCChan[i].find_first_not_of("TDC_Ch") );
+            //cout<<"\t"<<std::stoi(vec_strTDCChan[i].substr(vec_strTDCChan[i].find_first_not_of("TDC_Ch"), vec_strTDCChan[i].length() - vec_strTDCChan[i].find_first_not_of("TDC_Ch") ) ) <<endl;
         }
     }
     
@@ -227,30 +292,51 @@ int main( int argc_, char * argv_[]){
         //Yes, you need to initialize all entries in the map so they have memory addresses.
         //Then below in a separate loop you set them as a branch address
         map_fTDCData[vec_strTDCChan[i]];
-        
-        //tree_Input->SetBranchAddress( ("TDC_Ch" + vec_strTDCChan[i]).c_str(), &(map_fTDCData[vec_strTDCChan[i]]) );
     } //End Loop Over vec_strTDCChan
-
+    
     for(int i=0; i < vec_strTDCChan.size(); ++i){
         tree_Input->SetBranchAddress( ("TDC_Ch" + vec_strTDCChan[i]).c_str(), &(map_fTDCData[vec_strTDCChan[i]]) );
-    }    
-
+        map_fTDCHistos[vec_strTDCChan[i]] = new TH1F( ("TDC_Ch" + vec_strTDCChan[i]).c_str(),"Timing",1200,0,1200);
+        map_fTDCHistos[vec_strTDCChan[i]]->Sumw2();
+    }
+    
+    //map_fTDCHistos[strTDCOR] = new TH1F( "TDC_ChOR","Timing",1200,0,1200);      map_fTDCHistos[strTDCOR]->Sumw2();
+    //map_fTDCHistos[strTDCAND] = new TH1F( "TDC_ChAND","Timing",1200,0,1200);    map_fTDCHistos[strTDCAND]->Sumw2();
+    
+    TH1F *hTDC_ChOR = new TH1F( "TDC_ChOR","Timing - Channel OR",1200,0,1200);      hTDC_ChOR->Sumw2();
+    TH1F *hTDC_ChAND = new TH1F( "hTDC_ChAND","Timing - Channel AND",1200,0,1200);  hTDC_ChAND->Sumw2();
+    
     //Loop Over Input Data
     //------------------------------------------------------
     for (int i=0; i < tree_Input->GetEntries(); ++i) {
         tree_Input->GetEntry(i);
         
-        cout<<i<<"\t";
-        //for (int j=0; j<vec_fTDCData.size(); ++j) {
-          //  cout<<vec_fTDCData[j]<<"\t";
-        //}
-        for (auto chIter = map_fTDCData.begin(); chIter != map_fTDCData.end(); ++chIter) {
-            cout<<(*chIter).second<<"\t";
+        //Fill Individual Channels
+        for (int i=0; i < vec_strTDCChan.size(); ++i) {map_fTDCHistos[vec_strTDCChan[i]]->Fill(map_fTDCData[vec_strTDCChan[i]]);}
+        
+        
+        for (auto mapIter=map_fTDCData.begin(); mapIter!=map_fTDCData.end(); ++mapIter) {
+            cout<<(*mapIter).second<<"\t";
         }
-        cout<<endl;
         
+        cout<<"getMinForChannelOR(map_fTDCData) = " << getMinForChannelOR(map_fTDCData) << "\t";
+        cout<<"getMaxForChannelAND(map_fTDCData) = " <<getMaxForChannelAND(map_fTDCData) << endl;
         
+        //Fill OR && AND
+        hTDC_ChOR->Fill( getMinForChannelOR(map_fTDCData) );
+        hTDC_ChAND->Fill( getMaxForChannelAND(mymap) );
     } //End Loop Over tree_Input
+    
+    //Create Output File
+    //------------------------------------------------------
+    TFile *file_OutputROOTFile = new TFile("Output","RECREATE","",1);
+    
+    for (auto mapIter=map_fTDCHistos.begin(); mapIter!=map_fTDCHistos.end(); ++mapIter) {
+        (*mapIter)->Write();
+    }
+    
+    hTDC_ChOR->Write();
+    hTDC_ChAND->Write();
     
     return 0;
 } //End main()
