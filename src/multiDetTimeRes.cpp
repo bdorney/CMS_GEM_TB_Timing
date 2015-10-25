@@ -339,7 +339,7 @@ int main( int argc_, char * argv_[]){
     
     //Create Output File
     //------------------------------------------------------
-    TFile *file_OutputROOTFile = new TFile("Output","RECREATE","",1);
+    TFile *file_OutputROOTFile = new TFile("multiDetTimeRes_Output.root","RECREATE","",1);
     
     /*for (auto mapIter=map_fTDCHistos.begin(); mapIter!=map_fTDCHistos.end(); ++mapIter) {
         ( (*mapIter).second )->Write();
@@ -350,5 +350,7 @@ int main( int argc_, char * argv_[]){
     hTDC_ChOR->Write();
     hTDC_ChAND->Write();
     
+    file_OutputROOTFile->Close();
+
     return 0;
 } //End main()

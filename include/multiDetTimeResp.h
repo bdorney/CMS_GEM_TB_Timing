@@ -70,34 +70,38 @@ int getMinForChannelOR(std::map<std::string, int> inputMap){
     std::map<std::string, int>::iterator iterMap = inputMap.begin();
     std::map<std::string, int>::iterator iterMapEnd = inputMap.end();
 
-    while(iterMap != iterMapEnd){
+    while( iterMap != inputMap.end() ){
 	if( 0 == (*iterMap).second){
-		std::map<std::string, int>::iterator iterTemp = iterMap;
-		++iterMap;
-		inputMap.erase(iterTemp);
-
-		iterMapEnd = inputMap.end(); //??
-
-		if(iterMap == iterMapEnd) break;
+		//C++11 is magic
+		iterMap = inputMap.erase(iterMap);
 	}
 	else{
 		++iterMap;
-
-		if(iterMap == iterMapEnd) break;
 	}
     }
     
-    std::pair<std::string, int> min = *min_element(inputMap.begin(), inputMap.end(), CompareSecond_Min());
+    //std::cout <<"inputMap.begin() = "; 
+    //std::cout << "inputMap.begin() = " << inputMap.begin() << std::endl;
+    //std::cout << "inputMap.end() = " << inputMap.end() << std::endl;
+
+    if( 0 == inputMap.size() ){
+	return -1;
+    }
+    else{
+        std::pair<std::string, int> min = *min_element(inputMap.begin(), inputMap.end(), CompareSecond_Min());
     
-    return min.second;
+        return min.second;
+    }
 }
 
 int getMaxForChannelAND(std::map<std::string, int> inputMap){
     //Variable Declaration
     int iRetVal;
-    
-    //Require
-    if ( getMinForChannelOR(inputMap) > 0 ) {
+   
+    std::pair<std::string, int> min = *min_element(inputMap.begin(), inputMap.end(), CompareSecond_Min());
+
+    //Require All Elements to be nonzero (i.e. have a signal)
+    if ( min.second > 0 ) {
         std::pair<std::string, int> max = *max_element(inputMap.begin(), inputMap.end(), CompareSecond_Max() );
         
         //iRetVal = getMaxForChannelAND(inputMap);
