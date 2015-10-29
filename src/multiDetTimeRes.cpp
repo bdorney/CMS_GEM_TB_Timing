@@ -313,9 +313,10 @@ int main( int argc_, char * argv_[]){
     //map_fTDCHistos[strTDCOR] = new TH1F( "TDC_ChOR","Timing",1200,0,1200);      map_fTDCHistos[strTDCOR]->Sumw2();
     //map_fTDCHistos[strTDCAND] = new TH1F( "TDC_ChAND","Timing",1200,0,1200);    map_fTDCHistos[strTDCAND]->Sumw2();
     
-    TH1F *hTDC_ChOR = new TH1F( "TDC_ChOR","Timing - Channel OR",1200,0,1200);      hTDC_ChOR->Sumw2();
-    TH1F *hTDC_ChAND = new TH1F( "hTDC_ChAND","Timing - Channel AND",1200,0,1200);  hTDC_ChAND->Sumw2();
-
+    TH1F *hTDC_ChOR = new TH1F( "TDC_ChOR","Timing - Channel OR",1200,0,1200);                  hTDC_ChOR->Sumw2();
+    TH1F *hTDC_ChAND = new TH1F( "hTDC_ChAND","Timing - Channel AND",1200,0,1200);              hTDC_ChAND->Sumw2();
+    TH1F *hTDC_ChDeltaT = new TH1F( "hTDC_ChDeltaT","Timing - Channel #Deltat",1200,0,1200);    hTDC_ChDeltaT->Sumw2();
+    
     //Loop Over Input Data
     //------------------------------------------------------
     for (int i=0; i < tree_Input->GetEntries(); ++i) {
@@ -335,6 +336,11 @@ int main( int argc_, char * argv_[]){
         //Fill OR && AND
         hTDC_ChOR->Fill( getMinForChannelOR(map_fTDCData) );
         hTDC_ChAND->Fill( getMaxForChannelAND(map_fTDCData) );
+        
+        if ( getMaxForChannelAND(map_fTDCData) > 0 ) {
+            hTDC_ChDeltaT->Fill( fabs( getMaxForChannelAND(map_fTDCData) - getMinForChannelOR(map_fTDCData) ) );
+        }
+        
     } //End Loop Over tree_Input
     
     //Create Output File
@@ -349,6 +355,7 @@ int main( int argc_, char * argv_[]){
     
     hTDC_ChOR->Write();
     hTDC_ChAND->Write();
+    hTDC_ChDeltaT->Write();
     
     file_OutputROOTFile->Close();
 
