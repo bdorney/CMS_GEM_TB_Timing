@@ -342,7 +342,8 @@ int main( int argc_, char * argv_[]){
         hTDC_ChAND->Fill( getMaxForChannelAND(map_fTDCData) );
         
         if ( getMaxForChannelAND(map_fTDCData) > 0 ) {
-            hTDC_ChDeltaT->Fill( fabs( getMaxForChannelAND(map_fTDCData) - getMinForChannelOR(map_fTDCData) ) );
+            //hTDC_ChDeltaT->Fill( fabs( getMaxForChannelAND(map_fTDCData) - getMinForChannelOR(map_fTDCData) ) );
+            hTDC_ChDeltaT->Fill( map_fTDCData[vec_strTDCChan[0]] - map_fTDCData[vec_strTDCChan[1]]  );
         }
         
     } //End Loop Over tree_Input
