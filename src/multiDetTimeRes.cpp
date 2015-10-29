@@ -18,6 +18,7 @@
 //ROOT Includes
 #include "TFile.h"
 #include "TH1F.h"
+#include "TH2F.h"
 #include "TROOT.h"
 #include "TTree.h"
 
@@ -319,8 +320,8 @@ int main( int argc_, char * argv_[]){
     TH1F *hTDC_ChDeltaT = new TH1F( "hTDC_ChDeltaT","Timing - Channel #Deltat",4800,-1200,1200);    hTDC_ChDeltaT->Sumw2();
     TH2F *hTDC_Corr = new TH2F("hTDC_Corr","Timing Correlation",1200,0,1200,1200,0,1200);
     
-    hTDC_Corr->SetXTitle( map_fTDCData[vec_strTDCChan[0]].c_str() );
-    hTDC_Corr->SetYTitle( map_fTDCData[vec_strTDCChan[1]].c_str() );
+    //hTDC_Corr->SetXTitle( map_fTDCData[vec_strTDCChan[0]].c_str() );
+    //hTDC_Corr->SetYTitle( map_fTDCData[vec_strTDCChan[1]].c_str() );
     
     //Loop Over Input Data
     //------------------------------------------------------
