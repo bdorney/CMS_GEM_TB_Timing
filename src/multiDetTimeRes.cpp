@@ -316,7 +316,7 @@ int main( int argc_, char * argv_[]){
     TH1F *hTDC_ChOR = new TH1F( "TDC_ChOR","Timing - Channel OR",1200,0,1200);                  hTDC_ChOR->Sumw2();
     TH1F *hTDC_ChAND = new TH1F( "hTDC_ChAND","Timing - Channel AND",1200,0,1200);              hTDC_ChAND->Sumw2();
     //TH1F *hTDC_ChDeltaT = new TH1F( "hTDC_ChDeltaT","Timing - Channel #Deltat",1200,0,1200);    hTDC_ChDeltaT->Sumw2();
-    TH1F *hTDC_ChDeltaT = new TH1F( "hTDC_ChDeltaT","Timing - Channel #Deltat",2400,0,1200);    hTDC_ChDeltaT->Sumw2();
+    TH1F *hTDC_ChDeltaT = new TH1F( "hTDC_ChDeltaT","Timing - Channel #Deltat",4800,-1200,1200);    hTDC_ChDeltaT->Sumw2();
     
     //Loop Over Input Data
     //------------------------------------------------------
