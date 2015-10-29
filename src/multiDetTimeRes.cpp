@@ -315,7 +315,8 @@ int main( int argc_, char * argv_[]){
     
     TH1F *hTDC_ChOR = new TH1F( "TDC_ChOR","Timing - Channel OR",1200,0,1200);                  hTDC_ChOR->Sumw2();
     TH1F *hTDC_ChAND = new TH1F( "hTDC_ChAND","Timing - Channel AND",1200,0,1200);              hTDC_ChAND->Sumw2();
-    TH1F *hTDC_ChDeltaT = new TH1F( "hTDC_ChDeltaT","Timing - Channel #Deltat",1200,0,1200);    hTDC_ChDeltaT->Sumw2();
+    //TH1F *hTDC_ChDeltaT = new TH1F( "hTDC_ChDeltaT","Timing - Channel #Deltat",1200,0,1200);    hTDC_ChDeltaT->Sumw2();
+    TH1F *hTDC_ChDeltaT = new TH1F( "hTDC_ChDeltaT","Timing - Channel #Deltat",2400,0,1200);    hTDC_ChDeltaT->Sumw2();
     
     //Loop Over Input Data
     //------------------------------------------------------
@@ -323,8 +324,11 @@ int main( int argc_, char * argv_[]){
         tree_Input->GetEntry(i);
         
         //Fill Individual Channels
-        for (int i=0; i < vec_strTDCChan.size(); ++i) {map_fTDCHistos[vec_strTDCChan[i]]->Fill(map_fTDCData[vec_strTDCChan[i]]);}
-        
+        for (int i=0; i < vec_strTDCChan.size(); ++i) {
+            if ( map_fTDCData[vec_strTDCChan[i]] > 0) {
+                map_fTDCHistos[vec_strTDCChan[i]]->Fill(map_fTDCData[vec_strTDCChan[i]]);
+            }
+        }
         
         for (auto mapIter=map_fTDCData.begin(); mapIter!=map_fTDCData.end(); ++mapIter) {
             cout<<(*mapIter).second<<"\t";
