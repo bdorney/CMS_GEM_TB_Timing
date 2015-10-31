@@ -199,18 +199,13 @@ void treeProducerTDC::writeTree(string inputTreeName, string outputDataFile){
         if (fileName_ROOT.compare(0,1,"#") == 0) continue;
         
         //Output action to user, but only if line is not commented out!!!
-        //cout<<"treeProducerTDC::writeTree() - Retreiving Line!\n";
         cout<<"treeProducerTDC::writeTree() - Retreiving Line: " << fileName_ROOT << endl;
         
         //Create an instance of the Run Parameters and then get specific run info
-        //Param runParameters;
         TRunParameters runLog;
-        //run = runLog.getRun();
         
-        //setRun(fileName_ROOT, fileName_LUT, runParameters, runLog);
         setRun(fileName_ROOT, fileName_LUT, runLog);
         
-        //Run run = runLog.getRun();
         run = runLog.getRun();
         
         outputTDCTree->Fill();
