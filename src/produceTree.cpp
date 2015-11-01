@@ -20,8 +20,10 @@
 
 //My Includes
 #include "treeProducerTDC.h"
+#include "TimingUtilityFunctions.h"
 
 using std::cout;
+using namespace Timing;
 
 struct ProdInfo{
     bool bVerboseMode_IO;
@@ -40,131 +42,6 @@ struct ProdInfo{
     
     std::vector<std::string> vec_strIgnoredIdent;
 };
-
-std::istream & getlineNoSpaces(std::istream & stream, string & str){
-    //get the line
-    getline(stream, str);
-    
-    if (str.find("'",0) == std::string::npos ) { //Case: Header
-        str.erase(remove(str.begin(),str.end(), ' ' ), str.end() ); //spaces
-        str.erase(remove(str.begin(),str.end(), '\t' ), str.end() );//tabs
-    } //End Case: Header
-    else{ //Case: line input
-        int iFirstQuote = str.find("'",0);
-        int iLastQuote = str.rfind("'");
-        
-        //Spaces
-        str.erase(remove(str.begin(),str.begin()+iFirstQuote, ' ' ), str.begin()+iFirstQuote ); //Until first single-quote
-        str.erase(remove(str.begin()+iLastQuote,str.end(), ' ' ), str.end() ); //Until last single-quote
-        
-        //tabs
-        str.erase(remove(str.begin(),str.begin()+iFirstQuote, '\t' ), str.begin()+iFirstQuote ); //Until first single-quote
-        str.erase(remove(str.begin()+iLastQuote,str.end(), '\t' ), str.end() ); //Until last single-quote
-    } //End Case: line input
-    
-    return stream;
-} //End getlineNoSpaces()
-
-std::pair<string,string> getParsedLine(string strInputLine, bool &bExitSuccess){
-    //Variable Declaration
-    int iPos_Equals = strInputLine.find("=",0);
-    int iPos_End    = strInputLine.find(";",0);
-    int iPos_Quote1 = strInputLine.find("'",0); //Position of first single-quote
-    int iPos_Quote2 = strInputLine.rfind("'");  //Position of last single-quite
-    
-    string strFieldName;
-    string strFieldValue;
-    
-    //Check to make sure iPos_Equals found in input string
-    if (iPos_Equals == std::string::npos && strInputLine.find("[",0) == std::string::npos ) {
-        cout<<"Character '=' Not Found in line:\n";
-        cout<<strInputLine<<endl;
-        cout<<"Exiting treeProducer::getParsedLine(), Cross-Check Selcetion Setup File\n";
-        
-        bExitSuccess = false;
-        
-        return std::make_pair("","");
-    }
-    
-    //Check to make sure iPos_End found in input string
-    if (iPos_End == std::string::npos && strInputLine.find("[",0) == std::string::npos) {
-        cout<<"Character ';' Not Found in line:\n";
-        cout<<strInputLine<<endl;
-        cout<<"Exiting treeProducer::getParsedLine(), Cross-Check Selcetion Setup File\n";
-        
-        bExitSuccess = false;
-        
-        return std::make_pair("","");
-    }
-    
-    //Check to make sure iPos_Quote1 found in input string
-    if (iPos_Quote1 == std::string::npos && strInputLine.find("[",0) == std::string::npos) {
-        cout<<"First Single-Quote (e.g. ' ) Not Found in line:\n";
-        cout<<strInputLine<<endl;
-        cout<<"Exiting treeProducer::getParsedLine(), Cross-Check Selcetion Setup File\n";
-        
-        bExitSuccess = false;
-        
-        return std::make_pair("","");
-    }
-    
-    //Check to make sure iPos_Quote2 found in input string
-    if (iPos_Quote2 == std::string::npos && strInputLine.find("[",0) == std::string::npos) {
-        cout<<"Last Single-Quote (e.g. ' ) Not Found in line:\n";
-        cout<<strInputLine<<endl;
-        cout<<"Exiting treeProducer::getParsedLine(), Cross-Check Selcetion Setup File\n";
-        
-        bExitSuccess = false;
-        
-        return std::make_pair("","");
-    }
-    
-    //Get the Strings
-    strFieldName    = strInputLine.substr(0,iPos_Equals);
-    strFieldValue   = strInputLine.substr(iPos_Quote1+1, iPos_Quote2 - iPos_Quote1 - 1);
-    
-    //Set the Exit Flag
-    bExitSuccess = true;
-    
-    //cout<<"getParsedLine() - strFieldName = " << strFieldName << endl;
-    //cout<<"getParsedLine() - strFieldValue = " << strFieldValue << endl;
-
-    //Return the Pair
-    return std::make_pair(strFieldName,strFieldValue);
-} //End getParsedLine()
-
-bool convert2bool(string str, bool &bExitSuccess){
-    //convert to upper case
-    transform(str.begin(), str.end(), str.begin(), toupper);
-    
-    //Empty String?
-    if ( str.empty() ) {
-        bExitSuccess = false;
-        return false;
-    }
-    
-    //Input recognized?
-    if ( !(str.compare("T")==0 || str.compare("TRUE")==0 || str.compare("1")==0
-           || str.compare("F")==0 || str.compare("FALSE")==0 || str.compare("0")==0) ) {
-        bExitSuccess = false;
-        return false;
-    }
-    
-    bExitSuccess = true;
-    
-    return (str.compare("T")==0 || str.compare("TRUE")==0 || str.compare("1")==0);
-} //End convert2bool()
-
-//Prints All Bit Flags for an input ifstream
-void printStreamStatus(ifstream &inputStream){
-    std::cout << "Input File Stream Bit Status:\n";
-    std::cout << " good()=" << inputStream.good() << endl;
-    std::cout << " eof()=" << inputStream.eof() << endl;
-    std::cout << " fail()=" << inputStream.fail() << endl;
-    std::cout << " bad()=" << inputStream.bad() << endl;
-    
-    return;
-} //End treeProducerTDC::printStreamStatus()
 
 //Gets Production Info from input config file
 void getProdInfo(ifstream &file_Input, ProdInfo &pInfo, bool bVerboseMode){
@@ -237,7 +114,7 @@ void getProdInfo(ifstream &file_Input, ProdInfo &pInfo, bool bVerboseMode){
     if ( file_Input.bad() && bVerboseMode) {
         //perror( ("getProInfo(): error while reading file: " + strInputFileName).c_str() );
         perror( "getProInfo(): error while reading config file" );
-        printStreamStatus(file_Input);
+        Timing::printStreamStatus(file_Input);
     }
     
     //DO NOT CLOSE WILL BE USED ELSEWHERE
@@ -327,7 +204,7 @@ int main( int argc_, char * argv_[]){
         //Check to see if run list file opened successfully
         if (!file_Config.is_open()) {
             perror( ("main(): error while opening file: " + vec_strInputArgs[1]).c_str() );
-            printStreamStatus(file_Config);
+            Timing::printStreamStatus(file_Config);
             
             cout<<"Exitting!!!\n";
             
@@ -372,7 +249,7 @@ int main( int argc_, char * argv_[]){
     //Check to see if run list file opened successfully
     if (!file_RunList.is_open() && bVerboseMode) {
         perror( ("main(): error while opening file: " + pInfo.strPFN_RunList).c_str() );
-        printStreamStatus(file_RunList);
+        Timing::printStreamStatus(file_RunList);
     }
     
     //Create a new run list file for which we will insert the PFP into
@@ -397,7 +274,7 @@ int main( int argc_, char * argv_[]){
     } //End Loop through file_RunList
     if ( file_RunList.bad() && bVerboseMode) {
         perror( ("main(): error while reading file: " + pInfo.strPFN_RunList).c_str() );
-        printStreamStatus(file_RunList);
+        Timing::printStreamStatus(file_RunList);
     }
     
     file_RunList.close();
@@ -406,7 +283,7 @@ int main( int argc_, char * argv_[]){
     //------------------------------------------------------
     //Loop through config file, check for faults immediately afterward
     cout<<"Ignored parameter stream status"<<endl;
-    printStreamStatus(file_Config);
+    Timing::printStreamStatus(file_Config);
     while (getlineNoSpaces(file_Config, strLine) ) { //Loop Over file_Config
         //Skip Commented Lines
         if (strLine.compare(0,1,"#") == 0) continue;
@@ -442,7 +319,7 @@ int main( int argc_, char * argv_[]){
     } //End Loop Over file_Config
     if ( file_Config.bad() && bVerboseMode) {
         perror( ("main(): error while reading file: " + vec_strInputArgs[1]).c_str() );
-        printStreamStatus(file_Config);
+        Timing::printStreamStatus(file_Config);
     }
     
     file_Config.close();

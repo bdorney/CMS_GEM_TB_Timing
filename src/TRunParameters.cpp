@@ -7,15 +7,18 @@
 //
 
 #include "TRunParameters.h"
+#include "TimingUtilityFunctions.h"
+
+using namespace Timing;
 
 //Constructor
-Timing::TRunParameters::TRunParameters(){
+TRunParameters::TRunParameters(){
 
 } //End Constructor
 
 //Set Run; use 1st character of input to convert to ASCII Key Code then assign proper PDG ID
 //NOTE: This method fails if Proton and Pion are ever used in the same run
-void Timing::TRunParameters::setBeam(std::string strRun_Name, std::string input){
+void TRunParameters::setBeam(std::string strRun_Name, std::string input){
     //char firstChar = (input.substr(0,1)).c_str();
     char firstChar;
     
@@ -25,9 +28,9 @@ void Timing::TRunParameters::setBeam(std::string strRun_Name, std::string input)
     else{
         run.iBeam_Type = 0;
         
-        std::cout<<"Timing::TRunParameters::setBeam() - Expected input string::length() > 1\n";
-        std::cout<<"Timing::TRunParameters::setBeam() - Given: '" << input << "' with length " << input.length() << std::endl;
-        std::cout<<"Timing::TRunParameters::setBeam() - Please Cross-Check Input" << std::endl;
+        std::cout<<"TRunParameters::setBeam() - Expected input string::length() > 1\n";
+        std::cout<<"TRunParameters::setBeam() - Given: '" << input << "' with length " << input.length() << std::endl;
+        std::cout<<"TRunParameters::setBeam() - Please Cross-Check Input" << std::endl;
     }
     
     //Maybe instead of switch statement we should adopt what is used in setTrigMode()???
@@ -44,17 +47,17 @@ void Timing::TRunParameters::setBeam(std::string strRun_Name, std::string input)
             break;
         default:    //Unrecognized
             run.iBeam_Type = 0;
-            std::cout<<"Timing::TRunParameters::setBeam() - Unrecognized Input!!!\n";
-            std::cout<<"Timing::TRunParameters::setBeam() - Was given " << input << std::endl;
-            std::cout<<"Timing::TRunParameters::setBeam() - Expected 1st Letter to be from set {'E','P','M'}\n";
+            std::cout<<"TRunParameters::setBeam() - Unrecognized Input!!!\n";
+            std::cout<<"TRunParameters::setBeam() - Was given " << input << std::endl;
+            std::cout<<"TRunParameters::setBeam() - Expected 1st Letter to be from set {'E','P','M'}\n";
             break;
     } //End Switch
     
     return;
-} //End Timing::TRunParameters::setBeam()
+} //End TRunParameters::setBeam()
 
 //Set Trig Mode; use 1st character of input to convert to ASCII Key Code then assign 1 or 0 based on input
-void Timing::TRunParameters::setTrigMode(std::string strRun_Name, std::string input){
+void TRunParameters::setTrigMode(std::string strRun_Name, std::string input){
     //char firstChar = (input.substr(0,1)).c_str();
     
     if ( (input.substr(0,1)).compare("A") == 0 ) {
@@ -65,16 +68,16 @@ void Timing::TRunParameters::setTrigMode(std::string strRun_Name, std::string in
     }
     else {
         run.iTrig_Mode = -1;
-        std::cout<<"Timing::TRunParameters::setTrigMode() - Unrecognized Input!!!\n";
-        std::cout<<"Timing::TRunParameters::setTrigMode() - Was given " << input << std::endl;
-        std::cout<<"Timing::TRunParameters::setTrigMode() - Expected 1st Letter to be 'A' or 'S'\n";
+        std::cout<<"TRunParameters::setTrigMode() - Unrecognized Input!!!\n";
+        std::cout<<"TRunParameters::setTrigMode() - Was given " << input << std::endl;
+        std::cout<<"TRunParameters::setTrigMode() - Expected 1st Letter to be 'A' or 'S'\n";
     }
     
     return;
-} //End Timing::TRunParameters::setTrigMode()
+} //End TRunParameters::setTrigMode()
 
 //Set the Detector Current
-void Timing::TRunParameters::setDetCurrent(std::string strDet_Name, float fInput){
+void TRunParameters::setDetCurrent(std::string strDet_Name, float fInput){
     //Set Detector 1
     if (run.map_det[strDet_Name].bDet_Gain_IndepVar_Imon) {
         run.map_det[strDet_Name].fDet_Imon = input;
@@ -94,16 +97,104 @@ void Timing::TRunParameters::setDetCurrent(std::string strDet_Name, float fInput
 //  fDet_Gain_Slope;     //Gain Curve - Exponential Slope
 //  fDet_Gain_Slope_Err; //Gain Curve - Exponential Slope, Error
 //The input fDepVar is the physical quantity which parameterizes the gain (e.g. VDrift, Imon, etc...)
-void Timing::TRunParameters::setDetGain(std::string strDet_Name, float fDepVar){
+void TRunParameters::setDetGain(std::string strDet_Name, float fDepVar){
     //Detector 1
     run.map_det[strDet_Name].fDet_Gain  = exp(run.map_det[strDet_Name].fDet_Gain_Const + run.map_det[strDet_Name].fDet_Gain_Slope * fDepVar );
     run.map_det[strDet_Name].fDet_Gain_Err   = sqrt( exp(2. * run.map_det[strDet_Name].fDet_Gain_Const + run.map_det[strDet_Name].fDet_Gain_Slope * fDepVar) * ( pow(run.map_det[strDet_Name].fDet_Gain_Const_Err, 2) + pow(fDepVar * run.map_det[strDet_Name].fDet_Gain_Slope_Err, 2) ) );
     
     return;
-} //End Case: Timing::TRunParameters::calcGain()
+} //End Case: TRunParameters::calcGain()
+
+//Determine if a detector should use the multichannel HV perscription or the divider perscription
+//      Multichannel HV: strMultiChan = {t, true, 1, Multi}     (case insensitive)
+//      Ceramic Divider: strMultiChan = {f, false, 0, Divider}  (case insensitive)
+void TRunParameters::setDetMultiChanHVCase(std::string strDet_Name, str::string strMultiChan){
+    //Variable Declaration
+    bool bExitSuccess = false;
+    bool bMultiChanHV = Timing::convert2bool(strMultiChan, bExitSuccess);
+    
+    //Accept sets {t, true, T, TRUE, 1} or {f, false, F, FALSE, 0}
+    if (bExitSuccess) { //Case: identified by logical
+        run.map_det[strDet_Name].bDet_HV_MultiChan = bMultiChanHV;
+        return;
+    } //End Case: identified by logical
+    else{ //Case: identified by keyword {Divider, Multi}
+        //Transform to upper case
+        std::transform(strMultiChan.begin(), strMultiChan.end(), strMultiChan.begin(), toupper);
+        
+        if (0 == strMultiChan.compare("MULTI") ) { //Case: Multi Channel HV
+            run.map_det[strDet_Name].bDet_HV_MultiChan = true;
+        } //End Case: Multi Channel HV
+        else if ( 0 == strMultiChan.compare("DIVIDER") ){ //Case: Ceramic Divider
+            run.map_det[strDet_Name].bDet_HV_MultiChan = false;
+        } //End Case: Ceramic Divider
+        else{ //Case: Input Not Understood
+            std::cout<<"TRunParameters::setDetMultiChanHVCase() - Input Not Recognized\n";
+            std::cout<<"\tReceived strMultiChan = " << strMultiChan << endl;
+            std::cout<<"\tExpect the set {t, true, 1, f, false, 0, Multi, Divider}\n";
+            std::cout<<"\tSetting run.map_det["<<strDet_Name<<"].bDet_HV_MultiChan to false\n";
+            std::cout<<"\tPlease cross-check input Tree Setup File\n";
+            
+            run.map_det[strDet_Name].bDet_HV_MultiChan = false;
+        } //End Case: Input Not Understood
+    } //End Case: identified by keyword {Divider, Multi}
+    
+    return;
+} //End TRunParameters::setDetMultiChanHVCase
+
+//Set a given parameter from a TTree
+void TRunParameters::setDetParameterFromTree(std::string strDet_Name, std::string strBranchName, float &fInput){
+    //Cross check on input parameters
+    if (run.strRun_Name.length() == 0 || run.strTreeName_RunParam_DUT.length() == 0) {
+        std::cout<<"TRunParameters::setDetParameterFromTree() - Input Parameters Not Set!!!\n";
+        std::cout<<"\t Run Name = " << run.strRun_Name << std::endl;
+        std::cout<<"\t TTree Name = " << run.strTreeName_RunParam_DUT << std::endl;
+        std::cout<<"\t Please cross-check input Tree Setup File\n";
+        std::cout<<"\t Parameters may not have been set!\n";
+        
+        return;
+    }
+    
+    //Variable Declaration
+    float fParam = -1;   //Hack for ROOT, e.g. can't have float &fInput then pass &fInput below (evaluates to &&fInput which is nonsense?)
+    
+    TFile *file_ROOT_Run = new TFile(run.strRun_Name.c_str(),"READ","",1);
+    
+    TTree *tree_ParamDUT = (TTree*) file_ROOT_Run->Get( run.strTreeName_RunParam_DUT.c_str() );
+    
+    if (tree_ParamDUT->FindBranch(strBranchName.c_str() ) == nullptr) {
+        std::cout<<"TRunParameters::setDetParameterFromTree() - Input Branch Does Not Exist!!!\n";
+        std::cout<<"\t Branch Name = " << strBranchName.c_str() << std::endl;
+        std::cout<<"\t Please cross-check input Tree Setup File\n";
+        std::cout<<"\t Parameters may not have been set!\n";
+        
+        file_ROOT_Run.Close();
+        
+        delete tree_ParamDUT;
+        
+        return;
+    }
+    
+    tree_ParamDUT->SetBranchAddress(strBranchName.c_str(), &fParam);
+    
+    //Get fParam
+    if (tree_ParamDUT->GetEntries() > 0) {
+        tree_ParamDUT->GetEntry(0);
+    }
+    
+    //Now set fInput as fParam, fInput passed by reference so original is now also set!!!
+    fInput = fParam;
+    
+    file_ROOT_Run.Close();
+    
+    delete tree_ParamDUT;
+    delete file_ROOT_Run;
+    
+    return;
+} //End setDetParameterFromTree
 
 //Set boolean type parameters
-void Timing::TRunParameters::setParameter(std::string strDetOrRunName, bool bInput, int iMthdIdx){
+void TRunParameters::setParameter(std::string strDetOrRunName, bool bInput, int iMthdIdx){
     switch (iMthdIdx) {
             //Run Methods                               //Expected Input Data Type
             
@@ -117,18 +208,18 @@ void Timing::TRunParameters::setParameter(std::string strDetOrRunName, bool bInp
             //methodIdx Not Recognized
         default:
             std::cout<<"=================================================\n";
-            std::cout<<"Timing::TRunParameters::setParameter() - methodIdx = " << methodIdx << " for STRING data type NOT recognized\n";
-            std::cout<<"Timing::TRunParameters::setParameter() - Performing No Action\n";
-            std::cout<<"Timing::TRunParameters::setParameter() - Please Check Input Again\n";
+            std::cout<<"TRunParameters::setParameter() - methodIdx = " << methodIdx << " for STRING data type NOT recognized\n";
+            std::cout<<"TRunParameters::setParameter() - Performing No Action\n";
+            std::cout<<"TRunParameters::setParameter() - Please Check Input Again\n";
             std::cout<<"=================================================\n";
             break;
     } //End switch on methodIdx
     
     return;
-} //End Timing::TRunParameters::setParameter()
+} //End TRunParameters::setParameter()
 
 //Set int type parameters
-void Timing::TRunParameters::setParameter(std::string strDetOrRunName, int iInput, int iMthdIdx){
+void TRunParameters::setParameter(std::string strDetOrRunName, int iInput, int iMthdIdx){
     switch (iMthdIdx) {
             //Run Methods                                           //Expected Input Data Type
         case 1: setRunNumber(strDetOrRunName, iInput); break;                      //int
@@ -151,27 +242,28 @@ void Timing::TRunParameters::setParameter(std::string strDetOrRunName, int iInpu
         case 212: setVFATThresh(strDetOrRunName, iInput); break;                   //int
             
             //TDC Methods
-        case 301: setTDCChanDet(strDetOrRunName, iInput)                           //int
+        case 301: setTDCChanDet(strDetOrRunName, iInput); break;                   //int
             
             //methodIdx Not Recognized
         default:
             std::cout<<"=================================================\n";
-            std::cout<<"Timing::TRunParameters::setParameter() - methodIdx = " << iMthdIdx << " for INT data type NOT recognized\n";
-            std::cout<<"Timing::TRunParameters::setParameter() - Performing No Action\n";
-            std::cout<<"Timing::TRunParameters::setParameter() - Please Check Input Again\n";
+            std::cout<<"TRunParameters::setParameter() - methodIdx = " << iMthdIdx << " for INT data type NOT recognized\n";
+            std::cout<<"TRunParameters::setParameter() - Performing No Action\n";
+            std::cout<<"TRunParameters::setParameter() - Please Check Input Again\n";
             std::cout<<"=================================================\n";
             break;
     } //End switch on methodIdx
     
     return;
-} //End Timing::TRunParameters::setParameter()
+} //End TRunParameters::setParameter()
 
 //Set float type parameters
-void Timing::TRunParameters::setParameter(std::string strDetOrRunName, float fInput, int iMthdIdx){
+void TRunParameters::setParameter(std::string strDetOrRunName, float fInput, int iMthdIdx){
     switch (iMthdIdx) {
         //Run Methods                               //Expected Input Data Type
         case 4: setTrigDelay(strDetOrRunName, fInput); break;                    //float
-            
+        case 8: setSupermoduleHVSetPoint(strDetOrRunName, fInput); break;        //float
+    
         //Detector Methods
         case 104: setDetCurrent(strDetOrRunName, fInput); break;                 //float
         case 105: setDetDriftV(strDetOrRunName, fInput); break;                  //float
@@ -197,43 +289,49 @@ void Timing::TRunParameters::setParameter(std::string strDetOrRunName, float fIn
             //methodIdx Not Recognized
         default:
             std::cout<<"=================================================\n";
-            std::cout<<"Timing::TRunParameters::setParameter() - methodIdx = " << iMthdIdx << " for FLOAT data type NOT recognized\n";
-            std::cout<<"Timing::TRunParameters::setParameter() - Performing No Action\n";
-            std::cout<<"Timing::TRunParameters::setParameter() - Please Check Input Again\n";
+            std::cout<<"TRunParameters::setParameter() - methodIdx = " << iMthdIdx << " for FLOAT data type NOT recognized\n";
+            std::cout<<"TRunParameters::setParameter() - Performing No Action\n";
+            std::cout<<"TRunParameters::setParameter() - Please Check Input Again\n";
             std::cout<<"=================================================\n";
             break;
     } //End switch on methodIdx
     
     return;
-} //End Timing::TRunParameters::setParameter()
+} //End TRunParameters::setParameter()
 
 //Set string type parameters
-void Timing::TRunParameters::setParameter(std::string strDetOrRunName, std::string strInput, int iMthdIdx){
+void TRunParameters::setParameter(std::string strDetOrRunName, std::string strInput, int iMthdIdx){
     switch (iMthdIdx) {
             //Run Methods                               //Expected Input Data Type
         case 2: setBeam(strDetOrRunName, strInput); break;                 //string
         case 3: setTrigMode(strDetOrRunName, strInput); break;             //string
-            
-        case 6: setTDCFitParamNameOR(strDetOrRunName, strInput)            //string
-        case 7: setTDCFitParamNameAND(strDetOrRunName, strInput)           //string
-            
-            
+        case 6: setTDCFitParamNameOR(strDetOrRunName, strInput); break;            //string
+        case 7: setTDCFitParamNameAND(strDetOrRunName, strInput); break;           //string
+        case 9: setRunParamTree4DUT(strDetOrRunName, strInput); break;          //string
+    
             //Detector Methods
+        case 121: setDetMultiChanHVCase(strDetOrRunName, strInput); break;     //string
+        case 122: setDetGEM1TopV(strDetOrRunName, strInput); break;   //string
+        case 123: setDetGEM1BotV(strDetOrRunName, strInput); break;   //string
+        case 124: setDetGEM2TopV(strDetOrRunName, strInput); break;   //string
+        case 125: setDetGEM2BotV(strDetOrRunName, strInput); break;   //string
+        case 126: setDetGEM3TopV(strDetOrRunName, strInput); break;   //string
+        case 127: setDetGEM3BotV(strDetOrRunName, strInput); break;   //string
             
             //VFAT Methods
             
             //TDC Methods
-        case 302: setTDCFitParamName(strDetOrRunName, strInput)            //string
+        case 302: setTDCFitParamName(strDetOrRunName, strInput); break;            //string
             
             //methodIdx Not Recognized
         default:
             std::cout<<"=================================================\n";
-            std::cout<<"Timing::TRunParameters::setParameter() - methodIdx = " << iMthdIdx << " for STRING data type NOT recognized\n";
-            std::cout<<"Timing::TRunParameters::setParameter() - Performing No Action\n";
-            std::cout<<"Timing::TRunParameters::setParameter() - Please Check Input Again\n";
+            std::cout<<"TRunParameters::setParameter() - methodIdx = " << iMthdIdx << " for STRING data type NOT recognized\n";
+            std::cout<<"TRunParameters::setParameter() - Performing No Action\n";
+            std::cout<<"TRunParameters::setParameter() - Please Check Input Again\n";
             std::cout<<"=================================================\n";
             break;
     } //End switch on methodIdx
     
     return;
-} //End Timing::TRunParameters::setParameter()
+} //End TRunParameters::setParameter()

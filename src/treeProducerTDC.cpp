@@ -10,6 +10,18 @@
 
 //ClassImp(treeProducerTDC);
 
+using namespace Timing;
+
+using std::cin;
+using std::cout;
+using std::endl;
+using std::ifstream;
+using std::list;
+using std::pair;
+using std::string;
+using std::transform;
+using std::vector;
+
 //Constructor
 treeProducerTDC::treeProducerTDC(){
     verbose_IO          = false;
@@ -48,7 +60,7 @@ void treeProducerTDC::setNumericDeconvoModel(string inputFormula, vector<float> 
 
 //Set a Parameter to Be Ignored when calling getParsedFileName()
 void treeProducerTDC::setIgnoredParameter(string inputParameter){
-    std::transform(inputParameter.begin(),inputParameter.end(),inputParameter.begin(), toupper);
+    transform(inputParameter.begin(),inputParameter.end(),inputParameter.begin(), toupper);
     
     vecIgnoredParam.push_back(inputParameter);
     
@@ -189,7 +201,7 @@ void treeProducerTDC::writeTree(string inputTreeName, string outputDataFile){
     //  -failbit and badbit prevent data processing, eofbit does not
     //See: http://gehrcke.de/2011/06/reading-files-in-c-using-ifstream-dealing-correctly-with-badbit-failbit-eofbit-and-perror/
     while ( getline(dataInput, line) ) {
-        //Set File Names for later operations, use a string stream
+        //Set File Names for later operations, use a std::stringstream
         std::stringstream strStream;
         
         strStream<<line;
@@ -244,7 +256,7 @@ void treeProducerTDC::printStoredData(TTree *inputTree){
     
     //Get Branches
     //Run Info
-    inputTree->SetBranchAddress("iRun",&run.iRun);
+    /*inputTree->SetBranchAddress("iRun",&run.iRun);
     inputTree->SetBranchAddress("iBeam",&run.iBeam_Type);
     inputTree->SetBranchAddress("iTrig_Mode",&run.iTrig_Mode);
     inputTree->SetBranchAddress("fTrig_Delay",&run.fTrig_Delay);
@@ -330,6 +342,7 @@ void treeProducerTDC::printStoredData(TTree *inputTree){
         printf(" %4.2f %4.2f %4.2f %4.2f | ",run.fTDC_Histo_RMS,run.fTDC_Fit_Sigma,run.fTDC_Fit_Convo_Sigma,run.fTDC_NumDeconvo_TimeResp);
         printf(" %4.2f %4.2f %4.2f %4.2f %4.2f %4.2f\n", run.fTDC_Histo_PkPos_1stMax, run.fTDC_Histo_PkInt_1stMax, run.fTDC_Histo_PkPos_2ndMax, run.fTDC_Histo_PkInt_2ndMax, run.fTDC_Histo_PkPos_3rdMax, run.fTDC_Histo_PkInt_3rdMax);
     } //End Loop Over Tree Entries
+    */
     
     return;
 } //End treeProducerTDC::printStoredData()
@@ -352,9 +365,9 @@ void treeProducerTDC::printStoredData(TTree *inputTree){
     if ( !file_ROOT->IsOpen() || file_ROOT->IsZombie() ) { //Case: Problem Opening File
         if (verbose_IO) {
             perror( ("treeProducerTDC::getHistogram(): error while opening file: " + inputFileName).c_str() );
-            std::cout << "Input ROOT File Status:\n";
-            std::cout << " IsOpen()=" << file_ROOT->IsOpen() << endl;
-            std::cout << " IsZombie()=" << file_ROOT->IsZombie() << endl;
+            cout << "Input ROOT File Status:\n";
+            cout << " IsOpen()=" << file_ROOT->IsOpen() << endl;
+            cout << " IsZombie()=" << file_ROOT->IsZombie() << endl;
         }
         
         //Close the file
@@ -369,20 +382,24 @@ void treeProducerTDC::printStoredData(TTree *inputTree){
 } //End treeProducerTDC::getHistogram()*/
 
 //Loads the lookup table for a given run from a structured filename and also sets manually entered parameters for the given run.
-//The returned vector<quad> is the lookup table
+//The returned vector<LUTType> is the lookup table
 //The quad is defined as:
-//  first -> Key Value; second -> Identifier; third -> DataType; fourth -> mthd idx
-vector<quad<std::string, vector<std::string>, treeProducerTDC::dataType_t, int> > treeProducerTDC::getLookUpTable(string inputFileName/*, Param &mappedParam*/, TRunParameters &runLogger ){
+//  first -> Name of Obserable;
+//  second -> vector of Identifier(s);
+//  third -> DataType;
+//  fourth -> detector name;
+//  fifth -> method index in TRunParameter
+vector<treeProducerTDC::LUTType> treeProducerTDC::getLookUpTable(string inputROOTFileName, string inputLUTFileName, TRunParameters &runLogger ){
     //Variable Declaration
     bool bSec_Auto, bSec_Det, bSec_Man, bExitFlag = false;
     
     int iMthdIdx;
     
     string line;
-    string strTreeName, strDataType;
+    string strTreeName, strDataType, strDetOrRunName;
     
-    vector<std::string> vec_strLUTIdents;
-    vector<quad<std::string,vector<std::string>, dataType_t, int> > ret_vecOfParamQuad;
+    vector<string> vec_strLUTIdents;
+    vector<LUTType> ret_vecLookUpTable;
     
     //Open the Data File
     //------------------------------------------------------
@@ -434,9 +451,9 @@ vector<quad<std::string, vector<std::string>, treeProducerTDC::dataType_t, int> 
         
         //Parse the line in the look up table
         //parsedLine = getParsedLUTLine(line);
-        setParsedLUTLine(line,vec_strLUTIdents,strTreeName,strDataType,iMthdIdx,bExitFlag);
+        setParsedLUTLine(line,vec_strLUTIdents,strTreeName,strDataType,strDetOrRunName,iMthdIdx,bExitFlag);
         
-        //Cross check to make sure the line parsed correctly (size should be 4)
+        //Cross check to make sure the line parsed correctly
         if ( !bExitFlag || vec_strLUTIdents.size() == 0 ){ //Check on parsed LUT line
             cout<<"line:\n";
             cout<<line<<endl;
@@ -445,84 +462,83 @@ vector<quad<std::string, vector<std::string>, treeProducerTDC::dataType_t, int> 
             continue;
         } //End Check on parsedLine.size()
         
+        //Check if strDetOrRunName is a RUN parameter
+        if ( 0 == strDetOrRunName.compare("RUN") ) {
+            strDetOrRunName = inputROOTFileName;
+        }
+        
         //Either store the manually entered parameters in the parameter map or prep the look up table for those parameters which will be automatically found
         if (bSec_Det || bSec_Man) { //Case: Manual Entry
             //Here vec_strLUTIdents.size() = 1; as the user can only make one entry per field in DET or MAN sections
             
             //Check Datatype of Input Parameter and Store accordingly
             if (strDataType.compare("BOOL") == 0 ) { //Case: Data Type - bool
-                runLogger.setParameter( (vec_strLUTIdents[0].compare("TRUE") == 0 ), iMthdIdx );
+                runLogger.setParameter( strDetOrRunName, (vec_strLUTIdents[0].compare("TRUE") == 0 ), iMthdIdx );
             } //End Case: Data Type - bool
             else if (strDataType.compare("FLOAT") == 0 ) { //Case: Data Type - float
-                runLogger.setParameter( std::stof(vec_strLUTIdents[0]), iMthdIdx );
+                if(verbose_LUT) cout<<"treeProducerTDC::getLookUpTable() - stof converstion on " << vec_strLUTIdents[0] << endl;
+                runLogger.setParameter( strDetOrRunName, std::stof(vec_strLUTIdents[0]), iMthdIdx );
             } //End Case: Data Type - float
             else if (strDataType.compare("INT") == 0 ) {
-                //mappedParam.mapDataInt[parsedLine[0]] = std::make_pair( std::stoi(parsedLine[2]), std::stoi(parsedLine[3]) );
                 if(verbose_LUT) cout<<"treeProducerTDC::getLookUpTable() - stoi converstion on " << vec_strLUTIdents[0] << endl;
-                runLogger.setParameter( std::stoi(vec_strLUTIdents[0]), iMthdIdx );
+                runLogger.setParameter( strDetOrRunName, std::stoi(vec_strLUTIdents[0]), iMthdIdx );
             } //End Case: Data Type - int
             else if (strDataType.compare("STRING") == 0 ) { //Case: Data Type - string
-                //mappedParam.mapDataString[parsedLine[0]] = std::make_pair( parsedLine[2], std::stoi(parsedLine[3]) );
-                runLogger.setParameter( vec_strLUTIdents[0], iMthdIdx );
+                runLogger.setParameter( strDetOrRunName, vec_strLUTIdents[0], iMthdIdx );
             } //End Case: Data Type - string
         } //End Case: Manual Entry
         else if ( bSec_Auto ) { //Case: Automatic Search
             //Check Datatype of Input Parameter and Create quad accordingly
             if (strDataType.compare("BOOL") == 0 ) { //Case: Data Type - bool
-                ret_vecOfParamQuad.push_back(make_quad(strTreeName, vec_strLUTIdents, typeBool, iMthdIdx ) );
+                ret_vecLookUpTable.push_back(make_quint(strTreeName, vec_strLUTIdents, typeBool, strDetOrRunName, iMthdIdx ) );
             } //End Case: Data Type - bool
             else if (strDataType.compare("FLOAT") == 0 ) { //Case: Data Type - float
-                ret_vecOfParamQuad.push_back(make_quad(strTreeName, vec_strLUTIdents, typeFloat, iMthdIdx ) );
+                ret_vecLookUpTable.push_back(make_quint(strTreeName, vec_strLUTIdents, typeFloat, strDetOrRunName, iMthdIdx ) );
             } //End Case: Data Type - float
             else if (strDataType.compare("INT") == 0 ) {
-                ret_vecOfParamQuad.push_back(make_quad(strTreeName, vec_strLUTIdents, typeInt, iMthdIdx ) );
+                ret_vecLookUpTable.push_back(make_quint(strTreeName, vec_strLUTIdents, typeInt, strDetOrRunName, iMthdIdx ) );
             } //End Case: Data Type - int
             else if (strDataType.compare("STRING") == 0 ) { //Case: Data Type - string
-                ret_vecOfParamQuad.push_back(make_quad(strTreeName, vec_strLUTIdents, typeString, iMthdIdx ) );
+                ret_vecLookUpTable.push_back(make_quint(strTreeName, vec_strLUTIdents, typeString, strDetOrRunName, iMthdIdx ) );
             } //End Case: Data Type - string
         } //End Case: Automatic Search
-    //} while ( !lutFile.eof() );
     } //End Loop Over Input File
     if ( lutFile.bad() && verbose_IO) {
         perror( ("treeProducerTDC::getLookUpTable(): error while reading file: " + inputFileName).c_str() );
         printStreamStatus(lutFile);
     }
     
-    //Check to see if minimum parameter input is successful (i.e. warn user if they fucked up)
-    //DET_POS Present?
-    if (runLogger.getDetPos() < 0 ) {
-        cout<<"ERROR!!! A DET_POS VALUE WAS NOT FOUND IN "<< inputFileName <<endl;
-        cout<<"PLEASE SPECIFY A DET_POS VALUE NOW OR EXIT (Ctrl+C)"<<endl;
-        
-        //cin>>mappedParam.mapDataInt[keyVal_DetPos];
-        
-        int userInput;
-        cin>>userInput;
-        
-        //mappedParam.mapDataInt[keyVal_DetPos] = std::make_pair(userInput,101);
-        
-        runLogger.setDetPos(userInput);
-    }
+    //Check to see if minimum parameter input is successful for each detector (i.e. warn user if they fucked up)
+    std::map<string, Timing::Detector, Timing::map_cmp_str> map_detectors = runLogger.getDetectors();
     
-    //TDC_CH_NUMBER Present?
-    if (runLogger.getTDCChanNumber() < 0 ) {
-        cout<<"ERROR!!! A TDC_CH_NUMBER VALUE WAS NOT FOUND IN " << inputFileName <<endl;
-        cout<<"PLEASE SPECIFY A TDC_CH_NUMBER VALUE NOW OR EXIT (Ctrl+C)"<<endl;
+    for (auto detIter = map_detectors.begin(); detIter != map_detectors.end(); ++detIter) { //Loop Through Identified Detectors
+        //Det Pos Present?
+        if ( ((*detIter).second).iDet_Pos < 0 ) { //Case: Detector Position Not Found
+            cout<<"ERROR!!! A DET_POS VALUE WAS NOT FOUND IN "<< inputFileName << " FOR DETECTOR " << ((*detIter).first) << endl;
+            cout<<"PLEASE SPECIFY A DET_POS VALUE NOW OR EXIT (Ctrl+C)"<<endl;
+            
+            int userInput;
+            cin>>userInput;
+            
+            runLogger.setDetPos( (*detIter).first, userInput );
+        } //End Case: Detector Position Not Found
         
-        //cin>>mappedParam.mapDataInt[keyVal_TDCCh];
-        
-        int userInput;
-        cin>>userInput;
-        
-        //mappedParam.mapDataInt[keyVal_TDCCh] = std::make_pair(userInput,301);
-        
-        runLogger.setTDCChanNumber(userInput);
-    }
+        //TDC_CH_Number Present?
+        if ( ((*detIter).second).iTDC_Chan < 0 ) { //Case: Detector TDC Chan Not Found
+            cout<<"ERROR!!! A TDC_CH_NUMBER VALUE WAS NOT FOUND IN "<< inputFileName << " FOR DETECTOR " << ((*detIter).first) << endl;
+            cout<<"PLEASE SPECIFY A TDC_CH_NUMBER VALUE NOW OR EXIT (Ctrl+C)"<<endl;
+            
+            int userInput;
+            cin>>userInput;
+            
+            runLogger.setTDCChanDet( (*detIter).first, userInput );
+        } //End Case: Detector TDC Chan Not Found
+    } //End Loop Through Identified Detectors
     
     //Close the File
     lutFile.close();
     
-    return ret_vecOfParamQuad;
+    return ret_vecLookUpTable;
 } //End treeProducerTDC::getLookUpTable()
 
 //Given a Histogram and a peak position (in X-axis units); determine the peak integral
@@ -698,7 +714,7 @@ list<string> treeProducerTDC::getParsedFileName(string input){
         if(!exitFlag) input = input.substr(posUnderscore1+1,input.length()-posUnderscore1);
         
         //transform to upper case
-        std::transform(param.begin(),param.end(),param.begin(), toupper);
+        transform(param.begin(),param.end(),param.begin(), toupper);
         
         //Check to make sure we do not ignore this parameter
         for (auto iter = vecIgnoredParam.begin(); iter != vecIgnoredParam.end(); ++iter) {
@@ -723,9 +739,10 @@ list<string> treeProducerTDC::getParsedFileName(string input){
 //For a line formatted like "text(text)=text;"
 //Index of output vector goes as:
 //  0->Tree Name; 1->Data Type; 2->Value/Identifier
-void treeProducerTDC::setParsedLUTLine(string &inputLine, vector<string> &vec_strLUTIdents, string &strTreeName, string &strDataType, int &iMthdIdx, bool &bExitFlag){
+void treeProducerTDC::setParsedLUTLine(string &inputLine, vector<string> &vec_strLUTIdents, string &strTreeName, string &strDataType, string &strDetOrRunName, int &iMthdIdx, bool &bExitFlag){
     //Variable Declaration
     int iPos_Paren1 = inputLine.find("(",0);
+    int iPos_VertLine=inputLine.find("|",0);
     int iPos_Paren2 = inputLine.find(")",0);
     int iPos_Equals = inputLine.find("=",0);
     int iPos_Colon  = inputLine.find(":",0);
@@ -734,81 +751,68 @@ void treeProducerTDC::setParsedLUTLine(string &inputLine, vector<string> &vec_st
     int iPos_LastComma = 0;
     
     string strStoredIdentifier;
-    //string strTreeName, strDataType, strValueIdent, strMthIdx;
     
     vector<int> vec_iPos_Commas;
     
-    //vector<string> ret_strings;
-    //vector<string> commaStringContainer; //Temporary Container
-    
     //Check to make sure iPos_Paren1 found in input string
-    if (iPos_Paren1 == std::string::npos) {
-        cout<<"Character '(' Not Found in line:\n";
-        cout<<inputLine<<endl;
-        cout<<"Exiting treeProducerTDC::getParsedLUTLine(), Cross-Check LUT File:\n";
-        cout<<fileName_LUT<<endl;
+    if (std::string::npos == iPos_Paren1) {
+        printStringNotFoundMsg("treeProducerTDC::getParsedLUTLine()", "(", inputLine, fileName_LUT);
         
         bExitFlag = false;
         
-        //return ret_strings;
+        return;
+    }
+    
+    //Check to make sure iPos_VertLine found in input string
+    if (std::string::npos == iPos_VertLine) {
+        printStringNotFoundMsg("treeProducerTDC::getParsedLUTLine()", "|", inputLine, fileName_LUT);
+        
+        bExitFlag = false;
+        
         return;
     }
     
     //Check to make sure iPos_Paren2 found in input string
-    if(iPos_Paren2 == std::string::npos) {
-        cout<<"Character ')' Not Found in line:\n";
-        cout<<inputLine<<endl;
-        cout<<"Exiting treeProducerTDC::getParsedLUTLine(), Cross-Check LUT File:\n";
-        cout<<fileName_LUT<<endl;
+    if (std::string::npos == iPos_Paren2) {
+        printStringNotFoundMsg("treeProducerTDC::getParsedLUTLine()", ")", inputLine, fileName_LUT);
         
         bExitFlag = false;
         
-        //return ret_strings;
         return;
     }
     
     //Check to make sure iPos_Equals found in input string
-    if (iPos_Equals == std::string::npos) {
-        cout<<"Character '=' Not Found in line:\n";
-        cout<<inputLine<<endl;
-        cout<<"Exiting treeProducerTDC::getParsedLUTLine(), Cross-Check LUT File:\n";
-        cout<<fileName_LUT<<endl;
+    if (std::string::npos == iPos_Equals) {
+        printStringNotFoundMsg("treeProducerTDC::getParsedLUTLine()", "=", inputLine, fileName_LUT);
         
         bExitFlag = false;
         
-        //return ret_strings;
         return;
     }
     
     //Check to make sure iPos_Colon found in input string
-    if (iPos_Colon == std::string::npos) {
-        cout<<"Character ':' Not Found in line:\n";
-        cout<<inputLine<<endl;
-        cout<<"Exiting treeProducerTDC::getParsedLUTLine(), Cross-Check LUT File:\n";
-        cout<<fileName_LUT<<endl;
+    if (std::string::npos == iPos_Colon) {
+        printStringNotFoundMsg("treeProducerTDC::getParsedLUTLine()", ":", inputLine, fileName_LUT);
         
         bExitFlag = false;
         
-        //return ret_strings;
         return;
     }
     
     //Check to make sure iPos_End found in input string
-    if (iPos_End == std::string::npos) {
-        cout<<"Character ';' Not Found in line:\n";
-        cout<<inputLine<<endl;
-        cout<<"Exiting treeProducerTDC::getParsedLUTLine(), Cross-Check LUT File:\n";
-        cout<<fileName_LUT<<endl;
+    if (std::string::npos == iPos_End) {
+        printStringNotFoundMsg("treeProducerTDC::getParsedLUTLine()", ";", inputLine, fileName_LUT);
         
         bExitFlag = false;
         
-        //return ret_strings;
         return;
     }
     
     //Positions of Parameters Independent of Commas Found, Create Substrings
     strTreeName     = inputLine.substr(0,iPos_Paren1);
-    strDataType     = inputLine.substr(iPos_Paren1+1,iPos_Paren2 - iPos_Paren1 - 1);
+    //strDataType     = inputLine.substr(iPos_Paren1+1,iPos_Paren2 - iPos_Paren1 - 1);
+    strDataType     = inputLine.substr(iPos_Paren1+1,iPos_VertLine - iPos_Paren1 - 1);
+    strDetOrRunName = inputLine.substr(iPos_VertLine+1,iPos_Paren2 - iPos_VertLine - 1);
     
     if(verbose_LUT) cout<<"treeProducerTDC::getParsedLUTLine() - stoi converstion on " << inputLine.substr(iPos_Colon+1,iPos_End - iPos_Colon - 1 ) << endl;
     iMthdIdx        = std::stoi( inputLine.substr(iPos_Colon+1,iPos_End - iPos_Colon - 1 ) );
@@ -839,7 +843,7 @@ void treeProducerTDC::setParsedLUTLine(string &inputLine, vector<string> &vec_st
             } //End Case: All Other Elements
             
             //Transform the LUT Identifier
-            std::transform(strStoredIdentifier.begin(),strStoredIdentifier.end(),strStoredIdentifier.begin(),toupper);
+            transform(strStoredIdentifier.begin(),strStoredIdentifier.end(),strStoredIdentifier.begin(),toupper);
             
             //Store the LUT Identifier
             vec_strLUTIdents.push_back( strStoredIdentifier );
@@ -850,24 +854,18 @@ void treeProducerTDC::setParsedLUTLine(string &inputLine, vector<string> &vec_st
         strStoredIdentifier = inputLine.substr(iPos_Equals+1,iPos_Colon - iPos_Equals - 1 );
         
         //Transform the LUT Identifier
-        std::transform(strStoredIdentifier.begin(),strStoredIdentifier.end(),strStoredIdentifier.begin(),toupper);
+        transform(strStoredIdentifier.begin(),strStoredIdentifier.end(),strStoredIdentifier.begin(),toupper);
         
         //Store the LUT Identifier
         vec_strLUTIdents.push_back( strStoredIdentifier );
     } //End Case: Only One Value Identifier
     
     //transform to all capitals (allows case-insensitive comparison
-    std::transform( strTreeName.begin(), strTreeName.end(), strTreeName.begin(), toupper);
-    std::transform( strDataType.begin(), strDataType.end(), strDataType.begin(), toupper);
-    //std::transform( strValueIdent.begin(), strValueIdent.end(), strValueIdent.begin(), toupper);
+    transform( strTreeName.begin(), strTreeName.end(), strTreeName.begin(), toupper);
+    transform( strDataType.begin(), strDataType.end(), strDataType.begin(), toupper);
+    transform( strDetOrRunName.begin(), strDetOrRunName.end(), strDetOrRunName.begin(), toupper);
     
     //No need to transform strMthIdx as it is an integer (toupper does nothing to integers anyway)
-    
-    //Store Substrings
-    //ret_strings.push_back( strTreeName );
-    //ret_strings.push_back( strDataType );
-    //ret_strings.push_back( strValueIdent );
-    //ret_strings.push_back( strMthIdx );
     
     //Debugging
     if (verbose_LUT) { //Case: Verbose LUT Printing
@@ -881,19 +879,7 @@ void treeProducerTDC::setParsedLUTLine(string &inputLine, vector<string> &vec_st
     bExitFlag = true; //Exits Successfully
     
     return;
-    //return ret_strings;
 } //End treeProducerTDC::setParsedLUTLine()
-
-//Prints All Bit Flags for an input ifstream
-void treeProducerTDC::printStreamStatus(ifstream &inputStream){
-    std::cout << "Input File Stream Bit Status:\n";
-    std::cout << " good()=" << inputStream.good() << endl;
-    std::cout << " eof()=" << inputStream.eof() << endl;
-    std::cout << " fail()=" << inputStream.fail() << endl;
-    std::cout << " bad()=" << inputStream.bad() << endl;
-    
-    return;
-} //End treeProducerTDC::printStreamStatus()
 
 //Sets the timing histogram:
 void treeProducerTDC::setHistogram(string inputFileName, TH1F &inputHisto, int chanNum, bool &bExitFlag){
@@ -910,9 +896,9 @@ void treeProducerTDC::setHistogram(string inputFileName, TH1F &inputHisto, int c
     if ( !file_ROOT->IsOpen() || file_ROOT->IsZombie() ) { //Case: Problem Opening File
         if (verbose_IO) {
             perror( ("treeProducerTDC::setHistogram(): error while opening file: " + inputFileName).c_str() );
-            std::cout << "Input ROOT File Status:\n";
-            std::cout << " IsOpen()=" << file_ROOT->IsOpen() << endl;
-            std::cout << " IsZombie()=" << file_ROOT->IsZombie() << endl;
+            cout << "Input ROOT File Status:\n";
+            cout << " IsOpen()=" << file_ROOT->IsOpen() << endl;
+            cout << " IsZombie()=" << file_ROOT->IsZombie() << endl;
         }
         
         bExitFlag = false;
@@ -931,7 +917,7 @@ void treeProducerTDC::setHistogram(string inputFileName, TH1F &inputHisto, int c
 } //End treeProducerTDC::setHistogram()
 
 //As below, but for a single parameter entry.
-void treeProducerTDC::setMappedParam(string &parsedInput, quad<string,vector<string>,dataType_t,int> &lutItem, /*Param &mappedParam,*/ TRunParameters &runLogger){
+void treeProducerTDC::setMappedParam(string &parsedInput, treeProducerTDC::LUTType &lutItem, TRunParameters &runLogger){
     
     //Debugging
     //cout<<"treeProducerTDC::setMappedParam() - parsedInput = " << parsedInput << endl;
@@ -941,23 +927,23 @@ void treeProducerTDC::setMappedParam(string &parsedInput, quad<string,vector<str
             //Debugging
             //cout<<"Identifier(float) = " << lutItem.first << endl;
             //cout<<"parsedInput = " << parsedInput << endl;
-            runLogger.setParameter( (parsedInput.compare("TRUE") == 0), lutItem.fourth );
+            runLogger.setParameter(lutItem.fourth, (parsedInput.compare("TRUE") == 0), lutItem.fifth );
             break;
         case typeFloat:
             //Debugging
             //cout<<"Identifier(float) = " << lutItem.first << endl;
             //cout<<"parsedInput = " << parsedInput << endl;
-            runLogger.setParameter( std::stof(parsedInput), lutItem.fourth );
+            runLogger.setParameter(lutItem.fourth, std::stof(parsedInput), lutItem.fifth );
             break;
         case typeInt:
             //Debugging
             //cout<<"Identifier(int) = " << lutItem.first << endl;
             //cout<<"parsedInput = " << parsedInput << endl;
             if (verbose_LUT) cout<<"treeProducerTDC::setMappedParam() - stoi conversion on " << parsedInput << endl;
-            runLogger.setParameter( std::stoi(parsedInput), lutItem.fourth );
+            runLogger.setParameter(lutItem.fourth, std::stoi(parsedInput), lutItem.fifth );
             break;
         case typeString:
-            runLogger.setParameter( parsedInput, lutItem.fourth );
+            runLogger.setParameter(lutItem.fourth, parsedInput, lutItem.fifth );
             break;
         default:
             break;
@@ -967,7 +953,7 @@ void treeProducerTDC::setMappedParam(string &parsedInput, quad<string,vector<str
 } //End setMappedParam() - Single
 
 //Maps parameters found in the filename to the expected TTree Structure based on the definitions found in the lookup table
-void treeProducerTDC::setMappedParam(list<string> &parsedFileNames, vector<quad<string,vector<string>,dataType_t,int> > &lookUpTable, /*Param &mappedParam,*/ TRunParameters &runLogger){
+void treeProducerTDC::setMappedParam(list<string> &parsedFileNames, vector<treeProducerTDC::LUTType> &lookUpTable, TRunParameters &runLogger){
     //Variable Declaration
     
     //Idea here is to loop over lookUpTable and find all members of parsedFileNames that match
@@ -979,9 +965,11 @@ void treeProducerTDC::setMappedParam(list<string> &parsedFileNames, vector<quad<
         //We will remove found matches from parsedFileNames
         //This is for speed and then to tell the user which items we did not match (if requested)
 
-        //( *iterLUT ).first; //This is the Key Value
-        //( *iterLUT ).second; //This is a VECTOR of Identifier(s)
-        //( *iterLUT ).third; //This is the data type
+        //( *iterLUT ).first; //name of physical quantity
+        //( *iterLUT ).second; //vector of identifier(s)
+        //( *iterLUT ).third; //data type to match too
+        //( *iterLUT ).fourth; //name of detector
+        //( *iterLUT ).fifth; //method index in TRunParameters
         
         //Debugging
         //cout<<"\n=========Match List========="<<endl;
@@ -1070,7 +1058,7 @@ void treeProducerTDC::setMappedParam(list<string> &parsedFileNames, vector<quad<
                     //Here iterPFN is sent to the erase command, then iterPFN is incremented to iterPFN+1, then value at iterPFN is erased
                     
                     //Debugging
-                    //cout<<"iterPFN Position = " << std::distance(iterPFN,parsedFileNames.begin()) << endl;
+                    //cout<<"iterPFN Position = " << distance(iterPFN,parsedFileNames.begin()) << endl;
                     //cout<<"PFN Size = " << parsedFileNames.size() << endl;
                     //cout<<"iterPFN = " << (*iterPFN) << endl;
                     
@@ -1078,7 +1066,7 @@ void treeProducerTDC::setMappedParam(list<string> &parsedFileNames, vector<quad<
                     iterPFN = parsedFileNames.erase(iterPFN);
                     
                     //Debugging
-                    //cout<<"iterPFN Position = " << std::distance(iterPFN,parsedFileNames.begin()) << endl;
+                    //cout<<"iterPFN Position = " << distance(iterPFN,parsedFileNames.begin()) << endl;
                     //cout<<"PFN Size = " << parsedFileNames.size() << endl;
                     //cout<<"iterPFN = " << (*iterPFN) << endl;
                     
@@ -1116,20 +1104,18 @@ void treeProducerTDC::setMappedParam(list<string> &parsedFileNames, vector<quad<
         // 1-> Only one parameter, store immediately
         // 2-> More than one parameter exists, rely on user input
         if (tempParam.size() == 1) { //Case: Only 1 Parameter Found
-            //setMappedParam(tempParam[0], (*iterLUT), mappedParam, runLogger );
             setMappedParam(tempParam[0], (*iterLUT), runLogger );
         } //End Case: Only 1 Parameter Found
         else if (tempParam.size() > 1){ //Case: Multiple Parameters Found, Rely On User Input
             //Check to Make Sure the Found Number of Parameters is compatible with expected Detector Position
-            if ( runLogger.getDetPos() > tempParam.size() ) { //Case: Incompatible
-                cout<<"ERROR!!! REQUESTED DETECTOR POSITION " << runLogger.getDetPos();
+            if ( runLogger.getDetPos( (*iterLUT).fourth ) > tempParam.size() ) { //Case: Incompatible
+                cout<<"ERROR!!! REQUESTED DETECTOR " << (*iterLUT).fourth << " AT POSITION " << runLogger.getDetPos( (*iterLUT).fourth );
                 cout<<" BUT ONLY FOUND " << tempParam.size() << " PARAMETERS!!!" << endl;
                 cout<<"ERROR!!! SKIPPING REQUESTED INPUT: " << ( *iterLUT ).first << endl;
                 cout<<"ERROR!!! PLEASE CROSS CHECK INPUT FILES!!!" << endl;
             } //End Case: Incompatible
             else { //Case: Compatible
-                //setMappedParam(tempParam[(mappedParam.mapDataInt[keyVal_DetPos]).first], (*iterLUT), mappedParam, runLogger);
-                setMappedParam(tempParam[runLogger.getDetPos()], (*iterLUT), runLogger);
+                setMappedParam(tempParam[runLogger.getDetPos((*iterLUT).fourth)], (*iterLUT), runLogger);
             } //Case: Compatible
         } //End Case: Multiple Parameters Found, Rely On User Input
     } //End Loop Over lookUpTable
@@ -1138,31 +1124,32 @@ void treeProducerTDC::setMappedParam(list<string> &parsedFileNames, vector<quad<
 } //End treeProducerTDC::setMappedParam() - Multi
 
 //Sets all information for the current run
-void treeProducerTDC::setRun(string inputROOTFileName, string inputLUTFileName, /*Param &mappedParam,*/ TRunParameters &runLogger){
+void treeProducerTDC::setRun(string inputROOTFileName, string inputLUTFileName, TRunParameters &runLogger){
     //Variable Declaration
     bool bExitFlag = false;
     
     list<string> parsedFileNames  = getParsedFileName(inputROOTFileName);
-    vector<quad<string, vector<string>, dataType_t, int> > lookUpTable = getLookUpTable(inputLUTFileName, runLogger);
+    vector<LUTType> lookUpTable = getLookUpTable(inputROOTFileName, inputLUTFileName, runLogger);
     
     //TH1F *timingHisto;
     //TH1F timingHisto;
     
-    TSpectrum *timingSpec = new TSpectrum();
+    //TSpectrum *timingSpec = new TSpectrum();
     
     //Loop Over Stored quad's
-    /*cout<<"===========Stored Auto Search Parameters===========\n";
-    cout<<"idx\tFirst\t{Second}\tThird\tFourth\n";
-    for (auto iterLUT = lookUpTable.begin(); iterLUT != lookUpTable.end(); ++iterLUT) { //Loop Over Stored quad's
-        cout<<iterLUT - lookUpTable.begin()<<"\t"<<(*iterLUT).first<<"\t";
-     
-        for(int i=0; i<((*iterLUT).second).size(); ++i){
-            cout<<((*iterLUT).second)[i]<<"\t";
-        }
-     
-        cout<<(*iterLUT).third<<"\t"<<(*iterLUT).fourth<<endl;
-    } //End Loop Over Stored quad's
-    */
+    if (verbose_LUT) {
+        cout<<"===========Stored Auto Search Parameters===========\n";
+        cout<<"idx\tFirst\t{Second}\tThird\tFourth\tFifth\n";
+        for (auto iterLUT = lookUpTable.begin(); iterLUT != lookUpTable.end(); ++iterLUT) { //Loop Over Stored quad's
+            cout<<iterLUT - lookUpTable.begin()<<"\t"<<(*iterLUT).first<<"\t";
+            
+            for(int i=0; i<((*iterLUT).second).size(); ++i){
+                cout<<((*iterLUT).second)[i]<<"\t";
+            }
+            
+            cout<<(*iterLUT).third<<"\t"<<(*iterLUT).fourth<<"\t"<<(*iterLUT).fifth<<endl;
+        } //End Loop Over Stored quad's
+    }
     
     //Loop Over Stored parsed File Name
     if (verbose_PFN) {
@@ -1176,19 +1163,30 @@ void treeProducerTDC::setRun(string inputROOTFileName, string inputLUTFileName, 
     //Map the Parameters
     setMappedParam(parsedFileNames, lookUpTable, runLogger);
     
-    //Set the gain
-    runLogger.getDetGainIndepVarIsCurrent() ? runLogger.calcGain( runLogger.getDetCurrent() ) : runLogger.calcGain( runLogger.getDetDriftV() );
+    //Perform the Analysis
+    runLogger.setRunName(inputROOTFileName);
     
-    //Get the Histogram
-    //timingHisto = getHistogram(inputROOTFileName, runLogger.getTDCChanNumber() );
+    if (analyzer != nullptr) { //Case: ANALYZE
+        analyzer->setRun(runLogger);
+        analyzer->analyze();
+        
+        runLogger.setRun( analyzer->getRun() );
+    } //End Case: ANALYZE
+    else{ //Case: analyzer is a nullpointer
+        cout<<"treeProducerTDC::setRun() - Error!!!\n";
+        cout<<"\tThe analyzer pointer I was given is a nullpointer!!!\n";
+        cout<<"\tPlease cross check script this instance of treeProducerTDC is called from!!!\n";
+    } //End Case: analyzer is a nullpointer
+
+    
+    //Set the gain
+    //runLogger.getDetGainIndepVarIsCurrent() ? runLogger.calcGain( runLogger.getDetCurrent() ) : runLogger.calcGain( runLogger.getDetDriftV() );
     
     //Set the Histogram
-    setHistogram(inputROOTFileName, timingHisto, runLogger.getTDCChanNumber(), bExitFlag );
+    //setHistogram(inputROOTFileName, timingHisto, runLogger.getTDCChanNumber(), bExitFlag );
     
     //Check to make sure we do not have a null pointer
-    //if ( timingHisto == nullptr ) { //Case: Histo is Null
-    if ( !bExitFlag ) { //Case: Histo is Null
-        //cout<<"ERROR!!! REQUESTED TIMING HISTOGRAM: TDC_Ch" << runLogger.getTDCChanNumber() << " RETURNS NULL POINTER" << endl;
+    /*if ( !bExitFlag ) { //Case: Histo is Null
         cout<<"ERROR!!! REQUESTED TIMING HISTOGRAM: TDC_Ch" << runLogger.getTDCChanNumber() << " NOT SET CORRECTLY" << endl;
         cout<<"ERROR!!! PLEASE CROSS CHECK INPUT ROOT FILE: " << inputROOTFileName << endl;
         cout<<"ERROR!!! PLEASE CROSS CHECK INPUT LUT FILE: " << inputLUTFileName << endl;
@@ -1211,10 +1209,7 @@ void treeProducerTDC::setRun(string inputROOTFileName, string inputLUTFileName, 
         //Set Numeric Data From Histogram - runLogger
         runLogger.setTDCHistoMean( timingHisto.GetMean() );
         runLogger.setTDCHistoRMS( timingHisto.GetRMS() );
-        //runLogger.setTDCHistoPks( timingSpec->Search(timingHisto,3,"goff",0.001) ); //goff -> Do Not Draw the Polymarker
         runLogger.setTDCHistoPks( timingSpec->Search(&timingHisto,3,"goff",0.001) ); //goff -> Do Not Draw the Polymarker
-        //runLogger.setTDCHistoPks( timingSpec->Search(timingHisto,3,"",0.005) );   //Let's Use This One
-        //runLogger.setTDCHistoPks( timingSpec->Search(timingHisto,3,"",0.01) );
         
         //Check Trigger Mode and Act Accordingly
         if (runLogger.getTrigMode() == 0) { //Case: Async Trigger Mode
@@ -1281,9 +1276,9 @@ void treeProducerTDC::setRun(string inputROOTFileName, string inputLUTFileName, 
             //Loop Over Found Peaks
             Double_t *dHistoPeakPos_X = timingSpec->GetPositionX();
             
-            vector<std::pair<float,float> > vec_PksInfo; //pair.first -> Integral; pair.second -> X-Pos
+            vector<pair<float,float> > vec_PksInfo; //pair.first -> Integral; pair.second -> X-Pos
             
-            //NOTE: This could be done with a map<float,float> but I want random access "[]" for easy usage
+            //NOTE: This could be done with a std::map<float,float> but I want random access "[]" for easy usage
             
             //Get All the Peaks
             cout<<"============================================" << endl;
@@ -1338,6 +1333,7 @@ void treeProducerTDC::setRun(string inputROOTFileName, string inputLUTFileName, 
             return;
         } //End Case: Unrecognized Trigger Mode
     } //End Case: Histo is Non-Null
+    */
     
     return;
 } //End treeProducerTDC::setRun()
