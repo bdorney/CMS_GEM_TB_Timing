@@ -1168,7 +1168,7 @@ void treeProducerTDC::setRun(string inputROOTFileName, string inputLUTFileName, 
     
     if (analyzer != nullptr) { //Case: ANALYZE
         analyzer->setRun(runLogger);
-        analyzer->analyze();
+        analyzer->analyzeRun();
         
         runLogger.setRun( analyzer->getRun() );
     } //End Case: ANALYZE

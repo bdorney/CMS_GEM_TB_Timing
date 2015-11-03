@@ -19,22 +19,30 @@
 #include <utility>
 #include <vector>
 
+//My Includes
+#include "TimingUtilityTypes.h"
+
 //ROOT Includes
+#include "TFile.h";
 #include "TF1.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TObject.h"
+#include "TTree.h"
 
 /*  METHOD INDEX GUIDE
  
  //Run Methods                                                              //Expected Input Data Type
- case 1: setRunNumber(std::string strRun_Name, int iInput); break;                      //int
- case 2: setBeam(std::string strRun_Name, std::string strInput); break;                 //string
- case 3: setTrigMode(std::string strRun_Name, std::string strInput); break;             //string
- case 4: setTrigDelay(std::string strRun_Name, float fInput); break;                    //float
- case 5: setTDCChanTrig(std::string strRun_Name, int iInput); break;                    //int
- case 6: setTDCFitParamNameOR(std::string strRun_Name, string strParamName)             //string
- case 7: setTDCFitParamNameAND(std::string strRun_Name, string strParamName)            //string
+ case 1: setRunNumber(std::string strRunName, int iInput); break;                       //int
+ case 2: setBeam(std::string strRunName, std::string strInput); break;                  //string
+ case 3: setTrigMode(std::string strRunName, std::string strInput); break;              //string
+ case 4: setTrigDelay(std::string strRunName, float fInput); break;                     //float
+ case 5: setTDCChanTrig(std::string strRunName, int iInput); break;                     //int
+ case 6: setTDCFitParamNameOR(std::string strRunName, string strParamName)              //string
+ case 7: setTDCFitParamNameAND(std::string strRunName, string strParamName)             //string
+ case 8: setSupermoduleHVSetPoint(std::string strRunName, float fInput)                 //float
+ case 9: setTreeNameRun(std::string strRunName, std::string strTreeName)                //string
+ case 10:setTreeNameRunParamDUT(std::string strRunName, std::string strTreeName)        //string
  
  //Detector Methods
  case 101: setDetPos(std::string strDet_Name, int iInput); break;                       //int
@@ -56,6 +64,13 @@
  case 118: setDetGEM2BotV(std::string strDet_Name, float fInput); break;                //float
  case 119: setDetGEM3TopV(std::string strDet_Name, float fInput); break;                //float
  case 120: setDetGEM3BotV(std::string strDet_Name, float fInput); break;                //float
+ case 121: setDetMultiChanHVCase(std::string strDet_Name, std::string strMultiChan)     //string
+ case 122: setDetGEM1TopV(std::string strDet_Name, std::string strBranchName); break;   //string
+ case 123: setDetGEM1BotV(std::string strDet_Name, std::string strBranchName); break;   //string
+ case 124: setDetGEM2TopV(std::string strDet_Name, std::string strBranchName); break;   //string
+ case 125: setDetGEM2BotV(std::string strDet_Name, std::string strBranchName); break;   //string
+ case 126: setDetGEM3TopV(std::string strDet_Name, std::string strBranchName); break;   //string
+ case 127: setDetGEM3BotV(std::string strDet_Name, std::string strBranchName); break;   //string
  
  //VFAT Methods
  case 202: setVFATPos(std::string strDet_Name, int iInput); break;                      //int
@@ -92,241 +107,6 @@
  */
 
 namespace Timing {
-    struct Detector{
-        //Detector Info
-        //=============================
-        bool bDet_Gain_IndepVar_Imon;
-        
-        float fDet_Imon;    //Current through the Divider
-        float fDet_VDrift;  //Potential on the Drift
-        float fDet_VG1_Top;    //Potential on GEM1 Top
-        float fDet_VG1_Bot;    //Potential on GEM1 Bot
-        float fDet_VG2_Top;    //"             "2 Top
-        float fDet_VG2_Bot;
-        float fDet_VG3_Top;
-        float fDet_VG3_Bot;
-        
-        float fDet_Gain;            //Gain, given by f(x) = exp(Const + Slope * x)
-        float fDet_Gain_Err;        //Gain Error
-        float fDet_Gain_Const;      //Gain Curve - Amplitude
-        float fDet_Gain_Const_Err;  //Gain Curve - Amplitude, Error
-        float fDet_Gain_Slope;      //Gain Curve - Exponential Slope
-        float fDet_Gain_Slope_Err;  //Gain Curve - Exponential Slope, Error
-        
-        float fDet_GasFrac_Ar;  //Argon Fraction in Gas
-        float fDet_GasFrac_CO2; //CO2 "                 "
-        float fDet_GasFrac_CF4; //CF4 "                 "
-        
-        int iDet_Pos;       //Position of Detector of Interest in Listing
-        int iDet_Eta;       //iEta value of readout sector
-        int iDet_Phi;       //iPhi value of readout sector
-        
-        //std::string strDet_Name; //Detector Name
-        
-        //std::string getTreeText(){
-        //    return
-        //}
-        
-        //VFAT Info
-        //=============================
-        //int iTURBO_ID = -1;      //TURBO ID, 0->Master, 1->Slave 1, 2->Slave 2, etc...
-        int iVFAT_Pos;      //VFAT Position (on GE1/1)
-        
-        //std::string strVFAT_ID = ""; //VFAT ID, hex code
-        
-        int iVFAT_IPreAmpIn = -1;
-        int iVFAT_IPreAmpFeed = -1;
-        int iVFAT_IPreAmpOut = -1;
-        
-        int iVFAT_IShaper = -1;
-        int iVFAT_IShaperFeed = -1;
-        
-        int iVFAT_IComp = -1;        //Current to Comparator
-        
-        int iVFAT_MSPL = -1;         //Monostable Pulse Length
-        
-        //int iVFAT_Latency = -1;      //VFAT Latency
-        
-        float fVFAT_Thresh = -1;     //VFAT Threshold in fC
-        
-        //TDC
-        //=============================
-        float fTDC_Histo_Mean;
-        float fTDC_Histo_RMS;
-        float iTDC_Histo_nPks;
-        
-        float fTDC_Eff;
-        
-        //float fTDC_Histo_PkInt_1stMax = -1;
-        //float fTDC_Histo_PkInt_2ndMax = -1;
-        //float fTDC_Histo_PkInt_3rdMax = -1;
-        
-        //float fTDC_Histo_PkPos_1stMax = -1;
-        //float fTDC_Histo_PkPos_2ndMax = -1;
-        //float fTDC_Histo_PkPos_3rdMax = -1;
-        
-        float fTDC_Fit_Chi2;
-        float fTDC_Fit_NDF;
-        
-        int iTDC_Chan;
-        
-        ROOT::TF1 *func_TDC_Fit;     //User Specified
-        ROOT::TH1F *hTDC_Histo;          //Made from vec_iTDC_Data
-        
-        std::vector<std::string> vec_strParamName;
-        
-        //std::vector<float> vec_fTDC_Fit_Param;     //Fit parameter; assuming user labels first parameter in fit as [0] the indices match identically
-        //std::vector<float> vec_fTDC_Fit_ParamErr;  //Error on Fit parameter
-        std::map<std::string, float> map_fTDC_Fit_Param; //Fit parameters
-        std::map<std::string, float> map_fTDC_Fit_ParamErr; //Error on fit parameters
-        
-        std::std::vector<int> vec_iTDC_Data; //Event-by-Event Data
-        
-        Detector(){
-            //Detector Info
-            //=============================
-            bDet_Gain_IndepVar_Imon = true;
-            
-            fDet_Imon=fDet_VDrift = -1;
-            fDet_VG1_Top=fDet_VG1_Bot=fDet_VG2_Top=fDet_VG2_Bot=fDet_VG3_Top=fDet_VG3_Bot=-1;
-            
-            fDet_Gain = fDet_Gain_Err = -1;            //Gain, given by f(x) = exp(Const + Slope * x)
-            fDet_Gain_Const = fDet_Gain_Const_Err = 0;
-            fDet_Gain_Slope = fDet_Gain_Slope_Err = 0;
-            
-            fDet_GasFrac_Ar = fDet_GasFrac_CO2 = fDet_GasFrac_CF4 = -1;
-            
-            iDet_Pos = 0;
-            iDet_Eta = iDet_Phi = -1;
-            
-            std::string strDet_Name = ""; //Detector Name
-            
-            //VFAT Info
-            //=============================
-            fVFAT_Thresh = -1;     //VFAT Threshold in fC
-            
-            iVFAT_Pos = -1;
-            
-            iVFAT_IPreAmpIn = iVFAT_IPreAmpFeed = iVFAT_IPreAmpOut = -1;
-            
-            iVFAT_IShaper = iVFAT_IShaperFeed = -1;
-            
-            iVFAT_IComp = -1;        //Current to Comparator
-            
-            iVFAT_MSPL = -1;         //Monostable Pulse Length
-            
-            //TDC
-            //=============================
-            fTDC_Histo_Mean = fTDC_Histo_RMS = iTDC_Histo_nPks = -1;
-            fTDC_Eff = -1;
-            
-            fTDC_Fit_Chi2 = fTDC_Fit_NDF = -1;
-            
-            iTDC_Chan = 0;
-            
-            func_TDC_Fit = nullptr;     //User Specified
-            hTDC_Histo = nullptr;          //Made from vec_iTDC_Data
-        }
-    };
-    
-    //Run Info
-    //Most values initialized to -1 (iBeam_Type to 0)
-    //Pointers initialized to nullptr
-    struct Run{
-        //Run info
-        //=============================
-        float fTrig_Delay;    //Trigger Delay in ns;
-        
-        int iRun;           //Run Number
-        
-        int iBeam_Type;     //11->Electron, 13->Muon, 211->Pion
-        
-        int iTrig_Mode;     //0->Async, 1->Sync
-        
-        //Detectors
-        //=============================
-        //Detector Det1;
-        //Detector Det2;
-        std::map<std::string, Detector> map_det;
-        //std::map<int, Detector> map_det;
-        
-        //TDC Info
-        //=============================
-        //float fTDC_Fit_Chi2;
-        //float fTDC_Fit_NDF;
-        
-        int iTDC_Chan_Trig;         //Channel of the Trigger in the TDC
-        
-        ROOT::TF1 *func_TDC_Fit_OR;     //User Specified
-        ROOT::TF1 *func_TDC_Fit_AND;     //User Specified
-        
-        ROOT::TH1F *hTDC_OR;
-        ROOT::TH1F *hTDC_AND;
-        ROOT::TH1F *hTDC_DeltaT;
-        
-        ROOT::TH2F *hTDC_Correlation;
-
-        //OR
-        float fTDC_Histo_OR_Mean;
-        float fTDC_Histo_OR_RMS;
-        float iTDC_Histo_OR_nPks;
-        
-        float fTDC_Eff_OR;
-        
-        float fTDC_Fit_OR_Chi2;
-        float fTDC_Fit_OR_NDF;
-        
-        //AND
-        float fTDC_Histo_AND_Mean;
-        float fTDC_Histo_AND_RMS;
-        float iTDC_Histo_AND_nPks;
-        
-        float fTDC_Eff_AND;
-        
-        float fTDC_Fit_AND_Chi2;
-        float fTDC_Fit_AND_NDF;
-        
-        std::vector<std::string> vec_strParamName_OR;
-        
-        //std::vector<float> vec_fTDC_Fit_OR_Param;     //Fit parameter; assuming user labels first parameter in fit as [0] the indices match identically
-        //std::vector<float> vec_fTDC_Fit_OR_ParamErr;  //Error on Fit parameter
-        
-        std::map<std::string, float> map_fTDC_Fit_OR_Param;     //Fit parameter
-        std::map<std::string, float> map_fTDC_Fit_OR_ParamErr;  //Error on Fit parameter
-        
-        std::vector<std::string> vec_strParamName_AND;
-        
-        //std::vector<float> vec_fTDC_Fit_AND_Param;     //Fit parameter; assuming user labels first parameter in fit as [0] the indices match identically
-        //std::vector<float> vec_fTDC_Fit_AND_ParamErr;  //Error on Fit parameter
-        
-        std::map<std::string, float> map_fTDC_Fit_AND_Param;     //Fit parameter
-        std::map<std::string, float> map_fTDC_Fit_AND_ParamErr;  //Error on Fit parameter
-        
-        Run(){
-            //Run info
-            //=============================
-            fTrig_Delay = -1;    //Trigger Delay in ns;
-            
-            iRun = iTrig_Mode = -1;           //Run Number
-            
-            iBeam_Type = 0;     //11->Electron, 13->Muon, 211->Pion
-            
-            //TDC Info
-            //=============================
-            fTDC_Fit_Chi2 = fTDC_Fit_NDF = -1;
-            
-            iTDC_Chan_Trig = 0;         //Channel of the Trigger in the TDC
-            
-            func_TDC_Fit_OR = func_TDC_Fit_AND = nullptr;     //User Specified
-            hTDC_OR hTDC_AND = hTDC_DeltaT = nullptr;
-            hTDC_Correlation = nullptr;
-            
-            fTDC_Fit_OR_Chi2 = fTDC_Fit_OR_NDF = -1;
-            
-            fTDC_Fit_AND_Chi2 = fTDC_Fit_AND_NDF = -1;
-        }
-    };
-    
     //Container Class; All values are initialized to "-1"
     class TRunParameters : public TObject {
         
@@ -334,14 +114,16 @@ namespace Timing {
         TRunParameters();
         
         //Data Members==========================================================
-        Run run; //This time let's make it public to feature more intuitive access
+        Timing::Run run; //This time let's make it public to feature more intuitive access
         
         //std::vector<int> vec_iTDC_Chan; //std::vector of stored TDC Channels;
         
         //Getters===============================================================
         virtual Run getRun(){ return run;};
         
+        virtual int getNumDetectors(){ return run.map_det.size(); };
         virtual Detector getDetector(std::string strDet_Name){ return run.map_det[strDet_Name]; };
+        virtual map<std::string, Detector> getDetectors(){ return run.map_det; };
         
         //Run Methods - These are methods 1 to 100
         //=============================
@@ -373,7 +155,7 @@ namespace Timing {
         virtual int getTDCChanNumberTrig(){ return run.iTDC_Chan_Trig;};
         virtual int getTDCChanNumberDet(std::string strDet_Name){ return run.map_det[strDet_Name].iTDC_Chan; };
         
-        virtual int getTDCHistoPks(std::string strDet_Name){ return run.map_det[strDet_Name].iTDC_Histo_nPks; };
+        virtual int getTDCHistoPks(std::string strDet_Name){ return run.map_det[strDet_Name].timingResults.iTDC_Histo_nPks; };
         
         //New Methods are added below pre-existing ones to preserve backwards compatibile numbering
         
@@ -391,39 +173,66 @@ namespace Timing {
         
         //Setters===============================================================
         virtual void setRun(Run inputRun){ run = inputRun; return; };
+        virtual void setRunName(std::string strRunName){ run.strRunName = strRunName; return;};
+        
         virtual void setDetector(std::string strDet_Name, Detector inputDet){ run.map_det[strDet_Name] = inputDet; return;};
         
         //Run Methods - These are methods 1 to 100
         //=============================
-        virtual void setRunNumber(std::string strRun_Name, int iInput){run.iRun = iInput; return;};
-        virtual void setBeam(std::string strRun_Name, std::string strInput);
+        virtual void setRunNumber(std::string strRunName, int iInput){run.iRun = iInput; return;};
+        virtual void setBeam(std::string strRunName, std::string strInput);
         
-        virtual void setTrigMode(std::string strRun_Name, std::string strInput);
-        virtual void setTrigDelay(std::string strRun_Name, float fInput){run.fTrig_Delay = fInput; return; };
+        virtual void setTrigMode(std::string strRunName, std::string strInput);
+        virtual void setTrigDelay(std::string strRunName, float fInput){run.fTrig_Delay = fInput; return; };
         
         //Set channel of the trigger
-        virtual void setTDCChanTrig(std::string strRun_Name, int iInput){ run.iTDC_Chan_Trig = iInput; return; };
+        virtual void setTDCChanTrig(std::string strRunName, int iInput){ run.iTDC_Chan_Trig = iInput; return; };
         
         //Set names of parameters - OR
-        //virtual void setTDCFitParamNameOR(std::string strRun_Name, std::vector<std::string> vec_strParamName){
+        //virtual void setTDCFitParamNameOR(std::string strRunName, std::vector<std::string> vec_strParamName){
         //    run.map_det[strDet_Name].vec_strParamName_OR = vec_strParamName;
         //};
-        virtual void setTDCFitParamNameOR(std::string strRun_Name, std::string strParamName){
-            run.map_det[strDet_Name].vec_strParamName_OR.push_back(strParamName);
+        virtual void setTDCFitParamNameOR(std::string strRunName, std::string strParamName){
+            run.timingResultsOR.vec_strParamName.push_back(strParamName);
         };
         
         //Set names of parameters - AND
-        //virtual void setTDCFitParamNameAND(std::string strRun_Name, std::vector<std::string> vec_strParamName){
+        //virtual void setTDCFitParamNameAND(std::string strRunName, std::vector<std::string> vec_strParamName){
         //    run.map_det[strDet_Name].vec_strParamName_AND = vec_strParamName;
         //};
-        virtual void setTDCFitParamNameOR(std::string strRun_Name, std::string strParamName){
-            run.map_det[strDet_Name].vec_strParamName_AND.push_back(strParamName);
+        virtual void setTDCFitParamNameAND(std::string strRunName, std::string strParamName){
+            run.timingResultsAND.vec_strParamName.push_back(strParamName);
         };
+        
+        //Take the HV Setpoint of the supermodule from the dedicated TTree in the filename
+        //  NOTE: this means the HV info in the filename does not necessarily correspond to the individual detectors
+        virtual void setSupermoduleHVSetPoint(std::string strRunName, float fInput){
+            //run.bTakeHVFromRunParamTree = true;
+            run.fSupermoduleHVSetpoint = fInput;
+            return;
+        };
+        
+        //Set the name of the Tree that contains the data
+        virtual void setTreeNameRun(std::string strRunName, std::string strTreeName){
+            run.strTreeName_Run = strTreeName;
+            return;
+        };
+
+        //Take the HV of each detector from the dedicated TTree in the ROOT file?
+        //  NOTE: here the DET_V* automatic identifiers should be the name of the TBranch you want to use
+        virtual void setTreeNameRunParamDUT(std::string strRunName, std::string strTreeName){
+            run.bTakeHVFromRunParamTree = true;
+            run.strTreeName_RunParam_DUT = strTreeName;
+            return;
+        };
+        
         
         //New Methods are added below pre-existing ones to preserve backwards compatibile numbering
         
         //Detector Methods - These are methods 101 to 200
         //=============================
+        virtual void setDetParameterFromTree(std::string strDet_Name, std::string strBranchName, float &fInput);    //Untracked Method
+        
         //Detector Position in Filename
         virtual void setDetPos(std::string strDet_Name, int iInput){run.map_det[strDet_Name].iDet_Pos = iInput; return;};
         
@@ -469,6 +278,43 @@ namespace Timing {
         virtual void setDetGEM3TopV(std::string strDet_Name, float fInput){ run.map_det[strDet_Name].fDet_VG3_Top = fInput; return;};
         virtual void setDetGEM3BotV(std::string strDet_Name, float fInput){ run.map_det[strDet_Name].fDet_VG3_Bot = fInput; return;};
         
+        //Multichannel option?
+        virtual void setDetMultiChanHVCase(std::string strDet_Name, std::string strMultiChan);
+        
+        //Set Detector Voltages from a Tree File
+        virtual void setDetDriftV(std::string strDet_Name, std::string strBranchName){
+            setDetParameterFromTree(strDet_Name, strBranchName, run.map_det[strDet_Name].fDet_VDrift);
+            return;
+        };
+        virtual void setDetGEM1TopV(std::string strDet_Name, std::string strBranchName){
+            setDetParameterFromTree(strDet_Name, strBranchName, run.map_det[strDet_Name].fDet_VG1_Top);
+            return;
+        };
+        virtual void setDetGEM1BotV(std::string strDet_Name, std::string strBranchName){
+            setDetParameterFromTree(strDet_Name, strBranchName, run.map_det[strDet_Name].fDet_VG1_Bot);
+            return;
+        };
+        virtual void setDetGEM2TopV(std::string strDet_Name, std::string strBranchName){
+            setDetParameterFromTree(strDet_Name, strBranchName, run.map_det[strDet_Name].fDet_VG2_Top);
+            return;
+        };
+        virtual void setDetGEM2BotV(std::string strDet_Name, std::string strBranchName){
+            setDetParameterFromTree(strDet_Name, strBranchName, run.map_det[strDet_Name].fDet_VG2_Bot);
+            return;
+        };
+        virtual void setDetGEM3TopV(std::string strDet_Name, std::string strBranchName){
+            setDetParameterFromTree(strDet_Name, strBranchName, run.map_det[strDet_Name].fDet_VG3_Top);
+            return;
+        };
+        virtual void setDetGEM3BotV(std::string strDet_Name, std::string strBranchName){
+            setDetParameterFromTree(strDet_Name, strBranchName, run.map_det[strDet_Name].fDet_VG3_Bot);
+            return;
+        };
+        virtual void setDetCurrent(std::string strDet_Name, std::string strBranchName){
+            setDetParameterFromTree(strDet_Name, strBranchName, run.map_det[strDet_Name].fDet_Imon);
+            return;
+        };
+        
         //New Methods are added below pre-existing ones to preserve backwards compatibile numbering
         
         //VFAT Methods - These are methods 201 to 300
@@ -511,50 +357,26 @@ namespace Timing {
             //run.map_det[strDet_Name].vec_strParamName = vec_strParamName;
         //};
         virtual void setTDCFitParamName(std::string strDet_Name, std::string strParamName){
-            run.map_det[strDet_Name].vec_strParamName.push_back(strParamName);
+            run.map_det[strDet_Name].timingResults.vec_strParamName.push_back(strParamName);
         };
         
         //Set Detector Data
         virtual void setTDCData(std::string strDet_Name, std::vector<int> vec_iData){run.map_det[strDet_Name].vec_iTDC_Data = vec_iData1; return;};
         
         virtual void setTDCHistoDet(std::string strDet_Name, TH1F *hInput){
-            run.map_det[strDet_Name].hTDC_Histo = hInput;
-            run.map_det[strDet_Name].fTDC_Histo_Mean = hInput->GetMean();
-            run.map_det[strDet_Name].fTDC_Histo_RMS = hInput->GetRMS();
+            run.map_det[strDet_Name].timingResults.hTDC_Histo = hInput;
+            run.map_det[strDet_Name].timingResults.fTDC_Histo_Mean = hInput->GetMean();
+            run.map_det[strDet_Name].timingResults.fTDC_Histo_RMS = hInput->GetRMS();
             return;
         };
         
         virtual void setTDCHistoNPks(std::string strDet_Name, int iInput){
-            run.map_det[strDet_Name].iTDC_Histo_nPks = iInput;
+            run.map_det[strDet_Name].timingResults.iTDC_Histo_nPks = iInput;
         }
         
-        virtual void setTDCFit(std::string strDet_Name, TF1 *func_Input, std::vector<std::string> vec_strParamName){
-            //run.map_det[strDet_Name].vec_fTDC_Fit_Param.clear();
-            //run.map_det[strDet_Name].vec_fTDC_Fit_ParamErr.clear();
-            
-            run.map_det[strDet_Name].map_fTDC_Fit_Param.clear();
-            run.map_det[strDet_Name].map_fTDC_Fit_ParamErr.clear();
-            //run.map_det[strDet_Name].vec_strParamName.clear();
-            
-            run.map_det[strDet_Name].func_TDC_Fit = func_Input;
-            
-            //for (int i=0; i < func_Input->GetNpar(); ++i) {
-                //run.map_det[strDet_Name].vec_fTDC_Fit_Param.push_back( func_Input->GetParameter(i) );
-                //run.map_det[strDet_Name].vec_fTDC_Fit_ParamErr.push_back( func_Input->GetParError(i) );
-            //}
-            
-            for (auto strIter = vec_strParamName.begin(); strIter != vec_strParamName.end(); ++strIter) {
-                run.map_det[strDet_Name].map_fTDC_Fit_Param[*strIter] = func_Input->GetParameter(i);
-                run.map_det[strDet_Name].map_fTDC_Fit_ParamErr[*strIter] = func_Input->GetParError(i);
-            }
-            
-            run.map_det[strDet_Name].fTDC_Fit_Chi2  = func_Input->GetChisquare();
-            run.map_det[strDet_Name].fTDC_Fit_NDF   = func_Input->GetNDF();
-            
-            return;
-        };
+        virtual void setTDCFit(std::string strDet_Name, TF1 *func_Input, std::vector<std::string> vec_strParamName);
         
-        virtual void setTDCEff(std::string strDet_Name, float fInput){run.map_det[strDet_Name].fTDC_Eff = fInput; return;};
+        virtual void setTDCEff(std::string strDet_Name, float fInput){run.map_det[strDet_Name].timingResults.fTDC_Eff = fInput; return;};
         
         //Sync Mode
         //------------------------------------------------------
@@ -571,78 +393,36 @@ namespace Timing {
         //Complex Analysis Histograms - DETECTOR OR
         //=============================
         virtual void setTDCHistoOR(TH1F *hInput){
-            run.hTDC_OR = hInput;
-            run.fTDC_Histo_OR_Mean = hInput->GetMean();
-            run.fTDC_Histo_OR_RMS = hInput->GetRMS();
+            run.timingResultsOR.hTDC_OR = hInput;
+            run.timingResultsOR.fTDC_Histo_OR_Mean = hInput->GetMean();
+            run.timingResultsOR.fTDC_Histo_OR_RMS = hInput->GetRMS();
             return;
         };
         
         virtual void setTDCHistoORNPks(int iInput){
-            run.iTDC_Histo_OR_nPks = iInput;
+            run.timingResultsOR.iTDC_Histo_OR_nPks = iInput;
         };
         
-        virtual void setTDCFitOR(TF1 *func_Input, std::vector<std::string> vec_strParamName){
-            run.map_fTDC_Fit_OR_Param.clear();
-            run.map_fTDC_Fit_OR_ParamErr.clear();
-            //run.map_det[strDet_Name].vec_strParamName_OR.clear();
-            
-            run.func_TDC_Fit_OR = func_Input;
-            
-            //for (int i=0; i < func_Input->GetNpar(); ++i) {
-            //run.map_det[strDet_Name].vec_fTDC_Fit_Param.push_back( func_Input->GetParameter(i) );
-            //run.map_det[strDet_Name].vec_fTDC_Fit_ParamErr.push_back( func_Input->GetParError(i) );
-            //}
-            
-            for (auto strIter = vec_strParamName.begin(); strIter != vec_strParamName.end(); ++strIter) {
-                run.map_fTDC_Fit_OR_Param[*strIter] = func_Input->GetParameter(i);
-                run.map_fTDC_Fit_OR_ParamErr[*strIter] = func_Input->GetParError(i);
-            }
-            
-            run.fTDC_Fit_OR_Chi2  = func_Input->GetChisquare();
-            run.fTDC_Fit_OR_NDF   = func_Input->GetNDF();
-            
-            return;
-        };
+        virtual void setTDCFitOR(TF1 *func_Input, std::vector<std::string> vec_strParamName);
         
-        virtual void setTDCEffOR(float fInput){run.fTDC_Eff_OR = fInput; return;};
+        virtual void setTDCEffOR(float fInput){run.timingResultsOR.fTDC_Eff_OR = fInput; return;};
         
         //Complex Analysis Histograms - DETECTOR AND
         //=============================
         virtual void setTDCHistoAND(TH1F *hInput){
-            run.hTDC_AND = hInput;
-            run.fTDC_Histo_AND_Mean = hInput->GetMean();
-            run.fTDC_Histo_AND_RMS = hInput->GetRMS();
+            run.timingResultsAND.hTDC_AND = hInput;
+            run.timingResultsAND.fTDC_Histo_AND_Mean = hInput->GetMean();
+            run.timingResultsAND.fTDC_Histo_AND_RMS = hInput->GetRMS();
             return;
         };
         
         virtual void setTDCHistoANDNPks(int iInput){
-            run.iTDC_Histo_AND_nPks = iInput;
+            run.timingResultsAND.iTDC_Histo_AND_nPks = iInput;
         };
         
-        virtual void setTDCFitAND(TF1 *func_Input, std::vector<std::string> vec_strParamName){
-            run.map_fTDC_Fit_AND_Param.clear();
-            run.map_fTDC_Fit_AND_ParamErr.clear();
-            //run.map_det[strDet_Name].vec_strParamName_AND.clear();
-            
-            run.func_TDC_Fit_AND = func_Input;
-            
-            //for (int i=0; i < func_Input->GetNpar(); ++i) {
-            //run.map_det[strDet_Name].vec_fTDC_Fit_Param.push_back( func_Input->GetParameter(i) );
-            //run.map_det[strDet_Name].vec_fTDC_Fit_ParamErr.push_back( func_Input->GetParError(i) );
-            //}
-            
-            for (auto strIter = vec_strParamName.begin(); strIter != vec_strParamName.end(); ++strIter) {
-                run.map_fTDC_Fit_AND_Param[*strIter] = func_Input->GetParameter(i);
-                run.map_fTDC_Fit_AND_ParamErr[*strIter] = func_Input->GetParError(i);
-            }
-            
-            run.fTDC_Fit_AND_Chi2  = func_Input->GetChisquare();
-            run.fTDC_Fit_AND_NDF   = func_Input->GetNDF();
-            
-            return;
-        };
+        virtual void setTDCFitAND(TF1 *func_Input, std::vector<std::string> vec_strParamName);
         
-        virtual void setTDCEffAND(float fInput){run.fTDC_Eff_AND = fInput; return;};
+        virtual void setTDCEffAND(float fInput){run.timingResultsAND.fTDC_Eff_AND = fInput; return;};
         
         //Complex Analysis Histograms - Delta Detector Signal & Correlation
         //=============================

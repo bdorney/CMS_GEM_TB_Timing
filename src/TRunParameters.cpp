@@ -193,6 +193,67 @@ void TRunParameters::setDetParameterFromTree(std::string strDet_Name, std::strin
     return;
 } //End setDetParameterFromTree
 
+void TRunParameters::setTDCFit(std::string strDet_Name, TF1 *func_Input, std::vector<std::string> vec_strParamName){
+    //run.map_det[strDet_Name].vec_fTDC_Fit_Param.clear();
+    //run.map_det[strDet_Name].vec_fTDC_Fit_ParamErr.clear();
+    
+    run.map_det[strDet_Name].timingResults.map_fTDC_Fit_Param.clear();
+    run.map_det[strDet_Name].timingResults.map_fTDC_Fit_ParamErr.clear();
+    //run.map_det[strDet_Name].vec_strParamName.clear();
+    
+    run.map_det[strDet_Name].timingResults.func_TDC_Fit = func_Input;
+    
+    //for (int i=0; i < func_Input->GetNpar(); ++i) {
+    //run.map_det[strDet_Name].vec_fTDC_Fit_Param.push_back( func_Input->GetParameter(i) );
+    //run.map_det[strDet_Name].vec_fTDC_Fit_ParamErr.push_back( func_Input->GetParError(i) );
+    //}
+    
+    for (auto strIter = vec_strParamName.begin(); strIter != vec_strParamName.end(); ++strIter) {
+        run.map_det[strDet_Name].timingResults.map_fTDC_Fit_Param[*strIter] = func_Input->GetParameter(i);
+        run.map_det[strDet_Name].timingResults.map_fTDC_Fit_ParamErr[*strIter] = func_Input->GetParError(i);
+    }
+    
+    run.map_det[strDet_Name].timingResults.fTDC_Fit_Chi2  = func_Input->GetChisquare();
+    run.map_det[strDet_Name].timingResults.fTDC_Fit_NDF   = func_Input->GetNDF();
+    
+    return;
+};
+
+virtual void setTDCFitOR(TF1 *func_Input, std::vector<std::string> vec_strParamName){
+    run.timingResultsOR.map_fTDC_Fit_OR_Param.clear();
+    run.timingResultsOR.map_fTDC_Fit_OR_ParamErr.clear();
+    
+    run.timingResultsOR.func_TDC_Fit_OR = func_Input;
+    
+    for (auto strIter = vec_strParamName.begin(); strIter != vec_strParamName.end(); ++strIter) {
+        run.timingResultsOR.map_fTDC_Fit_OR_Param[*strIter] = func_Input->GetParameter(i);
+        run.timingResultsOR.map_fTDC_Fit_OR_ParamErr[*strIter] = func_Input->GetParError(i);
+    }
+    
+    run.timingResultsOR.fTDC_Fit_OR_Chi2  = func_Input->GetChisquare();
+    run.timingResultsOR.fTDC_Fit_OR_NDF   = func_Input->GetNDF();
+    
+    return;
+};
+
+
+void TRunParameters::setTDCFitAND(TF1 *func_Input, std::vector<std::string> vec_strParamName){
+    run.timingResultsAND.map_fTDC_Fit_AND_Param.clear();
+    run.timingResultsAND.map_fTDC_Fit_AND_ParamErr.clear();
+    
+    run.timingResultsAND.func_TDC_Fit_AND = func_Input;
+    
+    for (auto strIter = vec_strParamName.begin(); strIter != vec_strParamName.end(); ++strIter) {
+        run.timingResultsAND.map_fTDC_Fit_AND_Param[*strIter] = func_Input->GetParameter(i);
+        run.timingResultsAND.map_fTDC_Fit_AND_ParamErr[*strIter] = func_Input->GetParError(i);
+    }
+    
+    run.timingResultsAND.fTDC_Fit_AND_Chi2  = func_Input->GetChisquare();
+    run.timingResultsAND.fTDC_Fit_AND_NDF   = func_Input->GetNDF();
+    
+    return;
+};
+
 //Set boolean type parameters
 void TRunParameters::setParameter(std::string strDetOrRunName, bool bInput, int iMthdIdx){
     switch (iMthdIdx) {
@@ -307,8 +368,9 @@ void TRunParameters::setParameter(std::string strDetOrRunName, std::string strIn
         case 3: setTrigMode(strDetOrRunName, strInput); break;             //string
         case 6: setTDCFitParamNameOR(strDetOrRunName, strInput); break;            //string
         case 7: setTDCFitParamNameAND(strDetOrRunName, strInput); break;           //string
-        case 9: setRunParamTree4DUT(strDetOrRunName, strInput); break;          //string
-    
+        case 9: setTreeNameRun(strDetOrRunName, strInput); break;                //string
+        case 10:setTreeNameRunParamDUT(strDetOrRunName, strInput); break;        //string
+            
             //Detector Methods
         case 121: setDetMultiChanHVCase(strDetOrRunName, strInput); break;     //string
         case 122: setDetGEM1TopV(strDetOrRunName, strInput); break;   //string

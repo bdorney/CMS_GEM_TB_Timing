@@ -26,8 +26,11 @@
 #include <vector>
 
 //My Includes
+#include "TimingRunAnalyzer.h"
+#include "TimingUtilityFunctions.h"
+#include "TimingUtilityOperators.h"
+#include "TimingUtilityTypes.h"
 #include "TRunParameters.h"
-//#include "TRunParameters.cpp"
 
 //ROOT Includes
 #include "TBranch.h"
@@ -38,164 +41,158 @@
 #include "TSpectrum.h"
 #include "TTree.h"
 
-using std::cout;
-using std::cin;
-using std::endl;
-using std::ifstream;
-using std::list;
-using std::map;
-using std::string;
-//using std::tuple;
-using std::vector;
-
 using namespace ROOT;
 
-//Create a container like std::tuple, but 4 elements
-template<typename T1, typename T2, typename T3, typename T4>
-struct quad{
-    T1 first;
-    T2 second;
-    T3 third;
-    T4 fourth;
-};
+namespace Timing {
+    //Create a container like std::tuple, but 4 elements
+    /*template<typename T1, typename T2, typename T3, typename T4>
+    struct quad{
+        T1 first;
+        T2 second;
+        T3 third;
+        T4 fourth;
+    };*/
 
-template<typename T1, typename T2, typename T3, typename T4>
-quad<T1,T2,T3,T4> make_quad(const T1 &m1, const T2 &m2, const T3 &m3, const T4 &m4){
-    quad<T1,T2,T3,T4> quadInstance;
-    quadInstance.first = m1;
-    quadInstance.second = m2;
-    quadInstance.third = m3;
-    quadInstance.fourth = m4;
+    /*template<typename T1, typename T2, typename T3, typename T4>
+    quad<T1,T2,T3,T4> make_quad(const T1 &m1, const T2 &m2, const T3 &m3, const T4 &m4){
+        quad<T1,T2,T3,T4> quadInstance;
+        quadInstance.first = m1;
+        quadInstance.second = m2;
+        quadInstance.third = m3;
+        quadInstance.fourth = m4;
+        
+        return quadInstance;
+    }*/
     
-    return quadInstance;
-}
-
-class treeProducerTDC {
-public:
-    //Constructor
-    treeProducerTDC();
-    
-    //Getters - Methods that Get (i.e. Return) Something
-    //------------------------------------------------------------------------------------------------------------------------------------------
-    
-    //Printers - Methods that Print Something
-    //------------------------------------------------------------------------------------------------------------------------------------------
-    virtual void printStoredData(TTree *inputTree);
-    
-    //Setters - Methods that Set Something
-    //------------------------------------------------------------------------------------------------------------------------------------------
-    //Set data File
-    virtual void setFilesData(string inputFileName){fileName_Data = inputFileName; return;};
-    //virtual void setFilesLUT(string inputFileName){ fileName_LUT = inputFileName; return;};
-    
-    //virtual void setFitFormula(string inputOption){ fitFormula = inputOption; return;};
-    virtual void setFitOption(string inputOption){fitOption = inputOption; return;};
-    
-    virtual void setNumericDeconvoModel(string inputFormula, vector<float> inputParameters);
-    
-    virtual void setIgnoredParameter(string inputParameter);
-    
-    virtual void setHistoRebinFactor(int inputFactor){
-        iRebinFactor = inputFactor;
-        return;
+    //Create a container like std::tuple, but 5 elements
+    template<typename T1, typename T2, typename T3, typename T4, typename T5>
+    struct quint{
+        T1 first;
+        T2 second;
+        T3 third;
+        T4 fourth;
+        T5 fifth;
     };
     
-    //Set Verbose Print Modes
-    virtual void setVerboseModeIO(bool inputMode){verbose_IO = inputMode; return;};
-    virtual void setVerboseModeLUT(bool inputMode){verbose_LUT = inputMode; return;};
-    virtual void setVerboseModePFN(bool inputMode){verbose_PFN = inputMode; return;};
-    virtual void setVerboseModePkCalc(bool inputMode){verbose_PkCalc = inputMode; return;};
-    virtual void setVerboseModePrintRuns(bool inputMode){verbose_PrintRuns = inputMode; return;};
-    //virtual void setVerboseModeMappedData(bool inputMode){verbose_MappedData = inputMode; return;};
-    
-    //Write To File (I/O)
-    //------------------------------------------------------------------------------------------------------------------------------------------
-    virtual void writeTree(string inputTreeName, string outputDataFile);
-    
-    //Miscillaneous Methods
-    //------------------------------------------------------------------------------------------------------------------------------------------
-    virtual void clearIgnoredParameters(){ vecIgnoredParam.clear(); return; };
-    
-private:
-    //Data Members
-    bool verbose_IO;            //Output IO Related Statements
-    bool verbose_LUT;           //Output Parsed Look-up-table
-    bool verbose_PFN;           //Output Parsed File Name
-    bool verbose_PkCalc;        //Outputs Peak Integral Iterative Calculations During getPeakIntegral()
-    bool verbose_PrintRuns;     //Outputs a Table of all stored run information at the end of analysis
-    //bool verbose_MappedData;    //Output Stored Mapped Data
-    
-    int iRebinFactor;
-    
-    string fitOption;
-    //string fitFormula;
-    
-    string fileName_Data;   //List of Root Files
-    string fileName_LUT;    //Look Up File
-    string fileName_ROOT;   //Specific root file found in fileName_Data;
-    
-    string secName_AUTO;
-    string secName_DET;
-    string secName_END;
-    string secName_MAN;
-    
-    TF1 *func_NumericDeconvoModel;
-    
-    TH1F timingHisto;
-    
-    //Run run;
-    //TRunParameters runLogger;
-    
-    vector<string> vecIgnoredParam; //Vector of Parameters to be ignored during getParsedFileName()
-    
-    enum dataType_t {
-        typeBool=0,
-        typeFloat,
-        typeInt,
-        typeString
-    };
-    
-    //Methods
-    
-    //Getters - Methods that Get (i.e. Return) Something
-    //------------------------------------------------------------------------------------------------------------------------------------------
-    float getPeakIntegral(TH1F *hInputHisto, float fInputPeakPos_X);
-    
-    list<string> getParsedFileName(string inputFileName);
-    
-    //TH1F * getHistogram(string inputFileName, int chanNum);
-    
-    vector<quad<string,vector<string>,dataType_t,int> > getLookUpTable(string inputFileName, TRunParameters &runLogger);
-    
-    //Given an input object returns a string (using stringstream)
-    //Note this will probably only work for standard numeric containers in C++
-    //  i.e. int, long, float, double, etc...
-    template<class T>
-    string getString(T input);
-    
-    //Printers - Methods that Print Something
-    //------------------------------------------------------------------------------------------------------------------------------------------
-    virtual void printStreamStatus(ifstream &inputStream);
-    
-    //Setters - Methods that Set Something
-    //------------------------------------------------------------------------------------------------------------------------------------------
-    virtual void setHistogram(string inputFileName, TH1F &inputHisto, int chanNum, bool &bExitFlag);
-    
-    virtual void setMappedParam(string &parsedInput, quad<string,vector<string>,dataType_t,int> &lutItem, TRunParameters &runLogger);
-    virtual void setMappedParam(list<string> &parsedFileNames, vector<quad<string,vector<string>,dataType_t,int> > &lookUpTable, TRunParameters &runLogger);
-    
-    virtual void setParsedLUTLine(string &inputLine, vector<string> &vec_strLUTIdents, string &strTreeName, string &strDataType, int &iMthdIdx, bool &bExitFlag);
-    
-    virtual void setRun(string inputROOTFileName, string inputLUTFileName, TRunParameters &runLogger);
-    
-}; //End Class Definition treeProducerTDC
+    template<typename T1, typename T2, typename T3, typename T4, typename T5>
+    quint<T1,T2,T3,T4,T5> make_quint(const T1 &m1, const T2 &m2, const T3 &m3, const T4 &m4, const T5 &m5){
+        quint<T1,T2,T3,T4,T5> quintInstance;
+        quintInstance.first = m1;
+        quintInstance.second = m2;
+        quintInstance.third = m3;
+        quintInstance.fourth = m4;
+        quintInstance.fifth = m5;
+        
+        return quintInstance;
+    }
 
-//template method must be defined in the header file
-template<class T>
-string treeProducerTDC::getString(T input){
-    std::stringstream sstream;
-    sstream<<input;
-    return sstream.str();
-} //End treeProducerTDC::getString()
-
+    class treeProducerTDC {
+    public:
+        //Constructor
+        treeProducerTDC();
+        
+        //Getters - Methods that Get (i.e. Return) Something
+        //------------------------------------------------------------------------------------------------------------------------------------------
+        
+        //Printers - Methods that Print Something
+        //------------------------------------------------------------------------------------------------------------------------------------------
+        virtual void printStoredData(TTree *inputTree);
+        
+        //Setters - Methods that Set Something
+        //------------------------------------------------------------------------------------------------------------------------------------------
+        virtual void setAnalyzer(Timing::TestBeamRunAnalyzer *inputAnalyzer){analyzer = inputAnalyzer; return;};
+        
+        //Set data File
+        virtual void setFilesData(std::string inputFileName){fileName_Data = inputFileName; return;};
+        
+        virtual void setFitOption(std::string inputOption){fitOption = inputOption; return;};
+        
+        virtual void setNumericDeconvoModel(std::string inputFormula, std::vector<float> inputParameters);
+        
+        virtual void setIgnoredParameter(std::string inputParameter);
+        
+        /*virtual void setHistoRebinFactor(int inputFactor){
+            iRebinFactor = inputFactor;
+            return;
+        };*/
+        
+        //Set Verbose Print Modes
+        virtual void setVerboseModeIO(bool inputMode){verbose_IO = inputMode; return;};
+        virtual void setVerboseModeLUT(bool inputMode){verbose_LUT = inputMode; return;};
+        virtual void setVerboseModePFN(bool inputMode){verbose_PFN = inputMode; return;};
+        virtual void setVerboseModePkCalc(bool inputMode){verbose_PkCalc = inputMode; return;};
+        virtual void setVerboseModePrintRuns(bool inputMode){verbose_PrintRuns = inputMode; return;};
+        
+        //Write To File (I/O)
+        //------------------------------------------------------------------------------------------------------------------------------------------
+        virtual void writeTree(std::string inputTreeName, std::string outputDataFile);
+        
+        //Miscillaneous Methods
+        //------------------------------------------------------------------------------------------------------------------------------------------
+        virtual void clearIgnoredParameters(){ vecIgnoredParam.clear(); return; };
+        
+    private:
+        //Data Members
+        bool verbose_IO;            //Output IO Related Statements
+        bool verbose_LUT;           //Output Parsed Look-up-table
+        bool verbose_PFN;           //Output Parsed File Name
+        bool verbose_PkCalc;        //Outputs Peak Integral Iterative Calculations During getPeakIntegral()
+        bool verbose_PrintRuns;     //Outputs a Table of all stored run information at the end of analysis
+        
+        std::string fitOption;
+        
+        std::string fileName_Data;   //List of Root Files
+        std::string fileName_LUT;    //Look Up File
+        std::string fileName_ROOT;   //Specific root file found in fileName_Data;
+        
+        std::string secName_AUTO;
+        std::string secName_DET;
+        std::string secName_END;
+        std::string secName_MAN;
+        
+        Timing::TestBeamRunAnalyzer *analyzer;  //Generic Analyzer class set by the user; a default one is provided but the user can make an inherited class whose methods are over written
+        
+        std::vector<std::string> vecIgnoredParam; //Vector of Parameters to be ignored during getParsedFileName()
+        
+        enum dataType_t {
+            typeBool=0,
+            typeFloat,
+            typeInt,
+            typeString
+        };
+        
+        //This is:
+        //  first -> name of physical quantity
+        //  second -> vector of identifiers
+        //  third -> data type to match too
+        //  fourth -> name of detector
+        //  fifth -> method index in TRunParameters
+        typedef quint<std::string,std::vector<std::string>,dataType_t,std::string,int> LUTType;
+        
+        //Methods
+        
+        //Getters - Methods that Get (i.e. Return) Something
+        //------------------------------------------------------------------------------------------------------------------------------------------
+        float getPeakIntegral(TH1F *hInputHisto, float fInputPeakPos_X);
+        
+        std::list<std::string> getParsedFileName(std::string inputFileName);
+        
+        std::vector<LUTType> getLookUpTable(std::string inputFileName, TRunParameters &runLogger);
+        
+        //Printers - Methods that Print Something
+        //------------------------------------------------------------------------------------------------------------------------------------------
+        
+        //Setters - Methods that Set Something
+        //------------------------------------------------------------------------------------------------------------------------------------------
+        virtual void setHistogram(std::string inputFileName, TH1F &inputHisto, int chanNum, bool &bExitFlag);
+        
+        virtual void setMappedParam(std::string &parsedInput, LUTType &lutItem, TRunParameters &runLogger);
+        virtual void setMappedParam(std::list<std::string> &parsedFileNames, std::vector<LUTType> > &lookUpTable, TRunParameters &runLogger);
+        
+        virtual void setParsedLUTLine(std::string &inputLine, std::vector<std::string> &vec_strLUTIdents, std::string &strTreeName, std::string &strDataType, std::string &strDetName, int &iMthdIdx, bool &bExitFlag);
+        
+        virtual void setRun(std::string inputROOTFileName, std::string inputLUTFileName, TRunParameters &runLogger);
+        
+    }; //End Class Definition treeProducerTDC
+} //End namespace Timing
 #endif /* defined(____treeProducerTDC__) */

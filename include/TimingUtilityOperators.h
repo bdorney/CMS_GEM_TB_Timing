@@ -8,15 +8,25 @@
 #include <stdio.h>
 #include <sstream>
 #include <string>
+#include <utility>
 
-/*
+//My Includes
+#include "TimingUtilityTypes.h"
+
+/* Operator List:
  * 
- *
+ *  map_cmp_str, determines how two string key values should be ordered in a map
  *
  *
  */
 
 namespace Timing {
+    //Determins how two strings should be ordered
+    struct map_cmp_str{
+        bool operator()(const std::string& str1, const std::string& str2){
+            return str1.size() == str2.size() && (str1.compare(str2) < 0);
+        }
+    };
     
     //Comparison Operators
     struct cmp_chan{
@@ -45,8 +55,7 @@ namespace Timing {
     {
         bool operator()(const PairType_Str_Int& left, const PairType_Str_Int& right) const
         {
-            //return left.second > right.second;
-            return left.second < right.second;
+            return left.second > right.second;
         }
     };
     

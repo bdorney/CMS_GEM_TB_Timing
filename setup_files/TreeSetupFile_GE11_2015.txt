@@ -35,47 +35,94 @@
 #
 #---------------------------------------------------------------
 [DET]
-DET_POS(int)=<Number in Parameter Sequence>:101;
-DET_NAME(string)=<Detector Name>:106;
-TDC_CH_NUMBER(int)=<Channel Number>:301;
+#Intrinsic to the Run
+DET_TTREE_NAME_DATA(string|RUN)=CMS_GEM_RAW_DATA:9;
+DET_TTREE_NAME_RUNPARAM(string|RUN)=CMS_GEM_RUN_PARAM:10;
+#First Detector
+DET_POS(int|GE11-VI-L-CERN-0001)=0:101;
+DET_HV_CASE(string|GE11-VI-L-CERN-0001)=Divider:121;
+TDC_CH_NUMBER(int|GE11-VI-L-CERN-0001)=0:301;
+#Second Detector
+DET_POS(int|GE11-VI-L-CERN-0002)=1:101;
+DET_HV_CASE(string|GE11-VI-L-CERN-0002)=Multi:121;
+TDC_CH_NUMBER(int|GE11-VI-L-CERN-0002)=8:301;
 #---------------------------------------------------------------
 [AUTO]
-Run(int)=<Run Identifier>:1;
-Beam(string)=<Beam Identifier>:2;
-TRIG_MODE(string)=<Trig Mode Identifier>:3;
-TRIG_DELAY(float)=<Trig Delay Identifier>:4;
-DET_IMON(float)=<Curren Identifier>:104;
-DET_VDRIFT(float)=<Drift Identifier>:105;
-DET_VGEM1_TOP(float)=<GEM1 Top Identifier>:115;
-DET_VGEM1_BOT(float)=<GEM1 Bot Identifier>:116;
-DET_VGEM2_TOP(float)=<GEM2 Top Identifier>:117;
-DET_VGEM2_BOT(float)=<GEM2 Bot Identifier>:118;
-DET_VGEM3_TOP(float)=<GEM3 Top Identifier>:119;
-DET_VGEM3_BOT(float)=<GEM3 Bot Identifier>:120;
-VFAT_IPREAMPIN(int)=<VFAT IPreampIn Identifier>:204;
-VFAT_IPREAMPFEED(int)=<VFAT IPreampFeed Identifier>:205;
-VFAT_IPREAMPOUT(int)=<VFAT IPreampOut Identifier>:206;
-VFAT_ISHAPERFEED(int)=<VFAT IShaperFeed Identifier>:208;
-VFAT_ISHAPER(int)=<VFAT IShaper Identifier>:207;
-VFAT_IComp(int)=<VFAT IComp Identifier>:209;
-VFAT_MSPL(int)=<VFAT MSPL Identifier>:210;
-VFAT_THRESH(int)=<VFAT Threshold Identifier>:212;
+#Intrinsic to the Run
+RUN_NUMBER(int|RUN)=TDCRun:1;
+BEAM_PARTICLE(string|RUN)=Muon:2;
+SUPERMODULE_HV_SETPOINT(float|RUN)=uA:8
+#First Detector
+DET_IMON(string|GE11-VI-L-CERN-0001)=fHV_Det2_DividerCurrent:104;
+VFAT_THRESH(int|GE11-VI-L-CERN-0001)=T:212;
+#Second Detector
+DET_VDRIFT(string|GE11-VI-L-CERN-0002)=fHV_Det1_Drift:105;
+DET_VGEM1_TOP(string|GE11-VI-L-CERN-0002)=fHV_Det1_G1Top:115;
+DET_VGEM1_BOT(string|GE11-VI-L-CERN-0002)=fHV_Det1_G1Bot:116;
+DET_VGEM2_TOP(string|GE11-VI-L-CERN-0002)=fHV_Det1_G2Top:117;
+DET_VGEM2_BOT(string|GE11-VI-L-CERN-0002)=fHV_Det1_G2Bot:118;
+DET_VGEM3_TOP(string|GE11-VI-L-CERN-0002)=fHV_Det1_G3Top:119;
+DET_VGEM3_BOT(string|GE11-VI-L-CERN-0002)=fHV_Det1_G3Bot:120;
+VFAT_THRESH(int|GE11-VI-L-CERN-0002)=T:212;
 #---------------------------------------------------------------
 [MAN]
-TURBO_ID(int)=<Manual Entry Value>:201;
-VFAT_POS(int)=<Manual Entry Value>:202;
-#VFAT_ID(string)=<Manual Entry Value>:203;
-#VFAT_IPREAMPIN(int)=<Manual Entry Value>:204;
-DET_ETA(int)=<Manual Entry Value>:102;
-DET_PHI(int)=<Manual Entry Value>:103;
-DET_GASFRAC_AR(float)=<Manual Entry Value>:107;
-DET_GASFRAC_CO2(float)=<Manual Entry Value>:108;
-DET_GASFRAC_CF4(float)=<Manual Entry Value>:109;
+#Intrinsic to the Run
+TRIG_MODE(string|RUN)=Async:3;
+#First Detector
+VFAT_POS(int|GE11-VI-L-CERN-0001)=11:202;
+VFAT_IPREAMPIN(int|GE11-VI-L-CERN-0001)=168:204;
+VFAT_IPREAMPFEED(int|GE11-VI-L-CERN-0001)=80:205;
+VFAT_IPREAMPOUT(int|GE11-VI-L-CERN-0001)=150:206;
+VFAT_ISHAPERFEED(int|GE11-VI-L-CERN-0001)=100:208;
+VFAT_ISHAPER(int|GE11-VI-L-CERN-0001)=150:207;
+VFAT_IComp(int|GE11-VI-L-CERN-0001)=75:209;
+VFAT_MSPL(int|GE11-VI-L-CERN-0001)=4:210;
+#DET_IMON(float|GE11-VI-L-CERN-0001)=810:104;       #Fake Values
+#DET_VDRIFT(float|GE11-VI-L-CERN-0001)=900:105;     #Fake Values
+#DET_VGEM1_TOP(float|GE11-VI-L-CERN-0001)=420:115;  #Fake Values
+#DET_VGEM1_BOT(float|GE11-VI-L-CERN-0001)=300:116;  #Fake Values
+#DET_VGEM2_TOP(float|GE11-VI-L-CERN-0001)=440:117;  #Fake Values
+#DET_VGEM2_BOT(float|GE11-VI-L-CERN-0001)=200:118;  #Fake Values
+#DET_VGEM3_TOP(float|GE11-VI-L-CERN-0001)=440:119;  #Fake Values
+#DET_VGEM3_BOT(float|GE11-VI-L-CERN-0001)=600:120;  #Fake Values
+DET_ETA(int|GE11-VI-L-CERN-0001)=5:102;
+DET_PHI(int|GE11-VI-L-CERN-0001)=2:103;
+DET_GASFRAC_AR(float|GE11-VI-L-CERN-0001)=45:107;
+DET_GASFRAC_CO2(float|GE11-VI-L-CERN-0001)=15:108;
+DET_GASFRAC_CF4(float|GE11-VI-L-CERN-0001)=40:109;
 #Note Gain is calculated as: exp(DET_GAIN_CONST + DET_GAIN_SLOPE * fDepVar )
-DET_GAIN_CONST(float)=<Manual Entry Value>:110;
-DET_GAIN_CONST_ERR(float)=<Manual Entry Value>:111;
-DET_GAIN_SLOPE(float)= <Manual Entry Value>:112;
-DET_GAIN_SLOPE_ERR(float)= <Manual Entry Value>:113;
-DET_GAIN_INDEPVAR_CURRENT(bool)=<Manual Entry Value>:114;
+#DET_GAIN_CONST(float|GE11-VI-L-CERN-0001)=<Manual Entry Value>:110;
+#DET_GAIN_CONST_ERR(float|GE11-VI-L-CERN-0001)=<Manual Entry Value>:111;
+#DET_GAIN_SLOPE(float|GE11-VI-L-CERN-0001)= <Manual Entry Value>:112;
+#DET_GAIN_SLOPE_ERR(float|GE11-VI-L-CERN-0001)= <Manual Entry Value>:113;
+#DET_GAIN_INDEPVAR_CURRENT(bool|GE11-VI-L-CERN-0001)=<Manual Entry Value>:114;
+#Second Detector
+VFAT_POS(int|GE11-VI-L-CERN-0002)=11:202;
+VFAT_IPREAMPIN(int|GE11-VI-L-CERN-0002)=168:204;
+VFAT_IPREAMPFEED(int|GE11-VI-L-CERN-0002)=80:205;
+VFAT_IPREAMPOUT(int|GE11-VI-L-CERN-0002)=150:206;
+VFAT_ISHAPERFEED(int|GE11-VI-L-CERN-0002)=100:208;
+VFAT_ISHAPER(int|GE11-VI-L-CERN-0002)=150:207;
+VFAT_IComp(int|GE11-VI-L-CERN-0002)=75:209;
+VFAT_MSPL(int|GE11-VI-L-CERN-0002)=4:210;
+#DET_IMON(float|GE11-VI-L-CERN-0002)=810:104;       #Fake Values
+#DET_VDRIFT(float|GE11-VI-L-CERN-0002)=900:105;     #Fake Values
+#DET_VGEM1_TOP(float|GE11-VI-L-CERN-0002)=420:115;  #Fake Values
+#DET_VGEM1_BOT(float|GE11-VI-L-CERN-0002)=300:116;  #Fake Values
+#DET_VGEM2_TOP(float|GE11-VI-L-CERN-0002)=440:117;  #Fake Values
+#DET_VGEM2_BOT(float|GE11-VI-L-CERN-0002)=200:118;  #Fake Values
+#DET_VGEM3_TOP(float|GE11-VI-L-CERN-0002)=440:119;  #Fake Values
+#DET_VGEM3_BOT(float|GE11-VI-L-CERN-0002)=600:120;  #Fake Values
+DET_ETA(int|GE11-VI-L-CERN-0002)=5:102;
+DET_PHI(int|GE11-VI-L-CERN-0002)=2:103;
+DET_GASFRAC_AR(float|GE11-VI-L-CERN-0002)=45:107;
+DET_GASFRAC_CO2(float|GE11-VI-L-CERN-0002)=15:108;
+DET_GASFRAC_CF4(float|GE11-VI-L-CERN-0002)=40:109;
+#Note Gain is calculated as: exp(DET_GAIN_CONST + DET_GAIN_SLOPE * fDepVar )
+#DET_GAIN_CONST(float|GE11-VI-L-CERN-0002)=<Manual Entry Value>:110;
+#DET_GAIN_CONST_ERR(float|GE11-VI-L-CERN-0002)=<Manual Entry Value>:111;
+#DET_GAIN_SLOPE(float|GE11-VI-L-CERN-0002)= <Manual Entry Value>:112;
+#DET_GAIN_SLOPE_ERR(float|GE11-VI-L-CERN-0002)= <Manual Entry Value>:113;
+#DET_GAIN_INDEPVAR_CURRENT(bool|GE11-VI-L-CERN-0002)=<Manual Entry Value>:114;
 #---------------------------------------------------------------
 [END]
