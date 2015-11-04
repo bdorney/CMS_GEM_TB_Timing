@@ -43,8 +43,8 @@
 
 //For working with stl containers and TTree
 #ifdef __MAKECINT__
-//#pragma link C++ class vector<int>+;
-#pragma link C++ class vector<float>+;
+#pragma link C++ class vector<int>+;
+//#pragma link C++ class vector<float>+;
 #pragma link C++ class map<string,float>+;
 //#pragma link C++ class map<string,int>+;
 #endif

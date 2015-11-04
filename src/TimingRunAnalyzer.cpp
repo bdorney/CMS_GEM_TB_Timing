@@ -155,10 +155,10 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
             //  NOTE: this does not mean 0 is the trigger if this correction is made
             //        this moves the trigger time from t=0 to t=analysisSetup.fTDCWinSize
             if (analysisSetup.bInvertTime){ //Case: Invert non-zer times
-                ((*iterDet).second).vec_fTDC_Data.push_back( getInvertedTime( map_fTDCData[(*iterDet).first] ) );
+                ((*iterDet).second).vec_iTDC_Data.push_back( getInvertedTime( map_fTDCData[(*iterDet).first] ) );
             } //End Case: Invert non-zero times
             else{ //Case: Use Raw Times
-                ((*iterDet).second).vec_fTDC_Data.push_back( map_fTDCData[(*iterDet).first] );
+                ((*iterDet).second).vec_iTDC_Data.push_back( map_fTDCData[(*iterDet).first] );
             } //End Case: Use Raw Times
         } //End
     } //End Loop Through Tree
@@ -174,12 +174,12 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
             //Skip the first element, it is stored above (maybe there's a better way to do this)
             if (run.map_det.begin() == iterDet) continue;
             
-            fOffset = deltaMean( ((*detMapBegin).second).vec_fTDC_Data, ((*iterDet).second).vec_fTDC_Data );
+            fOffset = deltaMean( ((*detMapBegin).second).vec_iTDC_Data, ((*iterDet).second).vec_iTDC_Data );
             
             if (fOffset > fTDCResolution) { //Case: offset greater than TDC Resolution
                 //Won't work, fOffset is not a "const float"
-                //transform(((*iterDet).second).vec_fTDC_Data.begin(), ((*iterDet).second).vec_fTDC_Data.end(), ((*iterDet).second).vec_fTDC_Data.begin(), std::bind2nd(std::plus<float>(), fOffset)  )
-                std::for_each(((*iterDet).second).vec_fTDC_Data.begin(), ((*iterDet).second).vec_fTDC_Data.end(), Timing::addVal(fOffset) );
+                //transform(((*iterDet).second).vec_iTDC_Data.begin(), ((*iterDet).second).vec_iTDC_Data.end(), ((*iterDet).second).vec_iTDC_Data.begin(), std::bind2nd(std::plus<float>(), fOffset)  )
+                std::for_each(((*iterDet).second).vec_iTDC_Data.begin(), ((*iterDet).second).vec_iTDC_Data.end(), Timing::addVal(fOffset) );
             } //End Case: offset greater than TDC Resolution
         } //End Loop Over Detectors
     } //End Case: Correct for Offsets in Arrival Time
@@ -189,21 +189,21 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     //Fill Histograms
     //------------------------------------------------------
     //Use the tree again to get the number of events without a hassle
-    //  NOTE we are not looping through the tree data; but the vector data in the run.map_det[some_det].vec_fTDC_Data
+    //  NOTE we are not looping through the tree data; but the vector data in the run.map_det[some_det].vec_iTDC_Data
     for (int i=0; i < tree_Run->GetEntries(); ++i) { //Loop through Events
         //Fill individual histograms
         //Here we are going to loop over the detectors in run.map_det
-        //And we will access by index "i" the elements of run.map_det[some_det].vec_fTDC_Data
-        //This works since by design run.map_det[some_det].vec_fTDC_Data.size() == tree_Run->GetEntries()
+        //And we will access by index "i" the elements of run.map_det[some_det].vec_iTDC_Data
+        //This works since by design run.map_det[some_det].vec_iTDC_Data.size() == tree_Run->GetEntries()
         //For each i we are going to fill the histograms, and reset the value of map_fTDCData
         
         for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Over Detectors
             //Reset the value of the map_fTDCData
-            map_fTDCData[(*iterDet).first] = ((*iterDet).second).vec_fTDC_Data[i];
+            map_fTDCData[(*iterDet).first] = ((*iterDet).second).vec_iTDC_Data[i];
             
             //Fill the Histogram
-            if ( ((*iterDet).second).vec_fTDC_Data[i] > 0 ) {
-                map_fTDCHistos[((*iterDet).first)].Fill( ((*iterDet).second).vec_fTDC_Data[i] );
+            if ( ((*iterDet).second).vec_iTDC_Data[i] > 0 ) {
+                map_fTDCHistos[((*iterDet).first)].Fill( ((*iterDet).second).vec_iTDC_Data[i] );
             } //End Fill Histogram
         } //End Loop Over Detectors
         

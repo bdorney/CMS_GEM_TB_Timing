@@ -129,8 +129,8 @@ namespace Timing {
         
         int iTDC_Chan;
         
-        //std::vector<int> vec_iTDC_Data; //Event-by-Event Data
-        std::vector<float> vec_fTDC_Data; //Event-by-Event Data
+        std::vector<int> vec_iTDC_Data; //Event-by-Event Data
+        //std::vector<float> vec_fTDC_Data; //Event-by-Event Data
         
         Detector(){
             //Detector Info

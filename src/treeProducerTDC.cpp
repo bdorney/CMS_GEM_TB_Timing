@@ -263,7 +263,7 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
             }
             
             //TDC Info - Data
-            treeInput.Branch( ((*iterDet).first + "vec_fTDC_Data").c_str(), &((*iterDet).second).vec_fTDC_Data);
+            treeInput.Branch( ((*iterDet).first + "vec_iTDC_Data").c_str(), &((*iterDet).second).vec_iTDC_Data);
         } //End Loop over inputRun.map_det
         
         //TDC Info - AND
