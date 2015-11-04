@@ -21,6 +21,7 @@
 //My Includes
 #include "treeProducerTDC.h"
 #include "TimingUtilityFunctions.h"
+#include "TimingRunAnalyzer.h"
 
 using std::cout;
 using std::endl;
@@ -158,7 +159,7 @@ int main( int argc_, char * argv_[]){
         std::cout<<"For help menu:\n";
         std::cout<<"\t./produceTree -h\n";
         std::cout<<"For CMS GEM test beam production:\n";
-        std::cout<<"\t./produceTree <Input_Config_File> <Verbose Mode true/false>\n";
+        std::cout<<"\t./produceTree <Prod_Config_File> <Analysis_Config_File> <Verbose Mode true/false>\n";
 
         return 1;
     } //End Case: Usage
@@ -194,7 +195,7 @@ int main( int argc_, char * argv_[]){
         
         return 1;
     } //End Case: Help Menu
-    else if(vec_strInputArgs.size() == 3){ //Case: Production Mode!
+    else if(vec_strInputArgs.size() == 4){ //Case: Production Mode!
         bool bExitSuccess = false;
         
         //Set input config file
@@ -216,11 +217,11 @@ int main( int argc_, char * argv_[]){
         } //End Case: Input Not Understood
         
         //Set the verbose mode
-        bVerboseMode = convert2bool(vec_strInputArgs[2], bExitSuccess);
+        bVerboseMode = convert2bool(vec_strInputArgs[3], bExitSuccess);
         if (!bExitSuccess) { //Case: Input Not Understood
-            cout<<"main() - vec_strInputArgs[2] expected to be boolean!!!\n";
+            cout<<"main() - vec_strInputArgs[3] expected to be boolean!!!\n";
             cout<<"main() - Parameter given:\n";
-            cout<<"\t"<<vec_strInputArgs[2]<<endl;
+            cout<<"\t"<<vec_strInputArgs[3]<<endl;
             cout<<"Exitting!!!\n";
             
             return -2;
@@ -345,7 +346,12 @@ int main( int argc_, char * argv_[]){
     myProducer.setIgnoredParameter("Optimal");
     myProducer.setIgnoredParameter("values");*/
 
-    //Setup the remaining producer parameters
+    //Setup the Analyzer
+    TimingRunAnalyzer *myAnalyzer = new TimingRunAnalyzer();
+    myAnalyzer->setAnalysisConfig(vec_strInputArgs[2]);
+    myAnalyzer->setTDCResolution(0.3);  //300 picoseconds for 1200ns acquisition window
+    
+    //Setup the producer
     //------------------------------------------------------
     myProducer.setFitOption(pInfo.strFitOption);
     //myProducer.setHistoRebinFactor(2);
@@ -354,6 +360,7 @@ int main( int argc_, char * argv_[]){
     myProducer.setVerboseModeLUT(pInfo.bVerboseMode_LUT);
     myProducer.setVerboseModePrintRuns(pInfo.bVerboseMode_PrintRuns);
     myProducer.setFilesData(pInfo.strPFN_RunList_PFP);
+    myProducer.setAnalyzer(myAnalyzer);
     //myProducer.writeTree(pInfo.strOutput_Tree, pInfo.strOutput_ROOTFile);
     myProducer.readRuns(pInfo.strOutput_Tree, pInfo.strOutput_ROOTFile);
     
