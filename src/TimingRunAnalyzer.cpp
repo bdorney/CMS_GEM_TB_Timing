@@ -747,7 +747,8 @@ void Timing::TimingRunAnalyzer::setPerformanceData(TDCAnalysisData &inputTimingR
     
     //Get Number of peaks identified
     //Determine the number of Peaks in the Histogram (this may require additional user inputs...we'll see)
-    inputTimingResults.iTDC_Histo_nPks = timingSpec->Search( &hInput,3,"goff",0.001);
+    //inputTimingResults.iTDC_Histo_nPks = timingSpec->Search( &hInput,3,"goff",0.001);
+    inputTimingResults.iTDC_Histo_nPks = timingSpec->Search( &hInput,2,"goff",0.05);
     
     //If there is one peak, get it's position and center histogram on said peak
     //The record the mean and RMS of the histogram
