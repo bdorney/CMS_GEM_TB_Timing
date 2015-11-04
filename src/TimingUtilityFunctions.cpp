@@ -66,13 +66,13 @@ std::istream & Timing::getlineNoSpaces(std::istream & stream, std::string & str)
 //----------------------------------------------------------------------------------------
 //T -> Type; A -> Allocator
 //Determines the difference in mean between two datasets
-template<typename T, typename A>
-float Timing::deltaMean( std::vector<T,A> const &vec1, std::vector<T,A> const &vec2){
-    float fMean1 = (std::accumulate(vec1.begin(), vec1.end(), 0.0) / (float) vec1.size() );
-    float fMean2 = (std::accumulate(vec2.begin(), vec2.end(), 0.0) / (float) vec2.size() );
-    
-    return fMean1 - fMean2;
-} //End deltaMean
+//template<typename T, typename A>
+//float Timing::deltaMean( std::vector<T,A> const &vec1, std::vector<T,A> const &vec2){
+//    float fMean1 = (std::accumulate(vec1.begin(), vec1.end(), 0.0) / (float) vec1.size() );
+//    float fMean2 = (std::accumulate(vec2.begin(), vec2.end(), 0.0) / (float) vec2.size() );
+//
+//    return fMean1 - fMean2;
+//} //End deltaMean
 
 //Gets the maximum value for two channels (both channels required to be nonzero)
 int Timing::getMaxForChannelAND(std::map<std::string, float> inputMap){
