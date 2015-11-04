@@ -23,7 +23,8 @@
 namespace Timing {
     //Determins how two strings should be ordered
     struct map_cmp_str{
-        bool operator()(const std::string& str1, const std::string& str2){
+        bool operator() (const std::string& str1, const std::string& str2) const
+        {
             return str1.size() == str2.size() && (str1.compare(str2) < 0);
         }
     };

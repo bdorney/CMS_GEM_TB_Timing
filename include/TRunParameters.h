@@ -23,7 +23,7 @@
 #include "TimingUtilityTypes.h"
 
 //ROOT Includes
-#include "TFile.h";
+#include "TFile.h"
 #include "TF1.h"
 #include "TH1F.h"
 #include "TH2F.h"
@@ -88,7 +88,7 @@
  case 302: setTDCFitParamName(std::string strDet_Name, string strParamName)             //string
  
  //Non Automatically assigned Parameters
- case 303: setTDCData(std::string strDet_Name, std::vector<int> vec_iData)  //vector<int>
+ case 303: setTDCData(std::string strDet_Name, std::vector<float> vec_iData)  //vector<float>
  case 304: setTDCHistoDet(std::string strDet_Name, TH1F *hInput)    //TH1F*
  case 305: setTDCHistoNPks(std::string strDet_Name, int iInput)
  case 306: setTDCFit(std::string strDet_Name, TF1 *func_Input, std::vector<std::string> vec_strParamName)
@@ -361,7 +361,7 @@ namespace Timing {
         };
         
         //Set Detector Data
-        virtual void setTDCData(std::string strDet_Name, std::vector<int> vec_iData){run.map_det[strDet_Name].vec_iTDC_Data = vec_iData; return;};
+        virtual void setTDCData(std::string strDet_Name, std::vector<float> vec_fData){run.map_det[strDet_Name].vec_fTDC_Data = vec_fData; return;};
         
         virtual void setTDCHistoDet(std::string strDet_Name, TH1F *hInput){
             run.map_det[strDet_Name].timingResults.hTDC_Histo = hInput;

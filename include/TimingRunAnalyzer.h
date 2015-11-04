@@ -37,6 +37,7 @@
 #include "TimingUtilityFunctions.h"
 #include "TimingUtilityOperators.h"
 #include "TimingUtilityTypes.h"
+#include "TRunParameters.h"
 
 //ROOT Includes
 #include "TF1.h"
@@ -93,7 +94,7 @@ namespace Timing {
                 iHisto_nBins = 1200;
                 
                 
-                strFitFormula = "[0]*[2]*sqrt(TMath::Pi()/2.)*(TMath::Erf( (12.5 + (x-[1])) / ([2] * sqrt(2.) ) ) - TMath::Erf( ((x-[1]) - 12.5) / ([2] * sqrt(2.) ) ) )";
+                strFit_Formula = "[0]*[2]*sqrt(TMath::Pi()/2.)*(TMath::Erf( (12.5 + (x-[1])) / ([2] * sqrt(2.) ) ) - TMath::Erf( ((x-[1]) - 12.5) / ([2] * sqrt(2.) ) ) )";
                 strFit_Name = "func_Timing";
                 strFit_Option = "R";
                 
@@ -204,7 +205,7 @@ namespace Timing {
         //------------------------------------------------------------------------------------------------------------------------------------------
         //Inverts a time recorded by the TDC by the TDC Window (e.g. due to common_stop technique)
         virtual int getInvertedTime(int iInput){
-            (iInput > 0) ? return (analysisSetup.fTDCWinSize - iInput) : return iInput;
+            return (iInput > 0) ? (analysisSetup.fTDCWinSize - iInput) : iInput;
         };
 
         TF1 getFunction(HistoSetup &setupHisto, TH1F & hInput);
@@ -226,7 +227,7 @@ namespace Timing {
         //  ->hInput Detector Histogram
         //  ->funcInput fit of detector histogram
         virtual void setPerformanceData(TDCAnalysisData &inputTimingResults, TH1F &hInput);
-        virtual void setPerformanceData(TDCAnalysisData &inputTimingResults, TF1 &funcInput);
+        virtual void setPerformanceData(TDCAnalysisData &inputTimingResults, TF1 &funcInput, HistoSetup &setupHisto);
         
     //protected:
         

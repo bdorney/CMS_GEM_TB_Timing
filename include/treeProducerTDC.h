@@ -108,14 +108,14 @@ namespace Timing {
         
         //Setters - Methods that Set Something
         //------------------------------------------------------------------------------------------------------------------------------------------
-        virtual void setAnalyzer(Timing::TestBeamRunAnalyzer *inputAnalyzer){analyzer = inputAnalyzer; return;};
+        virtual void setAnalyzer(Timing::TimingRunAnalyzer *inputAnalyzer){analyzer = inputAnalyzer; return;};
         
         //Set data File
         virtual void setFilesData(std::string inputFileName){fileName_Data = inputFileName; return;};
         
         virtual void setFitOption(std::string inputOption){fitOption = inputOption; return;};
         
-        virtual void setNumericDeconvoModel(std::string inputFormula, std::vector<float> inputParameters);
+        //virtual void setNumericDeconvoModel(std::string inputFormula, std::vector<float> inputParameters);
         
         virtual void setIgnoredParameter(std::string inputParameter);
         
@@ -145,6 +145,8 @@ namespace Timing {
         
     private:
         //Data Members
+        bool b1stRun;
+        
         bool verbose_IO;            //Output IO Related Statements
         bool verbose_LUT;           //Output Parsed Look-up-table
         bool verbose_PFN;           //Output Parsed File Name
@@ -162,7 +164,7 @@ namespace Timing {
         std::string secName_END;
         std::string secName_MAN;
         
-        Timing::TestBeamRunAnalyzer *analyzer;  //Generic Analyzer class set by the user; a default one is provided but the user can make an inherited class whose methods are over written
+        Timing::TimingRunAnalyzer *analyzer;  //Generic Analyzer class set by the user; a default one is provided but the user can make an inherited class whose methods are over written
         
         std::vector<std::string> vecIgnoredParam; //Vector of Parameters to be ignored during getParsedFileName()
         
@@ -189,7 +191,7 @@ namespace Timing {
         
         std::list<std::string> getParsedFileName(std::string inputFileName);
         
-        std::vector<LUTType> getLookUpTable(std::string inputFileName, TRunParameters &runLogger);
+        std::vector<LUTType> getLookUpTable(std::string inputROOTFileName, std::string inputLUTFileName, TRunParameters &runLogger);
         
         //Printers - Methods that Print Something
         //------------------------------------------------------------------------------------------------------------------------------------------
@@ -198,8 +200,8 @@ namespace Timing {
         //------------------------------------------------------------------------------------------------------------------------------------------
         virtual void setHistogram(std::string inputFileName, TH1F &inputHisto, int chanNum, bool &bExitFlag);
         
-        virtual void setMappedParam(std::string &parsedInput, LUTType &lutItem, TRunParameters &runLogger);
-        virtual void setMappedParam(std::list<std::string> &parsedFileNames, std::vector<LUTType> > &lookUpTable, TRunParameters &runLogger);
+        virtual void setMappedParam(std::string &parsedInput, LUTType &lutItem, Timing::TRunParameters &runLogger);
+        virtual void setMappedParam(std::list<std::string> &parsedFileNames, std::vector<LUTType> &lookUpTable, Timing::TRunParameters &runLogger);
         
         virtual void setParsedLUTLine(std::string &inputLine, std::vector<std::string> &vec_strLUTIdents, std::string &strTreeName, std::string &strDataType, std::string &strDetName, int &iMthdIdx, bool &bExitFlag);
         

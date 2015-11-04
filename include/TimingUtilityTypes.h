@@ -35,7 +35,7 @@ namespace Timing {
 
         float fTDC_Eff;
         
-        float fTDC_Histo_Mlean;
+        float fTDC_Histo_Mean;
         float fTDC_Histo_RMS;
         float iTDC_Histo_nPks;
         
@@ -129,7 +129,8 @@ namespace Timing {
         
         int iTDC_Chan;
         
-        std::vector<int> vec_iTDC_Data; //Event-by-Event Data
+        //std::vector<int> vec_iTDC_Data; //Event-by-Event Data
+        std::vector<float> vec_fTDC_Data; //Event-by-Event Data
         
         Detector(){
             //Detector Info
@@ -196,7 +197,8 @@ namespace Timing {
         
         //Detectors
         //=============================
-        std::map<std::string, Detector, Timing::map_cmp_str> map_det;
+        //std::map<std::string, Detector, Timing::map_cmp_str> map_det;
+        std::map<std::string, Detector> map_det;
         
         //TDC Info
         //=============================

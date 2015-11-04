@@ -4,18 +4,21 @@
 
 //C++ Includes
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 #include <map>
+#include <numeric>
 #include <stdio.h>
 #include <sstream>
 #include <string>
-#include <utitlity>
+#include <utility>
 #include <vector>
 
 //My Includes
 #include "TimingUtilityOperators.h"
 
 //ROOT Includes
+#include "TFile.h"
 
 /* 
  * //boolean
@@ -51,25 +54,45 @@ namespace Timing {
     std::istream & getlineNoSpaces(std::istream & stream, std::string & str);
     
     //Math
-    //T -> Type; A -> Allocator
-    template<class T>
+    //Addition method
+    //template<class T>
+    /*template<typename T>
     struct addVal{
-        T val_fixed;
-        addition(T fixed) : val_fixed(fixed);
-        
-        void operator()(T &input) const{
+        T tVal;
+     
+        addVal(T tAdd){
+            tVal = tAdd;
+        }
+     
+        void operator()(T &tInput) const{
             //input += val_fixed; //internet says "input += fixed"
-            input += fixed;
+            tInput += tVal;
+        }
+        //usage example:
+        //std::for_each(myvec.begin(), myvec.end(), addVal(1.0));
+     };*/
+    
+    //Can't seem to get the templated form above to work
+    struct addVal{
+        float fVal;
+        
+        addVal(float fAdd){
+            fVal = fAdd;
+        }
+        
+        void operator()(float &fInput) const{
+            fInput += fVal;
         }
         //usage example:
         //std::for_each(myvec.begin(), myvec.end(), addVal(1.0));
     };
-
+    
+    //T -> Type; A -> Allocator
     template<typename T, typename A>
     float deltaMean( std::vector<T,A> const &vec1, std::vector<T,A> const &vec2);
     
-    int getMaxForChannelAND(std::map<std::string, int> inputMap)
-    int getMinForChannelOR(std::map<std::string, int> inputMap)
+    int getMaxForChannelAND(std::map<std::string, float> inputMap);
+    int getMinForChannelOR(std::map<std::string, float> inputMap);
     
     //printers
     void printStringNotFoundMsg(std::string strCallingMethod, std::string strPatternNotFound, std::string strLine, std::string strFilename);
@@ -150,15 +173,15 @@ namespace Timing {
     } //End deltaMean
     
     //Gets the maximum value for two channels (both channels required to be nonzero)
-    int getMaxForChannelAND(std::map<std::string, int> inputMap){
+    int getMaxForChannelAND(std::map<std::string, float> inputMap){
         //Variable Declaration
         int iRetVal;
         
-        std::pair<std::string, int> min = *min_element(inputMap.begin(), inputMap.end(), CompareSecond_Min());
+        std::pair<std::string, float> min = *min_element(inputMap.begin(), inputMap.end(), CompareSecond_Min());
         
         //Require All Elements to be nonzero (i.e. have a signal)
         if ( min.second > 0 ) {
-            std::pair<std::string, int> max = *max_element(inputMap.begin(), inputMap.end(), CompareSecond_Max() );
+            std::pair<std::string, float> max = *max_element(inputMap.begin(), inputMap.end(), CompareSecond_Max() );
             
             //iRetVal = getMaxForChannelAND(inputMap);
             iRetVal = max.second;
@@ -172,10 +195,10 @@ namespace Timing {
     } //End getMaxForChannel
     
     //Gets the minimum value for two channels
-    int getMinForChannelOR(std::map<std::string, int> inputMap){
+    int getMinForChannelOR(std::map<std::string, float> inputMap){
         //Variable Declaration
-        std::map<std::string, int>::iterator iterMap = inputMap.begin();
-        std::map<std::string, int>::iterator iterMapEnd = inputMap.end();
+        std::map<std::string, float>::iterator iterMap = inputMap.begin();
+        std::map<std::string, float>::iterator iterMapEnd = inputMap.end();
         
         while( iterMap != inputMap.end() ){
             if( 0 == (*iterMap).second){
@@ -202,8 +225,8 @@ namespace Timing {
     //Prints the status bits of an input TFile
     void printROOTFileStatus(TFile *file_ROOT){
         std::cout << "Input ROOT File Status:\n";
-        std::cout << "\tIsOpen() = " << file_ROOT->IsOpen() << endl;
-        std::cout << "\tIsZombie() = " << file_ROOT->IsZombie() << endl;
+        std::cout << "\tIsOpen() = " << file_ROOT->IsOpen() << std::endl;
+        std::cout << "\tIsZombie() = " << file_ROOT->IsZombie() << std::endl;
         
         return;
     } //End printROOTFileStatus
@@ -211,10 +234,10 @@ namespace Timing {
     //Prints an error message to the user if a specific pattern (strPatternNotFound) is not found during file I/O
     //Also informs the user which calling method and file the pattern is not found under
     void printStringNotFoundMsg(std::string strCallingMethod, std::string strPatternNotFound, std::string strLine, std::string strFilename){
-        cout<<"String '" << strPatternNotFound << "' Not Found in line:\n";
-        cout<< strLine <<endl;
-        cout<<"Exiting " << strCallingMethod << ", Cross-Check input File:\n";
-        cout<<strFilename<<endl;
+        std::cout<<"String '" << strPatternNotFound << "' Not Found in line:\n";
+        std::cout<< strLine <<std::endl;
+        std::cout<<"Exiting " << strCallingMethod << ", Cross-Check input File:\n";
+        std::cout<<strFilename<<std::endl;
         
         return;
     } //End printStringNotFoundMsg()
@@ -243,14 +266,14 @@ namespace Timing {
         std::string strUserInput;
 
         if (strInputValue.find_first_not_of( "0123456789." ) == std::string::npos) { //Case: only numeric data
-            ret_float =  std::stof(strInput);
+            ret_float =  std::stof(strInputValue);
         } //End Case: only numeric data
         else{ //Case: non numeric data entered
-            std::cout<<"Timing::stofSafe() - Sorry numeric conversion failed\n"
+            std::cout<<"Timing::stofSafe() - Sorry numeric conversion failed\n";
             std::cout<<"\tField = " << strInputField << std::endl;
             std::cout<<"\tValue = " << strInputValue << std::endl;
             std::cout<<"\tNonumeric characters present (sorry scientific notation not supported)\n";
-            std::cout<"\tWould you like to enter a value manually [y/N]?\n";
+            std::cout<<"\tWould you like to enter a value manually [y/N]?\n";
             
             while (!bInputUnderstood) { //Loop requesting manual entry
                 std::cin>>strUserInput;
@@ -292,14 +315,14 @@ namespace Timing {
         std::string strUserInput;
         
         if (strInputValue.find_first_not_of( "0123456789" ) == std::string::npos) { //Case: only numeric data
-            ret_int =  std::stoi(strInput);
+            ret_int =  std::stoi(strInputValue);
         } //End Case: only numeric data
         else{ //Case: non numeric data entered
-            std::cout<<"Timing::stofSafe() - Sorry numeric conversion failed\n"
+            std::cout<<"Timing::stoiSafe() - Sorry numeric conversion failed\n";
             std::cout<<"\tField = " << strInputField << std::endl;
             std::cout<<"\tValue = " << strInputValue << std::endl;
             std::cout<<"\tNonumeric characters present (or maybe you gave a floating point number instead?)\n";
-            std::cout<"\tWould you like to enter a value manually [y/N]?\n";
+            std::cout<<"\tWould you like to enter a value manually [y/N]?\n";
             
             while (!bInputUnderstood) { //Loop requesting manual entry
                 std::cin>>strUserInput;
