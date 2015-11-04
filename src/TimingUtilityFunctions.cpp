@@ -75,15 +75,15 @@ std::istream & Timing::getlineNoSpaces(std::istream & stream, std::string & str)
 //} //End deltaMean
 
 //Gets the maximum value for two channels (both channels required to be nonzero)
-int Timing::getMaxForChannelAND(std::map<std::string, float> inputMap){
+int Timing::getMaxForChannelAND(std::map<std::string, int> inputMap){
     //Variable Declaration
     int iRetVal;
     
-    std::pair<std::string, float> min = *min_element(inputMap.begin(), inputMap.end(), CompareSecond_Min());
+    std::pair<std::string, int> min = *min_element(inputMap.begin(), inputMap.end(), CompareSecond_Min());
     
     //Require All Elements to be nonzero (i.e. have a signal)
     if ( min.second > 0 ) {
-        std::pair<std::string, float> max = *max_element(inputMap.begin(), inputMap.end(), CompareSecond_Max() );
+        std::pair<std::string, int> max = *max_element(inputMap.begin(), inputMap.end(), CompareSecond_Max() );
         
         //iRetVal = getMaxForChannelAND(inputMap);
         iRetVal = max.second;
@@ -97,10 +97,10 @@ int Timing::getMaxForChannelAND(std::map<std::string, float> inputMap){
 } //End getMaxForChannel
 
 //Gets the minimum value for two channels
-int Timing::getMinForChannelOR(std::map<std::string, float> inputMap){
+int Timing::getMinForChannelOR(std::map<std::string, int> inputMap){
     //Variable Declaration
-    std::map<std::string, float>::iterator iterMap = inputMap.begin();
-    std::map<std::string, float>::iterator iterMapEnd = inputMap.end();
+    std::map<std::string, int>::iterator iterMap = inputMap.begin();
+    std::map<std::string, int>::iterator iterMapEnd = inputMap.end();
     
     while( iterMap != inputMap.end() ){
         if( 0 == (*iterMap).second){

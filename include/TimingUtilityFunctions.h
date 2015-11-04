@@ -91,8 +91,8 @@ namespace Timing {
     template<typename T, typename A>
     float deltaMean( std::vector<T,A> const &vec1, std::vector<T,A> const &vec2);
     
-    int getMaxForChannelAND(std::map<std::string, float> inputMap);
-    int getMinForChannelOR(std::map<std::string, float> inputMap);
+    int getMaxForChannelAND(std::map<std::string, int> inputMap);
+    int getMinForChannelOR(std::map<std::string, int> inputMap);
     
     //printers
     void printStringNotFoundMsg(std::string strCallingMethod, std::string strPatternNotFound, std::string strLine, std::string strFilename);
