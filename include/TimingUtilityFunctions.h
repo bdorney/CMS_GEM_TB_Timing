@@ -74,13 +74,13 @@ namespace Timing {
     
     //Can't seem to get the templated form above to work
     struct addVal{
-        float fVal;
+        int fVal;
         
-        addVal(float fAdd){
+        addVal(int fAdd){
             fVal = fAdd;
         }
         
-        void operator()(float &fInput) const{
+        void operator()(int &fInput) const{
             fInput += fVal;
         }
         //usage example:
