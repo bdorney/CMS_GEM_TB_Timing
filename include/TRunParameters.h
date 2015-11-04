@@ -361,7 +361,7 @@ namespace Timing {
         };
         
         //Set Detector Data
-        virtual void setTDCData(std::string strDet_Name, std::vector<float> vec_fData){run.map_det[strDet_Name].vec_fTDC_Data = vec_fData; return;};
+        virtual void setTDCData(std::string strDet_Name, std::vector<int> vec_iData){run.map_det[strDet_Name].vec_iTDC_Data = vec_fData; return;};
         
         virtual void setTDCHistoDet(std::string strDet_Name, TH1F *hInput){
             run.map_det[strDet_Name].timingResults.hTDC_Histo = hInput;
