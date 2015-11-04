@@ -57,8 +57,8 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     }
     
     //Variable Declaration
-    //map<string,int> map_iTDCData;
-    map<string,float> map_fTDCData;
+    map<string,int> map_iTDCData;
+    //map<string,float> map_fTDCData;
     map<string,TF1, map_cmp_str> map_fTDCFits;
     map<string,TH1F, map_cmp_str> map_fTDCHistos;
     
@@ -108,13 +108,13 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     //Get Data for each detector
     //------------------------------------------------------
     //HACK Explanation
-    //Initialize map_fTDCData for each detector
+    //Initialize map_iTDCData for each detector
     //Then we will set the TBranch address for each detector (e.g. TDC Channel)
     //Then we will get the data in the most hacked way imaginable; YEAH ROOT
     
-    //Initialize map_fTDCData for each detector
+    //Initialize map_iTDCData for each detector
     for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Through Detectors
-        map_fTDCData[(*iterDet).first];
+        map_iTDCData[(*iterDet).first];
         
         //NOTE: Changed, we do this below because we use inputs from the histogram to setup the function
         //Form fit for this detector
@@ -136,7 +136,7 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     //  NOTE: Yes it needs to be done in TWO separate loops; yes ROOT is stupid
     for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Through Detectors
         //Set branch address
-        tree_Run->SetBranchAddress( ("TDC_Ch" + getString( ((*iterDet).second).iTDC_Chan ) ).c_str(), &(map_fTDCData[(*iterDet).first]) );
+        tree_Run->SetBranchAddress( ("TDC_Ch" + getString( ((*iterDet).second).iTDC_Chan ) ).c_str(), &(map_iTDCData[(*iterDet).first]) );
     } //End Loop Through Detectors
     
     //Set Axis titles on Correlation histogram
@@ -155,10 +155,10 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
             //  NOTE: this does not mean 0 is the trigger if this correction is made
             //        this moves the trigger time from t=0 to t=analysisSetup.fTDCWinSize
             if (analysisSetup.bInvertTime){ //Case: Invert non-zer times
-                ((*iterDet).second).vec_iTDC_Data.push_back( getInvertedTime( map_fTDCData[(*iterDet).first] ) );
+                ((*iterDet).second).vec_iTDC_Data.push_back( getInvertedTime( map_iTDCData[(*iterDet).first] ) );
             } //End Case: Invert non-zero times
             else{ //Case: Use Raw Times
-                ((*iterDet).second).vec_iTDC_Data.push_back( map_fTDCData[(*iterDet).first] );
+                ((*iterDet).second).vec_iTDC_Data.push_back( map_iTDCData[(*iterDet).first] );
             } //End Case: Use Raw Times
         } //End
     } //End Loop Through Tree
@@ -195,11 +195,11 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
         //Here we are going to loop over the detectors in run.map_det
         //And we will access by index "i" the elements of run.map_det[some_det].vec_iTDC_Data
         //This works since by design run.map_det[some_det].vec_iTDC_Data.size() == tree_Run->GetEntries()
-        //For each i we are going to fill the histograms, and reset the value of map_fTDCData
+        //For each i we are going to fill the histograms, and reset the value of map_iTDCData
         
         for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Over Detectors
-            //Reset the value of the map_fTDCData
-            map_fTDCData[(*iterDet).first] = ((*iterDet).second).vec_iTDC_Data[i];
+            //Reset the value of the map_iTDCData
+            map_iTDCData[(*iterDet).first] = ((*iterDet).second).vec_iTDC_Data[i];
             
             //Fill the Histogram
             if ( ((*iterDet).second).vec_iTDC_Data[i] > 0 ) {
@@ -208,20 +208,20 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
         } //End Loop Over Detectors
         
         //Fill the OR histogram
-        if (getMinForChannelOR(map_fTDCData) > 0){ //Case: Any Detector fired this event
-            hTDC_OR.Fill( getMinForChannelOR(map_fTDCData) );
+        if (getMinForChannelOR(map_iTDCData) > 0){ //Case: Any Detector fired this event
+            hTDC_OR.Fill( getMinForChannelOR(map_iTDCData) );
         } //End Case: Any Detector fired this event
         
         //Fill the AND, DeltaT, and Correlation histograms
-        if (getMaxForChannelAND(map_fTDCData) > 0){
-            hTDC_AND.Fill( getMaxForChannelAND(map_fTDCData) );
+        if (getMaxForChannelAND(map_iTDCData) > 0){
+            hTDC_AND.Fill( getMaxForChannelAND(map_iTDCData) );
             
             //Right now only providing support for the 2 detector case
             //someone wants 3 they can write their own analyzer...
             //Need to use this hack so that deltaT and correlation are always the same
-            if (map_fTDCData.size() == 2) { //Case: Two Detectors
-                hTDC_DeltaT.Fill( map_fTDCData[vec_strMapDetKeyVal[0]] - map_fTDCData[vec_strMapDetKeyVal[1]] );
-                hTDC_Correlation.Fill(map_fTDCData[vec_strMapDetKeyVal[0]], map_fTDCData[vec_strMapDetKeyVal[1]]);
+            if (map_iTDCData.size() == 2) { //Case: Two Detectors
+                hTDC_DeltaT.Fill( map_iTDCData[vec_strMapDetKeyVal[0]] - map_iTDCData[vec_strMapDetKeyVal[1]] );
+                hTDC_Correlation.Fill(map_iTDCData[vec_strMapDetKeyVal[0]], map_iTDCData[vec_strMapDetKeyVal[1]]);
             } //End Case: Two Detectors
         } //End Case: Both Detectors fired this event
     } //End Loop through Events
