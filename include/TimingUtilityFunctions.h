@@ -112,7 +112,7 @@ namespace Timing {
     
     //template method must be defined in the header file
     template<class TConversion>
-    std::string Timing::getString(TConversion input){
+    std::string getString(TConversion input){
         std::stringstream sstream;
         sstream<<input;
         return sstream.str();
