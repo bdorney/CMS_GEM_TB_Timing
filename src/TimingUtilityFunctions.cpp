@@ -334,12 +334,12 @@ std::pair<std::string,std::string> Timing::getParsedLine(std::string strInputLin
 } //End getParsedLine()
 
 //template method must be defined in the header file
-template<class TConversion>
-std::string Timing::getString(TConversion input){
-    std::stringstream sstream;
-    sstream<<input;
-    return sstream.str();
-} //End getString()
+//template<class TConversion>
+//std::string Timing::getString(TConversion input){
+//    std::stringstream sstream;
+//    sstream<<input;
+//    return sstream.str();
+//} //End getString()
 
 //Returns a vector of strings taken from a comma separated list; ignores whitespaces in between elements
 std::vector<std::string> Timing::getCommaSeparatedList(std::string strInput){

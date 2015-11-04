@@ -107,6 +107,17 @@ namespace Timing {
     std::string getString(TConversion input);
     std::vector<std::string> getCommaSeparatedList(std::string strInput);
     
+    //Code Begins for TEMPLATED functions
+    //========================================================================================
+    
+    //template method must be defined in the header file
+    template<class TConversion>
+    std::string Timing::getString(TConversion input){
+        std::stringstream sstream;
+        sstream<<input;
+        return sstream.str();
+    } //End getString()
+
 } //End namespace
 
 #endif
