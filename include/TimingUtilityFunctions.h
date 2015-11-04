@@ -110,6 +110,20 @@ namespace Timing {
     //Code Begins for TEMPLATED functions
     //========================================================================================
     
+    //Math
+    //----------------------------------------------------------------------------------------
+    //T -> Type; A -> Allocator
+    //Determines the difference in mean between two datasets
+    template<typename T, typename A>
+    float Timing::deltaMean( std::vector<T,A> const &vec1, std::vector<T,A> const &vec2){
+        float fMean1 = (std::accumulate(vec1.begin(), vec1.end(), 0.0) / (float) vec1.size() );
+        float fMean2 = (std::accumulate(vec2.begin(), vec2.end(), 0.0) / (float) vec2.size() );
+        
+        return fMean1 - fMean2;
+    } //End deltaMean
+
+    //string manipulation
+    //----------------------------------------------------------------------------------------    
     //template method must be defined in the header file
     template<class TConversion>
     std::string getString(TConversion input){
