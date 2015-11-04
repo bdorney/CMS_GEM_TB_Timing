@@ -177,7 +177,7 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
         treeInput.Branch("iTrig_Mode",&inputRun.iTrig_Mode,"iTrig_Mode/I");
         
         //Detector Parameters
-        for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop over inputRun.map_det
+        for (auto iterDet = inputRunmap_det.begin(); iterDet != treeInput.Branchmap_det.end(); ++iterDet) { //Loop over inputRun.map_det
             //HV
             treeInput.Branch( ((*iterDet).first + "_fDet_Imon").c_str(), &((*iterDet).second).fDet_Imon, ((*iterDet).first + "_fDet_Imon/F").c_str() );
             
@@ -280,7 +280,7 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
              iterFitParam != inputRun.timingResultsAND.map_fTDC_Fit_Param.end();
              ++iterFitParam) {
             //Set Parameters
-            treeInput.Branch( ((*iterFitParam).first + "_AND").c_str() ,&((*iterFitParam).first).second, ( ((*iterFitParam).first) + "_AND/F" ).c_str() );
+            treeInput.Branch( ((*iterFitParam).first + "_AND").c_str(), &((*iterFitParam).second), ( ((*iterFitParam).first) + "_AND/F" ).c_str() );
         }
         
         //TDC Info - Fit Parameters Error
@@ -288,7 +288,7 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
              iterFitParamErr != inputRun.timingResultsAND.map_fTDC_Fit_ParamErr.end();
              ++iterFitParamErr) {
             //Set Parameters
-            treeInput.Branch( ((*iterFitParamErr).first + "_ERR_AND").c_str() ,&((*iterFitParamErr).first).second, ( ((*iterFitParamErr).first) + "_Err_AND/F" ).c_str() );
+            treeInput.Branch( ((*iterFitParamErr).first + "_ERR_AND").c_str() ,&((*iterFitParamErr).second), ( ((*iterFitParamErr).first) + "_Err_AND/F" ).c_str() );
         }
         
         //TDC Info - OR
@@ -305,7 +305,7 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
              iterFitParam != inputRun.timingResultsOR.map_fTDC_Fit_Param.end();
              ++iterFitParam) {
             //Set Parameters
-            treeInput.Branch( ((*iterFitParam).first + "_OR").c_str() ,&((*iterFitParam).first).second, ( ((*iterFitParam).first) + "_OR/F" ).c_str() );
+            treeInput.Branch( ((*iterFitParam).first + "_OR").c_str() ,&((*iterFitParam).second), ( ((*iterFitParam).first) + "_OR/F" ).c_str() );
         }
         
         //TDC Info - Fit Parameters Error
@@ -313,7 +313,7 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
              iterFitParamErr != inputRun.timingResultsOR.map_fTDC_Fit_ParamErr.end();
              ++iterFitParamErr) {
             //Set Parameters
-            treeInput.Branch( ((*iterFitParamErr).first + "_ERR_OR").c_str() ,&((*iterFitParamErr).first).second, ( ((*iterFitParamErr).first) + "_Err_OR/F" ).c_str() );
+            treeInput.Branch( ((*iterFitParamErr).first + "_ERR_OR").c_str() ,&((*iterFitParamErr).second), ( ((*iterFitParamErr).first) + "_Err_OR/F" ).c_str() );
         }
         
         treeInput.Branch("hTDC_DeltaT",&inputRun.hTDC_DeltaT);
@@ -321,11 +321,11 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
     } //End Case: First Run
     
     //Here we are assuming that the user uses the same format for all analyzed events,
-    //e.g. the run.map_det is the same...maybe this is a bad idea but I don't have a better solution just yet
+    //e.g. the treeInput.Branchmap_det is the same...maybe this is a bad idea but I don't have a better solution just yet
     
     //Maybe some relinking above the above is necessary....We'll see when it seg faults...
     
-    treeInput->Fill();
+    treeInput.Fill();
     
     return;
 } //End treeProducerTDC::writeTree()
