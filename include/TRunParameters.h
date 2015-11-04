@@ -123,7 +123,7 @@ namespace Timing {
         
         virtual int getNumDetectors(){ return run.map_det.size(); };
         virtual Detector getDetector(std::string strDet_Name){ return run.map_det[strDet_Name]; };
-        virtual map<std::string, Detector> getDetectors(){ return run.map_det; };
+        virtual std::map<std::string, Detector> getDetectors(){ return run.map_det; };
         
         //Run Methods - These are methods 1 to 100
         //=============================
@@ -343,7 +343,7 @@ namespace Timing {
         
         //virtual void setVFATLatency(int iInput){ run.map_det[strDet_Name].iVFAT_Latency = input; return;};
         
-        virtual void setVFATThresh(std::string strDet_Name, int iInput){ run.map_det[strDet_Name].fVFAT_Thresh = fInput*0.08; return;};
+        virtual void setVFATThresh(std::string strDet_Name, int iInput){ run.map_det[strDet_Name].fVFAT_Thresh = iInput*0.08; return;};
         
         //New Methods are added below pre-existing ones to preserve backwards compatibile numbering
         
@@ -361,7 +361,7 @@ namespace Timing {
         };
         
         //Set Detector Data
-        virtual void setTDCData(std::string strDet_Name, std::vector<int> vec_iData){run.map_det[strDet_Name].vec_iTDC_Data = vec_iData1; return;};
+        virtual void setTDCData(std::string strDet_Name, std::vector<int> vec_iData){run.map_det[strDet_Name].vec_iTDC_Data = vec_iData; return;};
         
         virtual void setTDCHistoDet(std::string strDet_Name, TH1F *hInput){
             run.map_det[strDet_Name].timingResults.hTDC_Histo = hInput;
@@ -393,36 +393,36 @@ namespace Timing {
         //Complex Analysis Histograms - DETECTOR OR
         //=============================
         virtual void setTDCHistoOR(TH1F *hInput){
-            run.timingResultsOR.hTDC_OR = hInput;
-            run.timingResultsOR.fTDC_Histo_OR_Mean = hInput->GetMean();
-            run.timingResultsOR.fTDC_Histo_OR_RMS = hInput->GetRMS();
+            run.timingResultsOR.hTDC_Histo = hInput;
+            run.timingResultsOR.fTDC_Histo_Mean = hInput->GetMean();
+            run.timingResultsOR.fTDC_Histo_RMS = hInput->GetRMS();
             return;
         };
         
         virtual void setTDCHistoORNPks(int iInput){
-            run.timingResultsOR.iTDC_Histo_OR_nPks = iInput;
+            run.timingResultsOR.iTDC_Histo_nPks = iInput;
         };
         
         virtual void setTDCFitOR(TF1 *func_Input, std::vector<std::string> vec_strParamName);
         
-        virtual void setTDCEffOR(float fInput){run.timingResultsOR.fTDC_Eff_OR = fInput; return;};
+        virtual void setTDCEffOR(float fInput){run.timingResultsOR.fTDC_Eff = fInput; return;};
         
         //Complex Analysis Histograms - DETECTOR AND
         //=============================
         virtual void setTDCHistoAND(TH1F *hInput){
-            run.timingResultsAND.hTDC_AND = hInput;
-            run.timingResultsAND.fTDC_Histo_AND_Mean = hInput->GetMean();
-            run.timingResultsAND.fTDC_Histo_AND_RMS = hInput->GetRMS();
+            run.timingResultsAND.hTDC_Histo = hInput;
+            run.timingResultsAND.fTDC_Histo_Mean = hInput->GetMean();
+            run.timingResultsAND.fTDC_Histo_RMS = hInput->GetRMS();
             return;
         };
         
         virtual void setTDCHistoANDNPks(int iInput){
-            run.timingResultsAND.iTDC_Histo_AND_nPks = iInput;
+            run.timingResultsAND.iTDC_Histo_nPks = iInput;
         };
         
         virtual void setTDCFitAND(TF1 *func_Input, std::vector<std::string> vec_strParamName);
         
-        virtual void setTDCEffAND(float fInput){run.timingResultsAND.fTDC_Eff_AND = fInput; return;};
+        virtual void setTDCEffAND(float fInput){run.timingResultsAND.fTDC_Eff = fInput; return;};
         
         //Complex Analysis Histograms - Delta Detector Signal & Correlation
         //=============================
@@ -441,6 +441,6 @@ namespace Timing {
         
     //private:
         //Run run;
-    //};
+    }; //End Class TRunParameters
 } //End namespace Timing
 #endif /* defined(____TRunParameters__) */

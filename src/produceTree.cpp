@@ -23,6 +23,10 @@
 #include "TimingUtilityFunctions.h"
 
 using std::cout;
+using std::endl;
+using std::ifstream;
+using std::string;
+
 using namespace Timing;
 
 struct ProdInfo{
@@ -350,7 +354,8 @@ int main( int argc_, char * argv_[]){
     myProducer.setVerboseModeLUT(pInfo.bVerboseMode_LUT);
     myProducer.setVerboseModePrintRuns(pInfo.bVerboseMode_PrintRuns);
     myProducer.setFilesData(pInfo.strPFN_RunList_PFP);
-    myProducer.writeTree(pInfo.strOutput_Tree, pInfo.strOutput_ROOTFile);
+    //myProducer.writeTree(pInfo.strOutput_Tree, pInfo.strOutput_ROOTFile);
+    myProducer.readRuns(pInfo.strOutput_Tree, pInfo.strOutput_ROOTFile);
     
     return 0;
 } //End main()

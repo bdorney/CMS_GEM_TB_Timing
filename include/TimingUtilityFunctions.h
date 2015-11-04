@@ -202,8 +202,8 @@ namespace Timing {
     //Prints the status bits of an input TFile
     void printROOTFileStatus(TFile *file_ROOT){
         std::cout << "Input ROOT File Status:\n";
-        std::cout << "\tIsOpen() = " << file_InputROOTFile->IsOpen() << endl;
-        std::cout << "\tIsZombie() = " << file_InputROOTFile->IsZombie() << endl;
+        std::cout << "\tIsOpen() = " << file_ROOT->IsOpen() << endl;
+        std::cout << "\tIsZombie() = " << file_ROOT->IsZombie() << endl;
         
         return;
     } //End printROOTFileStatus

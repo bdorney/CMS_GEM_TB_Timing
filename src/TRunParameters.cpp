@@ -221,7 +221,7 @@ void TRunParameters::setTDCFit(std::string strDet_Name, TF1 *func_Input, std::ve
     return;
 };
 
-virtual void setTDCFitOR(TF1 *func_Input, std::vector<std::string> vec_strParamName){
+void TRunParameters::setTDCFitOR(TF1 *func_Input, std::vector<std::string> vec_strParamName){
     run.timingResultsOR.map_fTDC_Fit_Param.clear();
     run.timingResultsOR.map_fTDC_Fit_ParamErr.clear();
     

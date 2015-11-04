@@ -35,7 +35,7 @@ namespace Timing {
 
         float fTDC_Eff;
         
-        float fTDC_Histo_Mean;
+        float fTDC_Histo_Mlean;
         float fTDC_Histo_RMS;
         float iTDC_Histo_nPks;
         
@@ -47,8 +47,8 @@ namespace Timing {
         //float fTDC_Histo_PkPos_2ndMax = -1;
         //float fTDC_Histo_PkPos_3rdMax = -1;
         
-        ROOT::TF1 *func_TDC_Fit;     //User Specified
-        ROOT::TH1F *hTDC_Histo;      //Made from Detector.vec_iTDC_Data
+        TF1 *func_TDC_Fit;     //User Specified
+        TH1F *hTDC_Histo;      //Made from Detector.vec_iTDC_Data
         
         std::map<std::string, float> map_fTDC_Fit_Param; //Fit parameters
         std::map<std::string, float> map_fTDC_Fit_ParamErr; //Error on fit parameters
@@ -208,9 +208,9 @@ namespace Timing {
         TDCAnalysisData timingResultsAND;
         TDCAnalysisData timingResultsOR;
         
-        ROOT::TH1F *hTDC_DeltaT;
+        TH1F *hTDC_DeltaT;
         
-        ROOT::TH2F *hTDC_Correlation;
+        TH2F *hTDC_Correlation;
         
         Run(){
             //Run info

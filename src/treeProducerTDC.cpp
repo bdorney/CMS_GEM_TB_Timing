@@ -24,6 +24,8 @@ using std::vector;
 
 //Constructor
 treeProducerTDC::treeProducerTDC(){
+    b1stRun             = true;
+    
     verbose_IO          = false;
     verbose_LUT         = false;
     verbose_PFN         = false;
@@ -31,7 +33,7 @@ treeProducerTDC::treeProducerTDC(){
     verbose_PrintRuns   = false;
     //verbose_MappedData  = false;
     
-    iRebinFactor    = 0;
+    //iRebinFactor    = 0;
     
     fitOption       = "";
     
@@ -41,14 +43,14 @@ treeProducerTDC::treeProducerTDC(){
     secName_MAN     = "[MAN]";
     
     //Set Default Numeric Deconvolution Model
-    func_NumericDeconvoModel = new TF1("func_NumericDeconvoModel","sqrt( ( ( x-[0] )/ [1] )^2 - [2] )",0.,50.);
-    func_NumericDeconvoModel->SetParameter(0,-2.32171083637621560e-02);
-    func_NumericDeconvoModel->SetParameter(1,1.00091696932777618e+00);
-    func_NumericDeconvoModel->SetParameter(2,5.23366302191208774e+01);
+    //func_NumericDeconvoModel = new TF1("func_NumericDeconvoModel","sqrt( ( ( x-[0] )/ [1] )^2 - [2] )",0.,50.);
+    //func_NumericDeconvoModel->SetParameter(0,-2.32171083637621560e-02);
+    //func_NumericDeconvoModel->SetParameter(1,1.00091696932777618e+00);
+    //func_NumericDeconvoModel->SetParameter(2,5.23366302191208774e+01);
 } //End treeProducerTDC constructor
 
 //Sets the numeric deconvolution model
-void treeProducerTDC::setNumericDeconvoModel(string inputFormula, vector<float> inputParameters){
+/*void treeProducerTDC::setNumericDeconvoModel(string inputFormula, vector<float> inputParameters){
     func_NumericDeconvoModel = new TF1(func_NumericDeconvoModel->GetName(), inputFormula.c_str(),0.,50.);
     
     for (int i=0; i < inputParameters.size(); ++i) {
@@ -56,7 +58,7 @@ void treeProducerTDC::setNumericDeconvoModel(string inputFormula, vector<float> 
     }
     
     return;
-} //End treeProducerTDC::setNumericDeconvoModel()
+}*/ //End treeProducerTDC::setNumericDeconvoModel()
 
 //Set a Parameter to Be Ignored when calling getParsedFileName()
 void treeProducerTDC::setIgnoredParameter(string inputParameter){
@@ -123,6 +125,8 @@ void treeProducerTDC::readRuns(string inputTreeName, string outputDataFile){
         run = runLog.getRun();
         
         writeTree(run,outputTDCTree);
+        
+        if (b1stRun) {b1stRun = false;}
     } //End Loop Over Input File
     
     //Check to see if we had problems while reading the file
@@ -134,7 +138,7 @@ void treeProducerTDC::readRuns(string inputTreeName, string outputDataFile){
     //Write the Tree
     outputTFile->cd();
     //outputTDCTree->Print();
-    outputTDCTree->Write();
+    outputTDCTree.Write();
     
     //Print to the User all the information stored in outputTDCTree
     //if (verbose_PrintRuns) {
@@ -161,175 +165,17 @@ void treeProducerTDC::readRuns(string inputTreeName, string outputDataFile){
 //This should solve the implementation problem of how to load the detectors when it is unknown how many the user will want to analyze!!
 //Just need to sit down and execute the above!!!
 //Write the tree
-void treeProducerTDC::writeTree(string inputTreeName, string outputDataFile){
+void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
     //Variable Declaration
-    Run run;
-    
     string line;
     
-    //Create Output ROOT File
-    //Make TFile first, prevents "memory-resident Tree" problems??
-    TFile *outputTFile = new TFile(outputDataFile.c_str(),"RECREATE",(inputTreeName + "Tree File").c_str() );
-    
-    //Create the TTree
-    TTree *outputTDCTree = new TTree(inputTreeName.c_str(), "Tree of TDC Data");
-    
-    //Make a Dummy Histogram?
-    TH1F *dummyHisto = new TH1F("dummyHisto","",10,0,10);
-    run.hTDC_Histo = dummyHisto;
-    
-    //Make a Dummy TF1?
-    TF1 *dummyFunc = new TF1("dummyFunc","[0]*x",0,100);
-    run.func_Gaus = dummyFunc;
-    run.func_Convo = dummyFunc;
-    
-    //Make Branches
-    //outputTDCTree->Branch("branchname",&ref,"name/Type ");
-    //Run Info
-    outputTDCTree->Branch("iRun",&run.iRun,"iRun/I");
-    outputTDCTree->Branch("iBeam",&run.iBeam_Type,"iBeam/I");
-    outputTDCTree->Branch("iTrig_Mode",&run.iTrig_Mode,"iTrig_Mode/I");
-    outputTDCTree->Branch("fTrig_Delay",&run.fTrig_Delay,"fTrig_Delay/F");
-    
-    outputTDCTree->Branch("fSupermoduleHVSetpoint",&run.fSupermoduleHVSetpoint,"fSupermoduleHVSetpoint/F");
-    
-    outputTDCTree->Branch("iTDC_Chan_Trig",&run.iTDC_Chan_Trig,"iTDC_Chan_Trig/I");
-    
-    //Det Info
-    //outputTDCTree->Branch("iDet_Eta",&run.iDet_Eta,"iDet_Eta/I");
-    //outputTDCTree->Branch("iDet_Phi",&run.iDet_Phi,"iDet_Phi/I");
-    
-    //outputTDCTree->Branch("fDet_Imon",&run.fDet_Imon,"fDet_Imon/F");
-    //outputTDCTree->Branch("fDet_VDrift",&run.fDet_VDrift,"fDet_VDrift/F");
-    //outputTDCTree->Branch("fDet_VG1_Top",&run.fDet_VG1_Top,"fDet_VG1_Top/F");
-    //outputTDCTree->Branch("fDet_VG1_Bot",&run.fDet_VG1_Bot,"fDet_VG1_Bot/F");
-    //outputTDCTree->Branch("fDet_VG2_Top",&run.fDet_VG2_Top,"fDet_VG2_Top/F");
-    //outputTDCTree->Branch("fDet_VG2_Bot",&run.fDet_VG2_Bot,"fDet_VG2_Bot/F");
-    //outputTDCTree->Branch("fDet_VG3_Top",&run.fDet_VG3_Top,"fDet_VG3_Top/F");
-    //outputTDCTree->Branch("fDet_VG3_Bot",&run.fDet_VG3_Bot,"fDet_VG3_Bot/F");
-    
-    //outputTDCTree->Branch("fDet_Gain",&run.fDet_Gain,"fDet_Gain/F");
-    //outputTDCTree->Branch("fDet_Gain_Err",&run.fDet_Gain_Err,"fDet_Gain_Err/F");
-    
-    //outputTDCTree->Branch("fDet_GasFrac_Ar",&run.fDet_GasFrac_Ar,"fDet_GasFrac_Ar/F");
-    //outputTDCTree->Branch("fDet_GasFrac_CO2",&run.fDet_GasFrac_CO2,"fDet_GasFrac_CO2/F");
-    //outputTDCTree->Branch("fDet_GasFrac_CF4",&run.fDet_GasFrac_CF4,"fDet_GasFrac_CF4/F");
-    
-    //VFAT Info
-    //outputTDCTree->Branch("iTURBO_ID",&run.iTURBO_ID,"iTURBO_ID/I");
-    //outputTDCTree->Branch("iVFAT_Pos",&run.iVFAT_Pos,"iVFAT_Pos/I");
-    
-    //outputTDCTree->Branch("strVFAT_ID",&run.strVFAT_ID.c_str(),"strVFAT_Pos/C");
-    
-    //outputTDCTree->Branch("iVFAT_IPreAmpIn",&run.iVFAT_IPreAmpIn,"iVFAT_IPreAmpIn/I");
-    //outputTDCTree->Branch("iVFAT_IPreAmpFeed",&run.iVFAT_IPreAmpFeed,"iVFAT_IPreAmpFeed/I");
-    //outputTDCTree->Branch("iVFAT_IPreAmpOut",&run.iVFAT_IPreAmpOut,"iVFAT_IPreAmpOut/I");
-    
-    //outputTDCTree->Branch("iVFAT_IShaper",&run.iVFAT_IShaper,"iVFAT_IShaper/I");
-    //outputTDCTree->Branch("iVFAT_IShaperFeed",&run.iVFAT_IShaperFeed,"iVFAT_IShaperFeed/I");
-    
-    //outputTDCTree->Branch("iVFAT_IComp",&run.iVFAT_IComp,"iVFAT_IComp/I");
-    
-    //outputTDCTree->Branch("iVFAT_MSPL",&run.iVFAT_MSPL,"iVFAT_MSPL/I");
-    
-    //outputTDCTree->Branch("iVFAT_Latency",&run.iVFAT_Latency,"iVFAT_Latency/I");
-    
-    //outputTDCTree->Branch("fVFAT_Thresh",&run.fVFAT_Thresh,"fVFAT_Thresh/F");
-    
-    //TDC Info
-    //outputTDCTree->Branch("iTDC_CH_Number",&run.iTDC_CH_Number,"iTDC_CH_Number/I");
-    
-    //outputTDCTree->Branch("fTDC_Histo_Mean",&run.fTDC_Histo_Mean,"fTDC_Histo_Mean/F");
-    //outputTDCTree->Branch("fTDC_Histo_RMS",&run.fTDC_Histo_RMS,"fTDC_Histo_RMS/F");
-    //outputTDCTree->Branch("fTDC_Histo_nPks",&run.fTDC_Histo_nPks,"fTDC_Histo_nPks/F");
-    
-    //outputTDCTree->Branch("fTDC_Histo_PkInt_1stMax", &run.fTDC_Histo_PkInt_1stMax,"fTDC_Histo_PkInt_1stMax/F");
-    //outputTDCTree->Branch("fTDC_Histo_PkInt_2ndMax", &run.fTDC_Histo_PkInt_2ndMax,"fTDC_Histo_PkInt_2ndMax/F");
-    //outputTDCTree->Branch("fTDC_Histo_PkInt_3rdMax", &run.fTDC_Histo_PkInt_3rdMax,"fTDC_Histo_PkInt_3rdMax/F");
-    
-    //outputTDCTree->Branch("fTDC_Histo_PkPos_1stMax", &run.fTDC_Histo_PkPos_1stMax,"fTDC_Histo_PkPos_1stMax/F");
-    //outputTDCTree->Branch("fTDC_Histo_PkPos_2ndMax", &run.fTDC_Histo_PkPos_2ndMax,"fTDC_Histo_PkPos_2ndMax/F");
-    //outputTDCTree->Branch("fTDC_Histo_PkPos_3rdMax", &run.fTDC_Histo_PkPos_3rdMax,"fTDC_Histo_PkPos_3rdMax/F");
-    
-    //outputTDCTree->Branch("fTDC_Fit_Amp",&run.fTDC_Fit_Amp,"fTDC_Fit_Amp/F");
-    //outputTDCTree->Branch("fTDC_Fit_Amp_Err",&run.fTDC_Fit_Amp_Err,"fTDC_Fit_Amp_Err/F");
-    //outputTDCTree->Branch("fTDC_Fit_Mean",&run.fTDC_Fit_Mean,"fTDC_Fit_Mean/F");
-    //outputTDCTree->Branch("fTDC_Fit_Mean_Err",&run.fTDC_Fit_Mean_Err,"fTDC_Fit_Mean_Err/F");
-    //outputTDCTree->Branch("fTDC_Fit_Sigma",&run.fTDC_Fit_Sigma,"fTDC_Fit_Sigma/F");
-    //outputTDCTree->Branch("fTDC_Fit_Sigma_Err",&run.fTDC_Fit_Sigma_Err,"fTDC_Fit_Sigma_Err/F");
-    //outputTDCTree->Branch("fTDC_Fit_Chi2",&run.fTDC_Fit_Chi2,"fTDC_Fit_Chi2/F");
-    //outputTDCTree->Branch("fTDC_Fit_NDF",&run.fTDC_Fit_NDF,"fTDC_Fit_NDF/F");
-    
-    
-    //outputTDCTree->Branch("hTDC_Histo","TH1F", &run.hTDC_Histo,32000,0);
-    
-    //Open the Data File
-    //------------------------------------------------------
-    if (verbose_IO) { //Case: User Requested Verbose Error Messages - I/O
-        cout<< "treeProducerTDC::writeTree(): trying to open and read: " << fileName_Data << endl;
-    } //End Case: User Requested Verbose Error Messages - I/O
-    
-    ifstream dataInput( fileName_Data.c_str() );
-    
-    //Check to See if Data File Opened Successfully
-    //------------------------------------------------------
-    if (!dataInput.is_open() && verbose_IO) {
-        perror( ("treeProducerTDC::writeTree(): error while opening file: " + fileName_Data).c_str() );
-        printStreamStatus(dataInput);
-    }
-    
-    //Loop Over data Input File
-    //------------------------------------------------------
-    //Read the file via std::getline().  Obey good coding practice rules:
-    //  -first the I/O operation, then error check, then data processing
-    //  -failbit and badbit prevent data processing, eofbit does not
-    //See: http://gehrcke.de/2011/06/reading-files-in-c-using-ifstream-dealing-correctly-with-badbit-failbit-eofbit-and-perror/
-    while ( getline(dataInput, line) ) {
-        //Set File Names for later operations, use a std::stringstream
-        std::stringstream strStream;
+    if (b1stRun) { //Case: First Run
         
-        strStream<<line;
-        strStream>>fileName_ROOT>>fileName_LUT;
+    } //End Case: First Run
+    else{ //Case: All other runs
         
-        //Does the user want to comment out this run?
-        if (fileName_ROOT.compare(0,1,"#") == 0) continue;
-        
-        //Output action to user, but only if line is not commented out!!!
-        cout<<"treeProducerTDC::writeTree() - Retreiving Line: " << fileName_ROOT << endl;
-        
-        //Create an instance of the Run Parameters and then get specific run info
-        TRunParameters runLog;
-        
-        setRun(fileName_ROOT, fileName_LUT, runLog);
-        
-        run = runLog.getRun();
-        
-        outputTDCTree->Fill();
-    } //End Loop Over Input File
+    } //End Case: All other runs
     
-    //Check to see if we had problems while reading the file
-    if (dataInput.bad() && verbose_IO) {
-        perror( ("treeProducerTDC::writeTree(): error while reading file: " + fileName_Data).c_str() );
-        printStreamStatus(dataInput);
-    }
-    
-    //Write the Tree
-    outputTFile->cd();
-    //outputTDCTree->Print();
-    outputTDCTree->Write();
-    
-    //Print to the User all the information stored in outputTDCTree
-    if (verbose_PrintRuns) {
-        printStoredData(outputTDCTree);
-    }
-    
-    //Close the File
-    //------------------------------------------------------
-    dataInput.close();
-    
-    //Close the Created ROOT File
-    //------------------------------------------------------
-    outputTFile->Close();
     
     return;
 } //End treeProducerTDC::writeTree()
@@ -473,7 +319,7 @@ void treeProducerTDC::printStoredData(TTree *inputTree){
 //  third -> DataType;
 //  fourth -> detector name;
 //  fifth -> method index in TRunParameter
-vector<treeProducerTDC::LUTType> treeProducerTDC::getLookUpTable(string inputROOTFileName, string inputLUTFileName, TRunParameters &runLogger ){
+vector<treeProducerTDC::LUTType> treeProducerTDC::getLookUpTable(string inputROOTFileName, string inputLUTFileName, TRunParameters &runLogger){
     //Variable Declaration
     bool bSec_Auto, bSec_Det, bSec_Man, bExitFlag = false;
     
@@ -488,16 +334,16 @@ vector<treeProducerTDC::LUTType> treeProducerTDC::getLookUpTable(string inputROO
     //Open the Data File
     //------------------------------------------------------
     if (verbose_IO) { //Case: User Requested Verbose Error Messages - I/O
-        cout<< "treeProducerTDC::getLookUpTable(): trying to open and read: " << inputFileName << endl;
+        cout<< "treeProducerTDC::getLookUpTable(): trying to open and read: " << inputLUTFileName << endl;
     } //End Case: User Requested Verbose Error Messages - I/O
     
     //ifstream lutFile;
-    ifstream lutFile(inputFileName.c_str() );
+    ifstream lutFile(inputLUTFileName.c_str() );
     
     //Check to See if Data File Opened Successfully
     //------------------------------------------------------
     if (!lutFile.is_open() && verbose_IO) {
-        perror( ("treeProducerTDC::getLookUpTable(): error while opening file: " + inputFileName).c_str() );
+        perror( ("treeProducerTDC::getLookUpTable(): error while opening file: " + inputLUTFileName).c_str() );
         printStreamStatus(lutFile);
     }
     
@@ -588,17 +434,18 @@ vector<treeProducerTDC::LUTType> treeProducerTDC::getLookUpTable(string inputROO
         } //End Case: Automatic Search
     } //End Loop Over Input File
     if ( lutFile.bad() && verbose_IO) {
-        perror( ("treeProducerTDC::getLookUpTable(): error while reading file: " + inputFileName).c_str() );
+        perror( ("treeProducerTDC::getLookUpTable(): error while reading file: " + inputLUTFileName).c_str() );
         printStreamStatus(lutFile);
     }
     
     //Check to see if minimum parameter input is successful for each detector (i.e. warn user if they fucked up)
-    std::map<string, Timing::Detector, Timing::map_cmp_str> map_detectors = runLogger.getDetectors();
+    //std::map<string, Timing::Detector, Timing::map_cmp_str> map_detectors = runLogger.getDetectors();
+    std::map<string, Timing::Detector> map_detectors = runLogger.getDetectors();
     
     for (auto detIter = map_detectors.begin(); detIter != map_detectors.end(); ++detIter) { //Loop Through Identified Detectors
         //Det Pos Present?
         if ( ((*detIter).second).iDet_Pos < 0 ) { //Case: Detector Position Not Found
-            cout<<"ERROR!!! A DET_POS VALUE WAS NOT FOUND IN "<< inputFileName << " FOR DETECTOR " << ((*detIter).first) << endl;
+            cout<<"ERROR!!! A DET_POS VALUE WAS NOT FOUND IN "<< inputLUTFileName << " FOR DETECTOR " << ((*detIter).first) << endl;
             cout<<"PLEASE SPECIFY A DET_POS VALUE NOW OR EXIT (Ctrl+C)"<<endl;
             
             int userInput;
@@ -609,7 +456,7 @@ vector<treeProducerTDC::LUTType> treeProducerTDC::getLookUpTable(string inputROO
         
         //TDC_CH_Number Present?
         if ( ((*detIter).second).iTDC_Chan < 0 ) { //Case: Detector TDC Chan Not Found
-            cout<<"ERROR!!! A TDC_CH_NUMBER VALUE WAS NOT FOUND IN "<< inputFileName << " FOR DETECTOR " << ((*detIter).first) << endl;
+            cout<<"ERROR!!! A TDC_CH_NUMBER VALUE WAS NOT FOUND IN "<< inputLUTFileName << " FOR DETECTOR " << ((*detIter).first) << endl;
             cout<<"PLEASE SPECIFY A TDC_CH_NUMBER VALUE NOW OR EXIT (Ctrl+C)"<<endl;
             
             int userInput;

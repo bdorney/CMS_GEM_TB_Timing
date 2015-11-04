@@ -11,6 +11,7 @@
 //C++ includes
 using std::cout;
 using std::endl;
+using std::ifstream;
 using std::map;
 using std::pair;
 using std::string;
@@ -30,7 +31,7 @@ TimingRunAnalyzer::TimingRunAnalyzer(){
     
     fTDCResolution          = 0.3;  //300 picoseconds for a 1200ns acquisition window
     
-    fStream_Log.open("logs/log_analyzer.txt", ios::out);    //Should overwrite the file
+    fStream_Log.open("logs/log_analyzer.txt", std::ios::out);    //Should overwrite the file
     
     strSecBegin_ANAL= "BEGIN_ANALYSIS_INFO";
     strSecBegin_AND = "BEGIN_AND_INFO";
@@ -56,7 +57,8 @@ void TimingRunAnalyzer::analyzeRun(){
     }
     
     //Variable Declaration
-    map<string,int> map_fTDCData;
+    //map<string,int> map_iTDCData;
+    map<string,float> map_fTDCData;
     map<string,TF1, map_cmp_str> map_fTDCFits;
     map<string,TH1F, map_cmp_str> map_fTDCHistos;
     
@@ -71,8 +73,6 @@ void TimingRunAnalyzer::analyzeRun(){
     TH2F hTDC_Correlation( ("hTDC_Corr_R" + getString(run.iRun) ).c_str(),"Correlation",analysisSetup.fTDCWinSize, 0., analysisSetup.fTDCWinSize,analysisSetup.fTDCWinSize, 0., analysisSetup.fTDCWinSize );
     TH1F hTDC_OR = getHistogram( analysisSetup.setupOR );
     
-    TSpectrum *timingSpec = new TSpectrum();
-    
     TTree *tree_Run;
     
     vector<string> vec_strMapDetKeyVal; //List of detector names for random access to the map...
@@ -83,19 +83,19 @@ void TimingRunAnalyzer::analyzeRun(){
     
     //Open this run's root file
     //------------------------------------------------------
-    TFile *file_ROOT_Run = new TFile(run.strRun_Name.c_str(),"READ","",1);
+    file_ROOT_Run = new TFile(run.strRunName.c_str(),"READ","",1);
     
     //Check to see if data file opened successfully, if so load the tree
     //------------------------------------------------------
     if ( !file_ROOT_Run->IsOpen() || file_ROOT_Run->IsZombie() ) { //Case: failed to load ROOT file
-        perror( ("TimingRunAnalyzer::analyze() - error while opening file: " + run.strRun_Name ).c_str() );
+        perror( ("TimingRunAnalyzer::analyze() - error while opening file: " + run.strRunName ).c_str() );
         printROOTFileStatus(file_ROOT_Run);
         std::cout << "Exiting!!!\n";
         
         return;
     } //End Case: failed to load ROOT file
     
-    TTree *tree_Run = (TTree*) file_ROOT_Run->Get( run.strTreeName_Run.c_str() );
+    tree_Run = (TTree*) file_ROOT_Run->Get( run.strTreeName_Run.c_str() );
     
     if ( nullptr == tree_Run ) { //Case: failed to load TTree
         std::cout<<"TimingRunAnalyzer::analyze() - error while fetching: " << run.strTreeName_Run << endl;
@@ -136,13 +136,13 @@ void TimingRunAnalyzer::analyzeRun(){
     //  NOTE: Yes it needs to be done in TWO separate loops; yes ROOT is stupid
     for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Through Detectors
         //Set branch address
-        tree_Input->SetBranchAddress( ("TDC_Ch" + getString( ((*iterDet).second).iTDC_Chan ) ).c_str(), &(map_fTDCData[map_fTDCData[(*iterDet).first]]) );
+        tree_Run->SetBranchAddress( ("TDC_Ch" + getString( ((*iterDet).second).iTDC_Chan ) ).c_str(), &(map_fTDCData[(*iterDet).first]) );
     } //End Loop Through Detectors
     
     //Set Axis titles on Correlation histogram
     if ( vec_strMapDetKeyVal.size() > 1 ){
-        hTDC_Correlation.SetXTitle( vec_strMapDetKeyVal[0] );
-        hTDC_Correlation.SetYTitle( vec_strMapDetKeyVal[1] );
+        hTDC_Correlation.SetXTitle( vec_strMapDetKeyVal[0].c_str() );
+        hTDC_Correlation.SetYTitle( vec_strMapDetKeyVal[1].c_str() );
     }
     
     //Get Data event-by-event from individual channels and nonzero invert times if requested
@@ -155,10 +155,10 @@ void TimingRunAnalyzer::analyzeRun(){
             //  NOTE: this does not mean 0 is the trigger if this correction is made
             //        this moves the trigger time from t=0 to t=analysisSetup.fTDCWinSize
             if (analysisSetup.bInvertTime){ //Case: Invert non-zer times
-                ((*iterDet).second).vec_iTDC_Data.push_back( getInvertedTime( map_fTDCData[(*iterDet).first] ) );
+                ((*iterDet).second).vec_fTDC_Data.push_back( getInvertedTime( map_fTDCData[(*iterDet).first] ) );
             } //End Case: Invert non-zero times
             else{ //Case: Use Raw Times
-                ((*iterDet).second).vec_iTDC_Data.push_back( map_fTDCData[(*iterDet).first] );
+                ((*iterDet).second).vec_fTDC_Data.push_back( map_fTDCData[(*iterDet).first] );
             } //End Case: Use Raw Times
         } //End
     } //End Loop Through Tree
@@ -174,12 +174,12 @@ void TimingRunAnalyzer::analyzeRun(){
             //Skip the first element, it is stored above (maybe there's a better way to do this)
             if (run.map_det.begin() == iterDet) continue;
             
-            fOffset = deltaMean( ((*detMapBegin).second).vec_iTDC_Data, ((*iterDet).second).vec_iTDC_Data );
+            fOffset = deltaMean( ((*detMapBegin).second).vec_fTDC_Data, ((*iterDet).second).vec_fTDC_Data );
             
             if (fOffset > fTDCResolution) { //Case: offset greater than TDC Resolution
                 //Won't work, fOffset is not a "const float"
-                //transform(((*iterDet).second).vec_iTDC_Data.begin(), ((*iterDet).second).vec_iTDC_Data.end(), ((*iterDet).second).vec_iTDC_Data.begin(), std::bind2nd(std::plus<float>(), fOffset)  )
-                std::for_each(((*iterDet).second).vec_iTDC_Data.begin(), ((*iterDet).second).vec_iTDC_Data.end(), Timing::AddVal(fOffset) );
+                //transform(((*iterDet).second).vec_fTDC_Data.begin(), ((*iterDet).second).vec_fTDC_Data.end(), ((*iterDet).second).vec_fTDC_Data.begin(), std::bind2nd(std::plus<float>(), fOffset)  )
+                std::for_each(((*iterDet).second).vec_fTDC_Data.begin(), ((*iterDet).second).vec_fTDC_Data.end(), Timing::addVal(fOffset) );
             } //End Case: offset greater than TDC Resolution
         } //End Loop Over Detectors
     } //End Case: Correct for Offsets in Arrival Time
@@ -189,39 +189,39 @@ void TimingRunAnalyzer::analyzeRun(){
     //Fill Histograms
     //------------------------------------------------------
     //Use the tree again to get the number of events without a hassle
-    //  NOTE we are not looping through the tree data; but the vector data in the run.map_det[some_det].vec_iTDC_Data
+    //  NOTE we are not looping through the tree data; but the vector data in the run.map_det[some_det].vec_fTDC_Data
     for (int i=0; i < tree_Run->GetEntries(); ++i) { //Loop through Events
         //Fill individual histograms
         //Here we are going to loop over the detectors in run.map_det
-        //And we will access by index "i" the elements of run.map_det[some_det].vec_iTDC_Data
-        //This works since by design run.map_det[some_det].vec_iTDC_Data.size() == tree_Run->GetEntries()
+        //And we will access by index "i" the elements of run.map_det[some_det].vec_fTDC_Data
+        //This works since by design run.map_det[some_det].vec_fTDC_Data.size() == tree_Run->GetEntries()
         //For each i we are going to fill the histograms, and reset the value of map_fTDCData
         
         for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Over Detectors
             //Reset the value of the map_fTDCData
-            map_fTDCData[(*iterDet).first] = ((*iterDet).second).vec_iTDC_Data[i];
+            map_fTDCData[(*iterDet).first] = ((*iterDet).second).vec_fTDC_Data[i];
             
             //Fill the Histogram
-            if ( ((*iterDet).second).vec_iTDC_Data[i] > 0 ) {
-                map_fTDCHistos[((*iterDet).second)]->Fill( ((*iterDet).second).vec_iTDC_Data[i] );
+            if ( ((*iterDet).second).vec_fTDC_Data[i] > 0 ) {
+                map_fTDCHistos[((*iterDet).first)].Fill( ((*iterDet).second).vec_fTDC_Data[i] );
             } //End Fill Histogram
         } //End Loop Over Detectors
         
         //Fill the OR histogram
         if (getMinForChannelOR(map_fTDCData) > 0){ //Case: Any Detector fired this event
-            hTDC_OR->Fill( getMinForChannelOR(map_fTDCData) );
+            hTDC_OR.Fill( getMinForChannelOR(map_fTDCData) );
         } //End Case: Any Detector fired this event
         
         //Fill the AND, DeltaT, and Correlation histograms
-        if (getMaxChannelAND(map_fTDCData) > 0){
-            hTDC_AND->Fill( getMaxChannelAND(map_fTDCData) );
+        if (getMaxForChannelAND(map_fTDCData) > 0){
+            hTDC_AND.Fill( getMaxForChannelAND(map_fTDCData) );
             
             //Right now only providing support for the 2 detector case
             //someone wants 3 they can write their own analyzer...
             //Need to use this hack so that deltaT and correlation are always the same
             if (map_fTDCData.size() == 2) { //Case: Two Detectors
-                hTDC_DeltaT->Fill( map_fTDCData[vec_strMapDetKeyVal[0]] - map_fTDCData[vec_strMapDetKeyVal[1]] );
-                hTDC_Correlation->Fill(map_fTDCData[vec_strMapDetKeyVal[0]], map_fTDCData[vec_strMapDetKeyVal[1]]);
+                hTDC_DeltaT.Fill( map_fTDCData[vec_strMapDetKeyVal[0]] - map_fTDCData[vec_strMapDetKeyVal[1]] );
+                hTDC_Correlation.Fill(map_fTDCData[vec_strMapDetKeyVal[0]], map_fTDCData[vec_strMapDetKeyVal[1]]);
             } //End Case: Two Detectors
         } //End Case: Both Detectors fired this event
     } //End Loop through Events
@@ -250,7 +250,7 @@ void TimingRunAnalyzer::analyzeRun(){
             fitHistogram( analysisSetup.map_DetSetup[(*iterDet).first], map_fTDCHistos[(*iterDet).first], map_fTDCFits[(*iterDet).first] );
             
             //Store the performance data
-            setPerformanceData( ((*iterDet).second).timingResults, map_fTDCFits[(*iterDet).first] );
+            setPerformanceData( ((*iterDet).second).timingResults, map_fTDCFits[(*iterDet).first], analysisSetup.map_DetSetup[(*iterDet).first] );
         } //End Loop Through Detectors
         
         //Initialize AND & OR fits
@@ -262,8 +262,8 @@ void TimingRunAnalyzer::analyzeRun(){
         fitHistogram(analysisSetup.setupOR, hTDC_OR, func_TDC_Fit_OR);
         
         //Store the performance data for the AND & OR
-        setPerformanceData( run.timingResultsAND, func_TDC_Fit_AND );
-        setPerformanceData( run.timingResultsOR, func_TDC_Fit_OR );
+        setPerformanceData( run.timingResultsAND, func_TDC_Fit_AND, analysisSetup.setupAND );
+        setPerformanceData( run.timingResultsOR, func_TDC_Fit_OR, analysisSetup.setupOR );
     } //End Case: Async Trigger Mode
     else if ( 1 == run.iTrig_Mode) { //Case: Sync Trigger Mode
         //Blank for now
@@ -332,7 +332,7 @@ void TimingRunAnalyzer::analyzeRun(){
     
     //Close the file and delete the tree
     //------------------------------------------------------
-    file_ROOT_Run.Close();
+    file_ROOT_Run->Close();
     
     delete tree_Run;
     
@@ -347,11 +347,11 @@ TF1 TimingRunAnalyzer::getFunction(HistoSetup &setupHisto, TH1F & hInput){
     
     //Append the run number to the function name
     if( bRunSet ){
-        ret_Func.SetName( ( setupHisto.strFit_Name.c_str() + "_R" + getString(run.iRun) ).c_str() );
+        ret_Func.SetName( ( setupHisto.strFit_Name + "_R" + getString(run.iRun) ).c_str() );
     }
     else{
         //In principle the run should always be set before this is called, but YOLO errors?
-        ret_Func.SetName( ( setupHisto.strFit_Name.c_str() + "_R0" ).c_str() );
+        ret_Func.SetName( ( setupHisto.strFit_Name + "_R0" ).c_str() );
     }
     
     //Set Fit Parameters
@@ -362,22 +362,22 @@ TF1 TimingRunAnalyzer::getFunction(HistoSetup &setupHisto, TH1F & hInput){
         //AMPLITUDE, MEAN, SIGMA
         //We assume the user has correctly matched the indices of setupHisto.vec_strFit_ParamMeaning and setupHisto.vec_strFit_ParamIGuess to the formula given in setupHisto.strFit_Formula
         for (int i=0; i<setupHisto.vec_strFit_ParamMeaning.size(); ++i) {
-            if ( 0 == setupHisto.Fit_Param_IGuess[i].compare("AMPLITUDE") ||
-                 0 == setupHisto.Fit_Param_IGuess[i].compare("MEAN") ||
-                 0 == setupHisto.Fit_Param_IGuess[i].compare("SIGMA")  ) {
+            if ( 0 == setupHisto.vec_strFit_ParamIGuess[i].compare("AMPLITUDE") ||
+                 0 == setupHisto.vec_strFit_ParamIGuess[i].compare("MEAN") ||
+                 0 == setupHisto.vec_strFit_ParamIGuess[i].compare("SIGMA")  ) {
                 
-                if (0 == setupHisto.Fit_Param_IGuess[i].compare("AMPLITUDE") ) {
+                if (0 == setupHisto.vec_strFit_ParamIGuess[i].compare("AMPLITUDE") ) {
                     ret_Func.SetParameter(i, hInput.GetBinContent( hInput.GetMaximumBin() ) );
                 }
-                else if (0 == setupHisto.Fit_Param_IGuess[i].compare("MEAN") ) {
+                else if (0 == setupHisto.vec_strFit_ParamIGuess[i].compare("MEAN") ) {
                     ret_Func.SetParameter(i, hInput.GetMean() );
                 }
-                else if (0 == setupHisto.Fit_Param_IGuess[i].compare("SIGMA") ) {
+                else if (0 == setupHisto.vec_strFit_ParamIGuess[i].compare("SIGMA") ) {
                     ret_Func.SetParameter(i, hInput.GetRMS() );
                 }
             } //End Case: automatic assignment from input histogram
             else{ //Case: manual assignment
-                ret_Func.SetParameter(i, stofSafe( setupHisto.Fit_Param_IGuess[i] ) );
+                ret_Func.SetParameter(i, stofSafe("Fit_Param_IGuess", setupHisto.vec_strFit_ParamIGuess[i] ) );
             } //End Case: manual assignment
         } //End Loop over parameters
     } //End Case: equal number of inputs, containers (should be) linked!!!
@@ -388,13 +388,13 @@ TF1 TimingRunAnalyzer::getFunction(HistoSetup &setupHisto, TH1F & hInput){
         
         cout<<"\tFit_Param_Map (Parameter Meaning) Given:\n\t\t";
         for (int i = 0; i < setupHisto.vec_strFit_ParamMeaning.size(); ++i) {
-            cout<<setupHisto.vec_strFit_ParamMeaning<<"\t";
+            cout<<setupHisto.vec_strFit_ParamMeaning[i]<<"\t";
         }
         cout<<endl;
         
-        cout<<"tFit_Param_IGuess (Parameter Initial Guess) Given:\n\t\t"
+        cout<<"tFit_Param_IGuess (Parameter Initial Guess) Given:\n\t\t";
         for (int i = 0; i < setupHisto.vec_strFit_ParamIGuess.size(); ++i) {
-            cout<<setupHisto.vec_strFit_ParamIGuess<<"\t";
+            cout<<setupHisto.vec_strFit_ParamIGuess[i]<<"\t";
         }
         cout<<endl;
         cout<<"\tParameters not linked!!! Please cross check input analysis config file!!!\n";
@@ -411,11 +411,11 @@ TH1F TimingRunAnalyzer::getHistogram(HistoSetup &setupHisto){
     
     //Append the run number to the histogram name
     if( bRunSet ){
-        ret_Histo.SetName( ( setupHisto.strHisto_Name.c_str() + "_R" + getString(run.iRun) ).c_str() );
+        ret_Histo.SetName( ( setupHisto.strHisto_Name + "_R" + getString(run.iRun) ).c_str() );
     }
     else{
         //In principle the run should always be set before this is called, but YOLO errors?
-        ret_Histo.SetName( ( setupHisto.strHisto_Name.c_str() + "_R0" ).c_str() );
+        ret_Histo.SetName( ( setupHisto.strHisto_Name + "_R0" ).c_str() );
     }
     
     ret_Histo.SetXTitle( setupHisto.strHisto_Title_X.c_str() );
@@ -450,7 +450,7 @@ void TimingRunAnalyzer::setAnalysisConfig(string strInputFile){
     
     //Check to See if Data File Opened Successfully
     //------------------------------------------------------
-    if (!fSetup.is_open() && bVerboseMode_IO) {
+    if (!fStream.is_open() && bVerboseMode_IO) {
         perror( ("TimingRunAnalyzer::setAnalysisConfig(): error while opening file: " + strInputFile).c_str() );
         printStreamStatus(fStream);
     }
@@ -583,9 +583,9 @@ void TimingRunAnalyzer::setAnalysisConfig(string strInputFile){
     } //End Loop Over Input File
     
     //Check to see if we had problems while reading the file
-    if (fSetup.bad() && bVerboseMode_IO) {
-        perror( ("TimingRunAnalyzer::setAnalysisConfig(): error while reading file: " + fileName_Data).c_str() );
-        printStreamStatus(dataInput);
+    if (fStream.bad() && bVerboseMode_IO) {
+        perror( ("TimingRunAnalyzer::setAnalysisConfig(): error while reading file: " + strInputFile).c_str() );
+        printStreamStatus(fStream);
     }
     
 } //End TimingRunAnalyzer::setAnalysisConfig()
@@ -608,7 +608,7 @@ void TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::ifstream &
         if ( 0 == strLine.compare(0,1,"#") ) continue;
         
         //Has this section ended?
-        if ( 0 == line.compare(strSecEnd_AND) || 0 == line.compare(strSecEnd_DET) || 0 == line.compare(strSecEnd_OR) ) break;
+        if ( 0 == strLine.compare(strSecEnd_AND) || 0 == strLine.compare(strSecEnd_DET) || 0 == strLine.compare(strSecEnd_OR) ) break;
         
         //Get Parameter Pairing
         pair_strParam = Timing::getParsedLine(strLine, bExitSuccess);
@@ -656,7 +656,7 @@ void TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::ifstream &
                     
                     //Output to User
                     cout<<"TimingRunAnalyzer::setAnalysisConfig() - Sorry I was expecting a comma separated list of 2 numbers for: " << pair_strParam.first << endl;
-                    cout<<"\tRight Now I have set:\n"
+                    cout<<"\tRight Now I have set:\n";
                     cout<<"\t\tLower Histo Value = "<<setupHisto.fHisto_xLower<<endl;
                     cout<<"\t\tUpper Histo Value"<<setupHisto.fHisto_xUpper<<endl;
                 } //End Case: Not enough numbers
@@ -678,13 +678,13 @@ void TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::ifstream &
                 }
             }
             else if( 0 == pair_strParam.first.compare("FIT_FORMULA") ){
-                setupHisto.strFit_Formula = pair_strParam.second
+                setupHisto.strFit_Formula = pair_strParam.second;
             }
             else if( 0 == pair_strParam.first.compare("FIT_NAME") ){
-                setupHisto.strFit_Name = pair_strParam.second
+                setupHisto.strFit_Name = pair_strParam.second;
             }
             else if( 0 == pair_strParam.first.compare("FIT_OPTION") ){
-                setupHisto.strFit_Option = pair_strParam.second
+                setupHisto.strFit_Option = pair_strParam.second;
             }
             else if( 0 == pair_strParam.first.compare("FIT_PARAM_MAP") ){
                 setupHisto.vec_strFit_ParamMeaning = getCommaSeparatedList(pair_strParam.second);
@@ -714,9 +714,12 @@ void TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::ifstream &
 //  ->timingResults struct containing detector & fit data
 //  ->hInput Detector Histogram
 void TimingRunAnalyzer::setPerformanceData(TDCAnalysisData &inputTimingResults, TH1F &hInput){
+    //Variable Declaration
+    TSpectrum *timingSpec = new TSpectrum();
+    
     //Get Number of peaks identified
     //Determine the number of Peaks in the Histogram (this may require additional user inputs...we'll see)
-    inputTimingResults.iTDC_Histo_nPks = timingSpec->Search( hInput,3,"goff",0.001);
+    inputTimingResults.iTDC_Histo_nPks = timingSpec->Search( &hInput,3,"goff",0.001);
     
     //If there is one peak, get it's position and center histogram on said peak
     //The record the mean and RMS of the histogram
@@ -727,12 +730,12 @@ void TimingRunAnalyzer::setPerformanceData(TDCAnalysisData &inputTimingResults, 
         
         //Ideally dHistoPeakPos_X[0] == hInput.GetMean()
         //May need to implement a background subtraction method
-        inputTimingResults.iTDC_Histo_Mean = hInput.GetMean();
-        inputTimingResults.iTDC_Histo_RMS  = hInput.GetRMS();
+        inputTimingResults.fTDC_Histo_Mean = hInput.GetMean();
+        inputTimingResults.fTDC_Histo_RMS  = hInput.GetRMS();
     } //End Case: Peak Found
     else{ //Case: No Peak Found
-        inputTimingResults.iTDC_Histo_Mean = -1;
-        inputTimingResults.iTDC_Histo_RMS  = -1;
+        inputTimingResults.fTDC_Histo_Mean = -1;
+        inputTimingResults.fTDC_Histo_RMS  = -1;
     } //End Case: No Peak Found
     
     //Set the Histogram
@@ -744,16 +747,16 @@ void TimingRunAnalyzer::setPerformanceData(TDCAnalysisData &inputTimingResults, 
  //Set Detector Data after all events of a given run have been analyzed
  //  ->timingResults struct containing detector & fit data
  //  ->funcInput fit of detector histogram
-void TimingRunAnalyzer::setPerformanceData(TDCAnalysisData &inputTimingResults, TF1 &funcInput, AnalysisSetup &setupHisto){
+void TimingRunAnalyzer::setPerformanceData(TDCAnalysisData &inputTimingResults, TF1 &funcInput, HistoSetup &setupHisto){
     
     //Set the normalized Chi2 value
     inputTimingResults.fTDC_Fit_Chi2= funcInput.GetChisquare();
-    inputTimingResults.fTDC_FitNDF  = funcInput.GetNDF();
+    inputTimingResults.fTDC_Fit_NDF  = funcInput.GetNDF();
     
     //Set the Parameters & Their Error
     for (int i = 0; i < setupHisto.vec_strFit_ParamMeaning.size(); ++i) { //Loop Over Function Parameters
-        inputTimingResults.map_fTDC_Fit_Param[setupHisto.vec_strFit_ParamMeaning[i]] = funcInput->GetParameter(i);
-        inputTimingResults.map_fTDC_Fit_ParamErr[setupHisto.vec_strFit_ParamMeaning[i]] = funcInput->GetParError(i);
+        inputTimingResults.map_fTDC_Fit_Param[setupHisto.vec_strFit_ParamMeaning[i]] = funcInput.GetParameter(i);
+        inputTimingResults.map_fTDC_Fit_ParamErr[setupHisto.vec_strFit_ParamMeaning[i]] = funcInput.GetParError(i);
     } //End Loop Over Function Parameters
     
     //Set the Function
