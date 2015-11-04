@@ -1,6 +1,6 @@
 
-#ifndef ____TimingUtility__
-#define ____TimingUtility__
+#ifndef ____TimingUtilityFunctions__
+#define ____TimingUtilityFunctions__
 
 //C++ Includes
 #include <algorithm>
@@ -48,10 +48,10 @@ namespace Timing {
     //Function Declaration
     //========================================================================================
     //boolean
-    bool convert2bool(std::string str, bool &bExitSuccess);
+    //bool convert2bool(std::string str, bool &bExitSuccess);
     
     //File I/O
-    std::istream & getlineNoSpaces(std::istream & stream, std::string & str);
+    //std::istream & getlineNoSpaces(std::istream & stream, std::string & str);
     
     //Math
     //Addition method
@@ -88,24 +88,24 @@ namespace Timing {
     };
     
     //T -> Type; A -> Allocator
-    template<typename T, typename A>
-    float deltaMean( std::vector<T,A> const &vec1, std::vector<T,A> const &vec2);
+    //template<typename T, typename A>
+    //float deltaMean( std::vector<T,A> const &vec1, std::vector<T,A> const &vec2);
     
-    int getMaxForChannelAND(std::map<std::string, float> inputMap);
-    int getMinForChannelOR(std::map<std::string, float> inputMap);
+    //int getMaxForChannelAND(std::map<std::string, float> inputMap);
+    //int getMinForChannelOR(std::map<std::string, float> inputMap);
     
     //printers
-    void printStringNotFoundMsg(std::string strCallingMethod, std::string strPatternNotFound, std::string strLine, std::string strFilename);
-    void printROOTFileStatus(TFile *file_ROOT);
-    void printStreamStatus(std::ifstream &inputStream);
+    //void printStringNotFoundMsg(std::string strCallingMethod, std::string strPatternNotFound, std::string strLine, std::string strFilename);
+    //void printROOTFileStatus(TFile *file_ROOT);
+    //void printStreamStatus(std::ifstream &inputStream);
     
     //string manipulation
-    float stofSafe(std::string strInputField, std::string strInputValue);
-    int stoiSafe(std::string strInputField, std::string strInputValue);
-    std::pair<std::string,std::string> getParsedLine(std::string strInputLine, bool &bExitSuccess);
-    template<class TConversion>
-    std::string getString(TConversion input);
-    std::vector<std::string> getCommaSeparatedList(std::string strInput);
+    //float stofSafe(std::string strInputField, std::string strInputValue);
+    //int stoiSafe(std::string strInputField, std::string strInputValue);
+    //std::pair<std::string,std::string> getParsedLine(std::string strInputLine, bool &bExitSuccess);
+    //template<class TConversion>
+    //std::string getString(TConversion input);
+    //std::vector<std::string> getCommaSeparatedList(std::string strInput);
     
     
     //Function Code Begins
