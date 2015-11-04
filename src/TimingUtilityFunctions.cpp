@@ -344,19 +344,31 @@ std::pair<std::string,std::string> Timing::getParsedLine(std::string strInputLin
 //Returns a vector of strings taken from a comma separated list; ignores whitespaces in between elements
 std::vector<std::string> Timing::getCommaSeparatedList(std::string strInput){
     //Variable Declaration
-    std::stringstream sstream(strInput);
+    std::stringstream sstream;
     
     std::string strEntry;
     
     std::vector<std::string> vec_retStrings;
     
-    while (sstream >> strEntry){ //Loop through the string
+    //Remove all white spaces and tabs
+    if( !(strInput.find(' ') == std::string::npos) ) strInput.erase(remove(strInput.begin(), strInput.end(), ' '), strInput.end() );
+    if( !(strInput.find('\t')== std::string::npos) ) strInput.erase(remove(strInput.begin(), strInput.end(), '\t'), strInput.end() ); 
+
+    sstream<<strInput;
+
+    //Get Entries
+    while ( std::getline(sstream, strEntry, ',') ){ //Loop through the string
         vec_retStrings.push_back(strEntry);
         
-        if (sstream.peek() == ',' || sstream.peek() == ' ' || sstream.peek() == '\t')
-            sstream.ignore();
+	//Debugging
+        std::cout<<strEntry<<"|";
+
+        //if (sstream.peek() == ',' || sstream.peek() == ' ' || sstream.peek() == '\t') sstream.ignore();
     } //End loop through the string
     
+    //Debugging
+    std::cout<<std::endl;
+
     return vec_retStrings;
 } //End getCommaSeparatedList()
 

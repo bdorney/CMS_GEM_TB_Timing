@@ -33,15 +33,15 @@ Timing::TimingRunAnalyzer::TimingRunAnalyzer(){
     
     fStream_Log.open("logs/log_analyzer.txt", std::ios::out);    //Should overwrite the file
     
-    strSecBegin_ANAL= "BEGIN_ANALYSIS_INFO";
-    strSecBegin_AND = "BEGIN_AND_INFO";
-    strSecBegin_DET = "BEGIN_DETECTOR_INFO";
-    strSecBegin_OR  = "BEGIN_OR_INFO";
+    strSecBegin_ANAL= "[BEGIN_ANALYSIS_INFO]";
+    strSecBegin_AND = "[BEGIN_AND_INFO]";
+    strSecBegin_DET = "[BEGIN_DETECTOR_INFO]";
+    strSecBegin_OR  = "[BEGIN_OR_INFO]";
     
-    strSecEnd_ANAL  = "END_ANALYSIS_INFO";
-    strSecEnd_AND   = "END_AND_INFO";
-    strSecEnd_DET   = "END_DETECTOR_INFO";
-    strSecEnd_OR    = "END_OR_INFO";
+    strSecEnd_ANAL  = "[END_ANALYSIS_INFO]";
+    strSecEnd_AND   = "[END_AND_INFO]";
+    strSecEnd_DET   = "[END_DETECTOR_INFO]";
+    strSecEnd_OR    = "[END_OR_INFO]";
 } //End Constructor Timing::TimingRunAnalyzer::TimingRunAnalyzer()
 
 //Analyze method, this is the central access point for the analysis
@@ -375,20 +375,24 @@ TF1 Timing::TimingRunAnalyzer::getFunction(HistoSetup &setupHisto, TH1F & hInput
         //AMPLITUDE, MEAN, SIGMA
         //We assume the user has correctly matched the indices of setupHisto.vec_strFit_ParamMeaning and setupHisto.vec_strFit_ParamIGuess to the formula given in setupHisto.strFit_Formula
         for (int i=0; i<setupHisto.vec_strFit_ParamMeaning.size(); ++i) {
-            if ( 0 == setupHisto.vec_strFit_ParamIGuess[i].compare("AMPLITUDE") ||
-                 0 == setupHisto.vec_strFit_ParamIGuess[i].compare("MEAN") ||
-                 0 == setupHisto.vec_strFit_ParamIGuess[i].compare("SIGMA")  ) {
-                
-                if (0 == setupHisto.vec_strFit_ParamIGuess[i].compare("AMPLITUDE") ) {
-                    ret_Func.SetParameter(i, hInput.GetBinContent( hInput.GetMaximumBin() ) );
-                }
-                else if (0 == setupHisto.vec_strFit_ParamIGuess[i].compare("MEAN") ) {
-                    ret_Func.SetParameter(i, hInput.GetMean() );
-                }
-                else if (0 == setupHisto.vec_strFit_ParamIGuess[i].compare("SIGMA") ) {
-                    ret_Func.SetParameter(i, hInput.GetRMS() );
-                }
-            } //End Case: automatic assignment from input histogram
+	    //Debugging
+	    cout<<"Timing::TimingRunAnalyzer::getFunction() - setupHist.vec_strFit_ParamMeaning[" << i << "]=" << setupHisto.vec_strFit_ParamMeaning[i] << endl;
+	    cout<<"Timing::TimingRunAnalyzer::getFunction() - setupHist.vec_strFit_ParamIGuess[" << i << "]=" << setupHisto.vec_strFit_ParamIGuess[i] << endl;
+
+	    cout<<"setupHisto.vec_strFit_ParamIGuess[i].compare('AMPLITUDE')=" << setupHisto.vec_strFit_ParamIGuess[i].compare("AMPLITUDE") << endl;
+	    cout<<"setupHisto.vec_strFit_ParamIGuess[i].compare('MEAN')=" << setupHisto.vec_strFit_ParamIGuess[i].compare("MEAN") << endl;
+	    cout<<"setupHisto.vec_strFit_ParamIGuess[i].compare('SIGMA')=" << setupHisto.vec_strFit_ParamIGuess[i].compare("SIGMA") << endl;
+
+	    //Try to automatically assign a value
+            if (0 == setupHisto.vec_strFit_ParamIGuess[i].compare("AMPLITUDE") ) { //Case: Histo Amplitude
+            	ret_Func.SetParameter(i, hInput.GetBinContent( hInput.GetMaximumBin() ) );
+            } //End Case: Histo Amplitude
+            else if (0 == setupHisto.vec_strFit_ParamIGuess[i].compare("MEAN") ) { //Case: Histo Mean
+                ret_Func.SetParameter(i, hInput.GetMean() );
+            } //End Case: Histo Mean
+            else if (0 == setupHisto.vec_strFit_ParamIGuess[i].compare("SIGMA") ) { //Case: Histo RMS
+                ret_Func.SetParameter(i, hInput.GetRMS() );
+            } //End Case: Histo RMS
             else{ //Case: manual assignment
                 ret_Func.SetParameter(i, stofSafe("Fit_Param_IGuess", setupHisto.vec_strFit_ParamIGuess[i] ) );
             } //End Case: manual assignment
@@ -562,6 +566,9 @@ void Timing::TimingRunAnalyzer::setAnalysisConfig(string strInputFile){
             //Setup the Histogram struct for analysis
             setHistoSetup(strInputFile, fStream, analysisSetup.setupOR );
         } //End Case: OR SECTION
+	else if ( 0 == strLine.compare(strSecEnd_ANAL) ){ //Case: END OF FILE
+	    break;
+	} //End Case: END OF FILE
         else{ //Case: Unsorted Parameters
             pair_strParam = getParsedLine(strLine, bExitSuccess);
             
@@ -581,7 +588,7 @@ void Timing::TimingRunAnalyzer::setAnalysisConfig(string strInputFile){
                     cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - Unrecognized field!!!\n";
                     cout<<"\tField Name = " << pair_strParam.first << "; Value = " << pair_strParam.second << endl;
                     cout<<"\tParameter not set!!! Please cross-check config file: " << strInputFile << endl;
-                    cout<<"\tMaybe you made a type?\n";
+                    cout<<"\tMaybe you made a typo?\n";
                 } //End Case: Parameter not recognized
             }//End Case: Parameter Fetched Successfully
             else{ //Case: Parameter was NOT fetched Successfully
@@ -617,6 +624,9 @@ void Timing::TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::if
     while ( getlineNoSpaces(fStream, strLine) ) {
         bExitSuccess = false;
         
+	//Debugging
+	//cout<<"strLine = " << strLine << endl;
+
         //Does the user want to comment out this line?
         if ( 0 == strLine.compare(0,1,"#") ) continue;
         
@@ -641,6 +651,11 @@ void Timing::TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::if
                 //Get comma separated list
                 vec_strList = Timing::getCommaSeparatedList(pair_strParam.second);
                 
+		//Debugging
+		for(int i=0; i<vec_strList.size(); ++i){
+			cout<<"vec_strList["<<i<<"] = " << vec_strList[i] << endl;
+		}
+
                 if (vec_strList.size() >= 2) { //Case: at least 2 numbers
                     //Fetch
                     setupHisto.fHisto_xLower = Timing::stofSafe(pair_strParam.first, vec_strList[0]);
