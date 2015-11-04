@@ -1,6 +1,6 @@
 # Define the compiler
-#CC = g++
-CC = clang++ #For Mac OSX > 10.9 ???
+CC = g++
+#CC = clang++ #For Mac OSX > 10.9 ???
 
 # Define root-config 
 ROOTCONFIG = $(ROOTSYS)/bin/root-config
@@ -20,7 +20,7 @@ LIBS = -lSpectrum
 
 # Define source files
 #SOURCES = TRunParameters.cpp treeProducerTDC.cpp produceTree.cpp
-SOURCES = TRunParameters.cpp treeProducerTDC.cpp produceTree.cpp TimingRunAnalyzer.cpp
+SOURCES = TRunParameters.cpp treeProducerTDC.cpp produceTree.cpp TimingRunAnalyzer.cpp TimingUtilityFunctions.cpp
 
 # Define object files
 #	We use Suffix Replacement
