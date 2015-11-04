@@ -343,10 +343,10 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
 void Timing::TimingRunAnalyzer::fitHistogram(HistoSetup &setupHisto, TH1F & hInput, TF1 &funcInput){
     
     if (setupHisto.bFit_AutoRanging) {
-        hInput.Fit(funcInput, setupHisto.strFit_Option.c_str(), hInput.GetMean() - 4. * hInput.GetRMS(), hInput.GetMean() + 4. * hInput.GetRMS() );
+        hInput.Fit(&funcInput, setupHisto.strFit_Option.c_str(), "", hInput.GetMean() - 4. * hInput.GetRMS(), hInput.GetMean() + 4. * hInput.GetRMS() );
     }
     else{
-        hInput.Fit(funcInput, setupHisto.strFit_Option.c_str() );
+        hInput.Fit(&funcInput, setupHisto.strFit_Option.c_str() );
     }
     
     return;
