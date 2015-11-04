@@ -170,88 +170,88 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
     
     if (b1stRun) { //Case: First Run
         //Run Parameters
-        treeInput->Branch("fTrig_Delay",&inputRun.fTrig_Delay,"fTrig_Delay/F");
-        treeInput->Branch("fSupermoduleHVSetpoint",&inputRun.fSupermoduleHVSetpoint,"fSupermoduleHVSetpoint/F");
-        treeInput->Branch("iRun",&inputRun.iRun,"iRun/I");
-        treeInput->Branch("iBeam_Type",&inputRun.iBeam_Type,"iBeam_Type/I");
-        treeInput->Branch("iTrig_Mode",&inputRun.iTrig_Mode,"iTrig_Mode/I");
+        treeInput.Branch("fTrig_Delay",&inputRun.fTrig_Delay,"fTrig_Delay/F");
+        treeInput.Branch("fSupermoduleHVSetpoint",&inputRun.fSupermoduleHVSetpoint,"fSupermoduleHVSetpoint/F");
+        treeInput.Branch("iRun",&inputRun.iRun,"iRun/I");
+        treeInput.Branch("iBeam_Type",&inputRun.iBeam_Type,"iBeam_Type/I");
+        treeInput.Branch("iTrig_Mode",&inputRun.iTrig_Mode,"iTrig_Mode/I");
         
         //Detector Parameters
         for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop over inputRun.map_det
             //HV
-            treeInput->Branch( ((*iterDet).first + "_fDet_Imon").c_str(), &((*iterDet).second).fDet_Imon, ((*iterDet).first + "_fDet_Imon/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fDet_Imon").c_str(), &((*iterDet).second).fDet_Imon, ((*iterDet).first + "_fDet_Imon/F").c_str() );
             
-            treeInput->Branch( ((*iterDet).first + "_fDet_VDrift").c_str() , &((*iterDet).second).fDet_VDrift, ((*iterDet).first + "_fDet_VDrift/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fDet_VDrift").c_str() , &((*iterDet).second).fDet_VDrift, ((*iterDet).first + "_fDet_VDrift/F").c_str() );
             
-            treeInput->Branch( ((*iterDet).first + "_fDet_VG1_Top").c_str() ,&((*iterDet).second).fDet_VG1_Top, ((*iterDet).first + "_fDet_VG1_Top/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fDet_VG1_Top").c_str() ,&((*iterDet).second).fDet_VG1_Top, ((*iterDet).first + "_fDet_VG1_Top/F").c_str() );
             
-            treeInput->Branch( ((*iterDet).first + "_fDet_VG1_Bot").c_str(), &((*iterDet).second).fDet_VG1_Bot, ((*iterDet).first + "_fDet_VG1_Bot/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fDet_VG1_Bot").c_str(), &((*iterDet).second).fDet_VG1_Bot, ((*iterDet).first + "_fDet_VG1_Bot/F").c_str() );
             
-            treeInput->Branch( ((*iterDet).first + "_fDet_VG2_Top").c_str(), &((*iterDet).second).fDet_VG2_Top,  ((*iterDet).first + "_fDet_VG2_Top/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fDet_VG2_Top").c_str(), &((*iterDet).second).fDet_VG2_Top,  ((*iterDet).first + "_fDet_VG2_Top/F").c_str() );
             
-            treeInput->Branch( ((*iterDet).first + "_fDet_VG2_Bot").c_str(), &((*iterDet).second).fDet_VG2_Bot, ((*iterDet).first + "_fDet_VG2_Bot/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fDet_VG2_Bot").c_str(), &((*iterDet).second).fDet_VG2_Bot, ((*iterDet).first + "_fDet_VG2_Bot/F").c_str() );
             
-            treeInput->Branch( ((*iterDet).first + "_fDet_VG3_Top").c_str(), &((*iterDet).second).fDet_VG3_Top, ((*iterDet).first + "_fDet_VG3_Top/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fDet_VG3_Top").c_str(), &((*iterDet).second).fDet_VG3_Top, ((*iterDet).first + "_fDet_VG3_Top/F").c_str() );
             
-            treeInput->Branch( ((*iterDet).first + "_fDet_VG3_Bot").c_str(), &((*iterDet).second).fDet_VG3_Bot, ((*iterDet).first + "_fDet_VG3_Bot/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fDet_VG3_Bot").c_str(), &((*iterDet).second).fDet_VG3_Bot, ((*iterDet).first + "_fDet_VG3_Bot/F").c_str() );
             
             //Gain
-            treeInput->Branch( ((*iterDet).first + "_fDet_Gain").c_str(), &((*iterDet).second).fDet_Gain, ((*iterDet).first + "_fDet_Gain/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fDet_Gain").c_str(), &((*iterDet).second).fDet_Gain, ((*iterDet).first + "_fDet_Gain/F").c_str() );
             
-            treeInput->Branch( ((*iterDet).first + "_fDet_Gain_Err").c_str(), &((*iterDet).second).fDet_Gain_Err, ((*iterDet).first + "_fDet_Gain_Err/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fDet_Gain_Err").c_str(), &((*iterDet).second).fDet_Gain_Err, ((*iterDet).first + "_fDet_Gain_Err/F").c_str() );
             
-            treeInput->Branch( ((*iterDet).first + "_fDet_Gain_Const").c_str(), &((*iterDet).second).fDet_Gain_Const, ((*iterDet).first + "_fDet_Gain_Const/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fDet_Gain_Const").c_str(), &((*iterDet).second).fDet_Gain_Const, ((*iterDet).first + "_fDet_Gain_Const/F").c_str() );
             
-            treeInput->Branch( ((*iterDet).first + "_fDet_Gain_Const_Err").c_str(), &((*iterDet).second).fDet_Gain_Const_Err, ((*iterDet).first + "_fDet_Gain_Const_Err/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fDet_Gain_Const_Err").c_str(), &((*iterDet).second).fDet_Gain_Const_Err, ((*iterDet).first + "_fDet_Gain_Const_Err/F").c_str() );
             
-            treeInput->Branch( ((*iterDet).first + "_fDet_Gain_Slope").c_str(), &((*iterDet).second).fDet_Gain_Slope, ((*iterDet).first + "_fDet_Gain_Slope/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fDet_Gain_Slope").c_str(), &((*iterDet).second).fDet_Gain_Slope, ((*iterDet).first + "_fDet_Gain_Slope/F").c_str() );
             
-            treeInput->Branch( ((*iterDet).first + "_fDet_Gain_Slope_Err").c_str(), &((*iterDet).second).fDet_Gain_Slope_Err, ((*iterDet).first + "_fDet_Gain_Slope_Err/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fDet_Gain_Slope_Err").c_str(), &((*iterDet).second).fDet_Gain_Slope_Err, ((*iterDet).first + "_fDet_Gain_Slope_Err/F").c_str() );
             
             //Gas
-            treeInput->Branch( ((*iterDet).first + "_fDet_GasFrac_Ar").c_str(), &((*iterDet).second).fDet_GasFrac_Ar, ((*iterDet).first + "_fDet_GasFrac_Ar/F").c_str() );
-            treeInput->Branch( ((*iterDet).first + "_fDet_GasFrac_CO2").c_str(), &((*iterDet).second).fDet_GasFrac_CO2, ((*iterDet).first + "_fDet_GasFrac_CO2/F").c_str() );
-            treeInput->Branch( ((*iterDet).first + "_fDet_GasFrac_CF4").c_str(), &((*iterDet).second).fDet_GasFrac_CF4, ((*iterDet).first + "_fDet_GasFrac_CF4/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fDet_GasFrac_Ar").c_str(), &((*iterDet).second).fDet_GasFrac_Ar, ((*iterDet).first + "_fDet_GasFrac_Ar/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fDet_GasFrac_CO2").c_str(), &((*iterDet).second).fDet_GasFrac_CO2, ((*iterDet).first + "_fDet_GasFrac_CO2/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fDet_GasFrac_CF4").c_str(), &((*iterDet).second).fDet_GasFrac_CF4, ((*iterDet).first + "_fDet_GasFrac_CF4/F").c_str() );
             
             //Position
-            treeInput->Branch( ((*iterDet).first + "_iDet_Pos" ).c_str(), &((*iterDet).second).iDet_Pos, ((*iterDet).first + "_iDet_Pos/I" ).c_str() );
-            treeInput->Branch( ((*iterDet).first + "_iDet_Eta").c_str(), &((*iterDet).second).iDet_Eta, ((*iterDet).first + "_iDet_Eta/I").c_str() );
-            treeInput->Branch( ((*iterDet).first + "_iDet_Phi").c_str(), &((*iterDet).second).iDet_Phi, ((*iterDet).first + "_iDet_Phi/I").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_iDet_Pos" ).c_str(), &((*iterDet).second).iDet_Pos, ((*iterDet).first + "_iDet_Pos/I" ).c_str() );
+            treeInput.Branch( ((*iterDet).first + "_iDet_Eta").c_str(), &((*iterDet).second).iDet_Eta, ((*iterDet).first + "_iDet_Eta/I").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_iDet_Phi").c_str(), &((*iterDet).second).iDet_Phi, ((*iterDet).first + "_iDet_Phi/I").c_str() );
             
             //VFAT Info
-            treeInput->Branch( ((*iterDet).first + "_iVFAT_Pos").c_str(), &((*iterDet).second).iVFAT_Pos, ((*iterDet).first + "_iVFAT_Pos/I").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_iVFAT_Pos").c_str(), &((*iterDet).second).iVFAT_Pos, ((*iterDet).first + "_iVFAT_Pos/I").c_str() );
             
-            treeInput->Branch( ((*iterDet).first + "_iVFAT_IPreAmpIn").c_str(), &((*iterDet).second).iVFAT_IPreAmpIn, ((*iterDet).first + "_iVFAT_IPreAmpIn/I").c_str() );
-            treeInput->Branch( ((*iterDet).first + "_iVFAT_IPreAmpFeed").c_str(), &((*iterDet).second).iVFAT_IPreAmpFeed, ((*iterDet).first + "_iVFAT_IPreAmpFeed/I").c_str());
-            treeInput->Branch( ((*iterDet).first + "_iVFAT_IPreAmpOut").c_str(), &((*iterDet).second).iVFAT_IPreAmpOut, ((*iterDet).first + "_iVFAT_IPreAmpOut/I").c_str());
+            treeInput.Branch( ((*iterDet).first + "_iVFAT_IPreAmpIn").c_str(), &((*iterDet).second).iVFAT_IPreAmpIn, ((*iterDet).first + "_iVFAT_IPreAmpIn/I").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_iVFAT_IPreAmpFeed").c_str(), &((*iterDet).second).iVFAT_IPreAmpFeed, ((*iterDet).first + "_iVFAT_IPreAmpFeed/I").c_str());
+            treeInput.Branch( ((*iterDet).first + "_iVFAT_IPreAmpOut").c_str(), &((*iterDet).second).iVFAT_IPreAmpOut, ((*iterDet).first + "_iVFAT_IPreAmpOut/I").c_str());
             
-            treeInput->Branch( ((*iterDet).first + "_iVFAT_IShaper").c_str(), &((*iterDet).second).iVFAT_IShaper, ((*iterDet).first + "_iVFAT_IShaper/I").c_str() );
-            treeInput->Branch( ((*iterDet).first + "_iVFAT_IShaperFeed").c_str(), &((*iterDet).second).iVFAT_IShaperFeed, ((*iterDet).first + "_iVFAT_IShaperFeed/I").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_iVFAT_IShaper").c_str(), &((*iterDet).second).iVFAT_IShaper, ((*iterDet).first + "_iVFAT_IShaper/I").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_iVFAT_IShaperFeed").c_str(), &((*iterDet).second).iVFAT_IShaperFeed, ((*iterDet).first + "_iVFAT_IShaperFeed/I").c_str() );
             
-            treeInput->Branch( ((*iterDet).first + "_iVFAT_IComp").c_str(), &((*iterDet).second).iVFAT_IComp, ((*iterDet).first + "_iVFAT_IComp/I").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_iVFAT_IComp").c_str(), &((*iterDet).second).iVFAT_IComp, ((*iterDet).first + "_iVFAT_IComp/I").c_str() );
             
-            treeInput->Branch( ((*iterDet).first + "_iVFAT_MSPL").c_str(), &((*iterDet).second).iVFAT_MSPL, ((*iterDet).first + "_iVFAT_MSPL/I").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_iVFAT_MSPL").c_str(), &((*iterDet).second).iVFAT_MSPL, ((*iterDet).first + "_iVFAT_MSPL/I").c_str() );
             
-            treeInput->Branch( ((*iterDet).first + "_fVFAT_Thresh").c_str(), &((*iterDet).second).fVFAT_Thresh, ((*iterDet).first + "_fVFAT_Thresh/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fVFAT_Thresh").c_str(), &((*iterDet).second).fVFAT_Thresh, ((*iterDet).first + "_fVFAT_Thresh/F").c_str() );
             
             //TDC Info - Numeric
-            treeInput->Branch( ((*iterDet).first + "_fTDC_Fit_Chi2").c_str(), &((*iterDet).second).timingResults.fTDC_Fit_Chi2, ((*iterDet).first + "_fTDC_Fit_Chi2/F").c_str() );
-            treeInput->Branch( ((*iterDet).first + "_fTDC_Fit_NDF").c_str(), &((*iterDet).second).timingResults.fTDC_Fit_NDF, ((*iterDet).first + "_fTDC_Fit_NDF/F").c_str() );
-            treeInput->Branch( ((*iterDet).first + "_fTDC_Eff").c_str(), &((*iterDet).second).timingResults.fTDC_Eff, ((*iterDet).first + "_fTDC_Eff/F").c_str() );
-            treeInput->Branch( ((*iterDet).first + "_fTDC_Histo_Mean").c_str(), &((*iterDet).second).timingResults.fTDC_Histo_Mean, ((*iterDet).first + "_fTDC_Histo_Mean/F").c_str() );
-            treeInput->Branch( ((*iterDet).first + "_fTDC_Histo_RMS").c_str(), &((*iterDet).second).timingResults.fTDC_Histo_RMS, ((*iterDet).first + "_fTDC_Histo_RMS/F").c_str() );
-            treeInput->Branch( ((*iterDet).first + "_iTDC_Histo_nPks").c_str(), &((*iterDet).second).timingResults.iTDC_Histo_nPks, ((*iterDet).first + "_iTDC_Histo_nPks/I").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fTDC_Fit_Chi2").c_str(), &((*iterDet).second).timingResults.fTDC_Fit_Chi2, ((*iterDet).first + "_fTDC_Fit_Chi2/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fTDC_Fit_NDF").c_str(), &((*iterDet).second).timingResults.fTDC_Fit_NDF, ((*iterDet).first + "_fTDC_Fit_NDF/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fTDC_Eff").c_str(), &((*iterDet).second).timingResults.fTDC_Eff, ((*iterDet).first + "_fTDC_Eff/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fTDC_Histo_Mean").c_str(), &((*iterDet).second).timingResults.fTDC_Histo_Mean, ((*iterDet).first + "_fTDC_Histo_Mean/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_fTDC_Histo_RMS").c_str(), &((*iterDet).second).timingResults.fTDC_Histo_RMS, ((*iterDet).first + "_fTDC_Histo_RMS/F").c_str() );
+            treeInput.Branch( ((*iterDet).first + "_iTDC_Histo_nPks").c_str(), &((*iterDet).second).timingResults.iTDC_Histo_nPks, ((*iterDet).first + "_iTDC_Histo_nPks/I").c_str() );
             
             //TDC Info - ROOT Objects
-            treeInput->Branch( ((*iterDet).first + "_func_TDC_Fit").c_str(), &((*iterDet).second).timingResults.func_TDC_Fit, 3200, 0);
-            treeInput->Branch( ((*iterDet).first + "hTDC_Histo").c_str(), &((*iterDet).second).timingResults.hTDC_Histo, 3200, 0);
+            treeInput.Branch( ((*iterDet).first + "_func_TDC_Fit").c_str(), &((*iterDet).second).timingResults.func_TDC_Fit, 3200, 0);
+            treeInput.Branch( ((*iterDet).first + "hTDC_Histo").c_str(), &((*iterDet).second).timingResults.hTDC_Histo, 3200, 0);
             
             //TDC Info - Fit Parameters
             for (auto iterFitParam = ((*iterDet).second).timingResults.map_fTDC_Fit_Param.begin();
                  iterFitParam != ((*iterDet).second).timingResults.map_fTDC_Fit_Param.end();
                  ++iterFitParam) {
                 //Set Parameters
-                treeInput->Branch( ((*iterDet).first + "_" + (*iterFitParam).first).c_str(), &((*iterFitParam).first).second, ((*iterDet).first + "_" + (*iterFitParam).first +"/F").c_str() );
+                treeInput.Branch( ((*iterDet).first + "_" + (*iterFitParam).first).c_str(), &((*iterFitParam).first).second, ((*iterDet).first + "_" + (*iterFitParam).first +"/F").c_str() );
             }
             
             //TDC Info - Fit Parameters Error
@@ -259,28 +259,28 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
                  iterFitParamErr != ((*iterDet).second).timingResults.map_fTDC_Fit_ParamErr.end();
                  ++iterFitParamErr) {
                 //Set Parameters
-                treeInput->Branch( ((*iterDet).first + "_" + (*iterFitParamErr).first).c_str(), &((*iterFitParamErr).first).second, ((*iterDet).first + "_" + (*iterFitParamErr).first +"_Err/F").c_str() );
+                treeInput.Branch( ((*iterDet).first + "_" + (*iterFitParamErr).first).c_str(), &((*iterFitParamErr).first).second, ((*iterDet).first + "_" + (*iterFitParamErr).first +"_Err/F").c_str() );
             }
             
             //TDC Info - Data
-            treeInput->Branch( ((*iterDet).first + "vec_fTDC_Data").c_str(), &((*iterDet).second).vec_fTDC_Data);
+            treeInput.Branch( ((*iterDet).first + "vec_fTDC_Data").c_str(), &((*iterDet).second).vec_fTDC_Data);
         } //End Loop over inputRun.map_det
         
         //TDC Info - AND
-        treeInput->Branch("fTDC_Fit_Chi2_AND",&inputRun.timingResultsAND.fTDC_Fit_Chi2,"fTDC_Fit_Chi2_AND/F");
-        treeInput->Branch("fTDC_Fit_NDF_AND",&inputRun.timingResultsAND.fTDC_Fit_NDF,"fTDC_Fit_NDF_AND/F");
-        treeInput->Branch("fTDC_Eff_AND",&inputRun.timingResultsAND.fTDC_Eff,"fTDC_Eff_AND/F");
-        treeInput->Branch("fTDC_Histo_Mean_AND",&inputRun.timingResultsAND.fTDC_Histo_Mean,"fTDC_Histo_Mean_AND/F");
-        treeInput->Branch("fTDC_Histo_RMS_AND",&inputRun.timingResultsAND.fTDC_Histo_RMS,"fTDC_Histo_RMS_AND/F");
-        treeInput->Branch("iTDC_Histo_nPks_AND",&inputRun.timingResultsAND.iTDC_Histo_nPks,"iTDC_Histo_nPks_AND/I");
-        treeInput->Branch("func_TDC_Fit_AND",&inputRun.timingResultsAND.func_TDC_Fit);
-        treeInput->Branch("hTDC_Histo_AND",&inputRun.timingResultsAND.hTDC_Histo);
+        treeInput.Branch("fTDC_Fit_Chi2_AND",&inputRun.timingResultsAND.fTDC_Fit_Chi2,"fTDC_Fit_Chi2_AND/F");
+        treeInput.Branch("fTDC_Fit_NDF_AND",&inputRun.timingResultsAND.fTDC_Fit_NDF,"fTDC_Fit_NDF_AND/F");
+        treeInput.Branch("fTDC_Eff_AND",&inputRun.timingResultsAND.fTDC_Eff,"fTDC_Eff_AND/F");
+        treeInput.Branch("fTDC_Histo_Mean_AND",&inputRun.timingResultsAND.fTDC_Histo_Mean,"fTDC_Histo_Mean_AND/F");
+        treeInput.Branch("fTDC_Histo_RMS_AND",&inputRun.timingResultsAND.fTDC_Histo_RMS,"fTDC_Histo_RMS_AND/F");
+        treeInput.Branch("iTDC_Histo_nPks_AND",&inputRun.timingResultsAND.iTDC_Histo_nPks,"iTDC_Histo_nPks_AND/I");
+        treeInput.Branch("func_TDC_Fit_AND",&inputRun.timingResultsAND.func_TDC_Fit);
+        treeInput.Branch("hTDC_Histo_AND",&inputRun.timingResultsAND.hTDC_Histo);
         
         for (auto iterFitParam = inputRun.timingResultsAND.map_fTDC_Fit_Param.begin();
              iterFitParam != inputRun.timingResultsAND.map_fTDC_Fit_Param.end();
              ++iterFitParam) {
             //Set Parameters
-            treeInput->Branch( ((*iterFitParam).first + "_AND").c_str() ,&((*iterFitParam).first).second, ( ((*iterFitParam).first) + "_AND/F" ).c_str() );
+            treeInput.Branch( ((*iterFitParam).first + "_AND").c_str() ,&((*iterFitParam).first).second, ( ((*iterFitParam).first) + "_AND/F" ).c_str() );
         }
         
         //TDC Info - Fit Parameters Error
@@ -288,24 +288,24 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
              iterFitParamErr != inputRun.timingResultsAND.map_fTDC_Fit_ParamErr.end();
              ++iterFitParamErr) {
             //Set Parameters
-            treeInput->Branch( ((*iterFitParamErr).first + "_ERR_AND").c_str() ,&((*iterFitParamErr).first).second, ( ((*iterFitParamErr).first) + "_Err_AND/F" ).c_str() );
+            treeInput.Branch( ((*iterFitParamErr).first + "_ERR_AND").c_str() ,&((*iterFitParamErr).first).second, ( ((*iterFitParamErr).first) + "_Err_AND/F" ).c_str() );
         }
         
         //TDC Info - OR
-        treeInput->Branch("fTDC_Fit_Chi2_OR",&inputRun.timingResultsOR.fTDC_Fit_Chi2,"fTDC_Fit_Chi2_OR/F");
-        treeInput->Branch("fTDC_Fit_NDF_OR",&inputRun.timingResultsOR.fTDC_Fit_NDF,"fTDC_Fit_NDF_OR/F");
-        treeInput->Branch("fTDC_Eff_OR",&inputRun.timingResultsOR.fTDC_Eff,"fTDC_Eff_OR/F");
-        treeInput->Branch("fTDC_Histo_Mean_OR",&inputRun.timingResultsOR.fTDC_Histo_Mean,"fTDC_Histo_Mean_OR/F");
-        treeInput->Branch("fTDC_Histo_RMS_OR",&inputRun.timingResultsOR.fTDC_Histo_RMS,"fTDC_Histo_RMS_OR/F");
-        treeInput->Branch("iTDC_Histo_nPks_OR",&inputRun.timingResultsOR.iTDC_Histo_nPks,"iTDC_Histo_nPks_OR/I");
-        treeInput->Branch("func_TDC_Fit_OR",&inputRun.timingResultsOR.func_TDC_Fit);
-        treeInput->Branch("hTDC_Histo_OR",&inputRun.timingResultsOR.hTDC_Histo);
+        treeInput.Branch("fTDC_Fit_Chi2_OR",&inputRun.timingResultsOR.fTDC_Fit_Chi2,"fTDC_Fit_Chi2_OR/F");
+        treeInput.Branch("fTDC_Fit_NDF_OR",&inputRun.timingResultsOR.fTDC_Fit_NDF,"fTDC_Fit_NDF_OR/F");
+        treeInput.Branch("fTDC_Eff_OR",&inputRun.timingResultsOR.fTDC_Eff,"fTDC_Eff_OR/F");
+        treeInput.Branch("fTDC_Histo_Mean_OR",&inputRun.timingResultsOR.fTDC_Histo_Mean,"fTDC_Histo_Mean_OR/F");
+        treeInput.Branch("fTDC_Histo_RMS_OR",&inputRun.timingResultsOR.fTDC_Histo_RMS,"fTDC_Histo_RMS_OR/F");
+        treeInput.Branch("iTDC_Histo_nPks_OR",&inputRun.timingResultsOR.iTDC_Histo_nPks,"iTDC_Histo_nPks_OR/I");
+        treeInput.Branch("func_TDC_Fit_OR",&inputRun.timingResultsOR.func_TDC_Fit);
+        treeInput.Branch("hTDC_Histo_OR",&inputRun.timingResultsOR.hTDC_Histo);
         
         for (auto iterFitParam = inputRun.timingResultsOR.map_fTDC_Fit_Param.begin();
              iterFitParam != inputRun.timingResultsOR.map_fTDC_Fit_Param.end();
              ++iterFitParam) {
             //Set Parameters
-            treeInput->Branch( ((*iterFitParam).first + "_OR").c_str() ,&((*iterFitParam).first).second, ( ((*iterFitParam).first) + "_OR/F" ).c_str() );
+            treeInput.Branch( ((*iterFitParam).first + "_OR").c_str() ,&((*iterFitParam).first).second, ( ((*iterFitParam).first) + "_OR/F" ).c_str() );
         }
         
         //TDC Info - Fit Parameters Error
@@ -313,11 +313,11 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
              iterFitParamErr != inputRun.timingResultsOR.map_fTDC_Fit_ParamErr.end();
              ++iterFitParamErr) {
             //Set Parameters
-            treeInput->Branch( ((*iterFitParamErr).first + "_ERR_OR").c_str() ,&((*iterFitParamErr).first).second, ( ((*iterFitParamErr).first) + "_Err_OR/F" ).c_str() );
+            treeInput.Branch( ((*iterFitParamErr).first + "_ERR_OR").c_str() ,&((*iterFitParamErr).first).second, ( ((*iterFitParamErr).first) + "_Err_OR/F" ).c_str() );
         }
         
-        treeInput->Branch("hTDC_DeltaT",&inputRun.hTDC_DeltaT);
-        treeInput->Branch("hTDC_Correlation",&inputRun.hTDC_Correlation);
+        treeInput.Branch("hTDC_DeltaT",&inputRun.hTDC_DeltaT);
+        treeInput.Branch("hTDC_Correlation",&inputRun.hTDC_Correlation);
     } //End Case: First Run
     
     //Here we are assuming that the user uses the same format for all analyzed events,
