@@ -19,7 +19,8 @@ LPATHS = -L $(ROOTSYS)/lib/
 LIBS = -lSpectrum
 
 # Define source files
-SOURCES = TRunParameters.cpp treeProducerTDC.cpp produceTree.cpp
+#SOURCES = TRunParameters.cpp treeProducerTDC.cpp produceTree.cpp
+SOURCES = TRunParameters.cpp treeProducerTDC.cpp produceTree.cpp TimingRunAnalyzer.cpp
 
 # Define object files
 #	We use Suffix Replacement
