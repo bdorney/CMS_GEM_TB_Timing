@@ -22,7 +22,7 @@ using std::vector;
 using namespace Timing;
 
 //Constructor
-TimingRunAnalyzer::TimingRunAnalyzer(){
+Timing::TimingRunAnalyzer::TimingRunAnalyzer(){
     bRunSet = false;
     
     bVerbose_Logging        = false;
@@ -42,15 +42,15 @@ TimingRunAnalyzer::TimingRunAnalyzer(){
     strSecEnd_AND   = "END_AND_INFO";
     strSecEnd_DET   = "END_DETECTOR_INFO";
     strSecEnd_OR    = "END_OR_INFO";
-} //End Constructor TimingRunAnalyzer::TimingRunAnalyzer()
+} //End Constructor Timing::TimingRunAnalyzer::TimingRunAnalyzer()
 
 //Analyze method, this is the central access point for the analysis
 //Inherited class can over ride this method but it MUST exist
 //The entire analysis needs to be executed through this method (but not necessarily in this method)
-void TimingRunAnalyzer::analyzeRun(){
+void Timing::TimingRunAnalyzer::analyzeRun(){
     //Check to see if a run was set
     if (!bRunSet) {
-        cout<<"TimingRunAnalyzer::analyze() - Sorry, but you asked for analysis on a blank run!!!\n";
+        cout<<"Timing::TimingRunAnalyzer::analyze() - Sorry, but you asked for analysis on a blank run!!!\n";
         cout<<"\tSkipping!!! Please cross-check your usage of the TimingRunAnalyzer class\n";
         
         return;
@@ -88,7 +88,7 @@ void TimingRunAnalyzer::analyzeRun(){
     //Check to see if data file opened successfully, if so load the tree
     //------------------------------------------------------
     if ( !file_ROOT_Run->IsOpen() || file_ROOT_Run->IsZombie() ) { //Case: failed to load ROOT file
-        perror( ("TimingRunAnalyzer::analyze() - error while opening file: " + run.strRunName ).c_str() );
+        perror( ("Timing::TimingRunAnalyzer::analyze() - error while opening file: " + run.strRunName ).c_str() );
         printROOTFileStatus(file_ROOT_Run);
         std::cout << "Exiting!!!\n";
         
@@ -98,7 +98,7 @@ void TimingRunAnalyzer::analyzeRun(){
     tree_Run = (TTree*) file_ROOT_Run->Get( run.strTreeName_Run.c_str() );
     
     if ( nullptr == tree_Run ) { //Case: failed to load TTree
-        std::cout<<"TimingRunAnalyzer::analyze() - error while fetching: " << run.strTreeName_Run << endl;
+        std::cout<<"Timing::TimingRunAnalyzer::analyze() - error while fetching: " << run.strTreeName_Run << endl;
         std::cout<<"\tTree Returns nullptr; tree_Run = " << tree_Run << endl;
         std::cout<<"Exiting!!!\n";
         
@@ -337,11 +337,24 @@ void TimingRunAnalyzer::analyzeRun(){
     delete tree_Run;
     
     return;
-} //End TimingRunAnalyzer::analyze()
+} //End Timing::TimingRunAnalyzer::analyze()
+
+//Fits an input histogram based on parameters given
+void Timing::TimingRunAnalyzer::fitHistogram(HistoSetup &setupHisto, TH1F & hInput, TF1 &funcInput){
+    
+    if (setupHisto.bFit_AutoRanging) {
+        hInput.Fit(funcInput, setupHisto.strFit_Option.c_str(), hInput.GetMean() - 4. * hInput.GetRMS(), hInput.GetMean() + 4. * hInput.GetRMS() );
+    }
+    else{
+        hInput.Fit(funcInput, setupHisto.strFit_Option.c_str() );
+    }
+    
+    return;
+} //End Timing::TimingRunAnalyzer::fitHistogram
 
 //Returns a TF1 (function) whose parameters are set by setupHisto
 //Good candidate for TimingUtitlityFunctions.h?
-TF1 TimingRunAnalyzer::getFunction(HistoSetup &setupHisto, TH1F & hInput){
+TF1 Timing::TimingRunAnalyzer::getFunction(HistoSetup &setupHisto, TH1F & hInput){
     //Variable Declaration
     TF1 ret_Func(setupHisto.strFit_Name.c_str(), setupHisto.strFit_Formula.c_str(), setupHisto.fHisto_xLower, setupHisto.fHisto_xUpper);
     
@@ -382,7 +395,7 @@ TF1 TimingRunAnalyzer::getFunction(HistoSetup &setupHisto, TH1F & hInput){
         } //End Loop over parameters
     } //End Case: equal number of inputs, containers (should be) linked!!!
     else{
-        cout<<"TimingRunAnalyzer::getFunction() - Trying to set initial parameters for:\n";
+        cout<<"Timing::TimingRunAnalyzer::getFunction() - Trying to set initial parameters for:\n";
         cout<<"\tHisto Name = " << hInput.GetName() << endl;
         cout<<"\tFunction Name = " << ret_Func.GetName() << endl;
         
@@ -405,7 +418,7 @@ TF1 TimingRunAnalyzer::getFunction(HistoSetup &setupHisto, TH1F & hInput){
 
 //Returns a TH1F (histogram) whose parameters are set by setupHisto
 //Good candidate for TimingUtitlityFunctions.h
-TH1F TimingRunAnalyzer::getHistogram(HistoSetup &setupHisto){
+TH1F Timing::TimingRunAnalyzer::getHistogram(HistoSetup &setupHisto){
     //Variable Declaration
     TH1F ret_Histo(setupHisto.strHisto_Name.c_str(), "", setupHisto.iHisto_nBins, setupHisto.fHisto_xLower, setupHisto.fHisto_xUpper );
     
@@ -427,7 +440,7 @@ TH1F TimingRunAnalyzer::getHistogram(HistoSetup &setupHisto){
 } //End getHistogram
 
 //Loads all relevant analysis parameters from a text file
-void TimingRunAnalyzer::setAnalysisConfig(string strInputFile){
+void Timing::TimingRunAnalyzer::setAnalysisConfig(string strInputFile){
     //Variable Declaration
     bool bExitSuccess = false;
     bool bDetSetup = false;
@@ -443,7 +456,7 @@ void TimingRunAnalyzer::setAnalysisConfig(string strInputFile){
     //Open the Data File
     //------------------------------------------------------
     if (bVerboseMode_IO) { //Case: User Requested Verbose Error Messages - I/O
-        cout<< "TimingRunAnalyzer::setAnalysisConfig(): trying to open and read: " << strInputFile << endl;
+        cout<< "Timing::TimingRunAnalyzer::setAnalysisConfig(): trying to open and read: " << strInputFile << endl;
     } //End Case: User Requested Verbose Error Messages - I/O
     
     ifstream fStream( strInputFile.c_str() );
@@ -451,7 +464,7 @@ void TimingRunAnalyzer::setAnalysisConfig(string strInputFile){
     //Check to See if Data File Opened Successfully
     //------------------------------------------------------
     if (!fStream.is_open() && bVerboseMode_IO) {
-        perror( ("TimingRunAnalyzer::setAnalysisConfig(): error while opening file: " + strInputFile).c_str() );
+        perror( ("Timing::TimingRunAnalyzer::setAnalysisConfig(): error while opening file: " + strInputFile).c_str() );
         printStreamStatus(fStream);
     }
     
@@ -486,7 +499,7 @@ void TimingRunAnalyzer::setAnalysisConfig(string strInputFile){
                 
                 //Do we reach the end of the section? If so the user has configured the file incorrectly
                 if ( 0 == strLine.compare(strSecEnd_DET) ) { //Section End Reached Prematurely
-                    cout<<"TimingRunAnalyzer::setAnalysisConfig() - I have reached the END of a Detector Heading\n";
+                    cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - I have reached the END of a Detector Heading\n";
                     cout<<"\tBut Have NOT found the 'Detector_Name' field\n"<<endl;
                     cout<<"\tYou have configured this heading incorrectly, the 'Detector_Name' field is expected to be the FIRST' line of a Detector Heading\n";
                     cout<<"\tThis Detector has been skipped, please cross-check\n";
@@ -515,14 +528,14 @@ void TimingRunAnalyzer::setAnalysisConfig(string strInputFile){
                         break;
                     } //End Case: Detector Name found!
                     else{ //Case: Detector Name not found!
-                        cout<<"TimingRunAnalyzer::setAnalysisConfig() - I am parsing a Detector Heading\n";
+                        cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - I am parsing a Detector Heading\n";
                         cout<<"\tHowever I expected the 'Detector_Name' field to be at the tope of the heading\n";
                         cout<<"\tThe current line I am parsing: " << strLine << endl;
                         cout<<"\tHas been skipped and may lead to undefined behavior" << endl;
                     } //End Case: Detector Name not found!
                 }//End Case: Parameter Fetched Successfully
                 else{ //Case: Parameter was NOT fetched Successfully
-                    cout<<"TimingRunAnalyzer::setAnalysisConfig() - Sorry I didn't parse parameter correctly\n";
+                    cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - Sorry I didn't parse parameter correctly\n";
                     cout<<"\tWorking on file: " << strInputFile << endl;
                     cout<<"\tCurrent line: " << strLine << endl;
                     //cout<<"\tExpecting a detector name that matches one of detector names in the TreeSetup File\n";
@@ -565,14 +578,14 @@ void TimingRunAnalyzer::setAnalysisConfig(string strInputFile){
                     analysisSetup.bMatchArrivalTime = convert2bool(pair_strParam.second, bExitSuccess);
                 }
                 else{ //Case: Parameter not recognized
-                    cout<<"TimingRunAnalyzer::setAnalysisConfig() - Unrecognized field!!!\n";
+                    cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - Unrecognized field!!!\n";
                     cout<<"\tField Name = " << pair_strParam.first << "; Value = " << pair_strParam.second << endl;
                     cout<<"\tParameter not set!!! Please cross-check config file: " << strInputFile << endl;
                     cout<<"\tMaybe you made a type?\n";
                 } //End Case: Parameter not recognized
             }//End Case: Parameter Fetched Successfully
             else{ //Case: Parameter was NOT fetched Successfully
-                cout<<"TimingRunAnalyzer::setHistoSetup() - Sorry I didn't parse parameter correctly\n";
+                cout<<"Timing::TimingRunAnalyzer::setHistoSetup() - Sorry I didn't parse parameter correctly\n";
                 cout<<"\tWorking on file: " << strInputFile << endl;
                 cout<<"\tCurrent line: " << strLine << endl;
                 cout<<"\tPlease cross-check! Skipping!!!\n";
@@ -584,13 +597,13 @@ void TimingRunAnalyzer::setAnalysisConfig(string strInputFile){
     
     //Check to see if we had problems while reading the file
     if (fStream.bad() && bVerboseMode_IO) {
-        perror( ("TimingRunAnalyzer::setAnalysisConfig(): error while reading file: " + strInputFile).c_str() );
+        perror( ("Timing::TimingRunAnalyzer::setAnalysisConfig(): error while reading file: " + strInputFile).c_str() );
         printStreamStatus(fStream);
     }
     
-} //End TimingRunAnalyzer::setAnalysisConfig()
+} //End Timing::TimingRunAnalyzer::setAnalysisConfig()
 
-void TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::ifstream &fStream, HistoSetup& setupHisto){
+void Timing::TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::ifstream &fStream, HistoSetup& setupHisto){
     //Variable Declaration
     bool bExitSuccess;
     
@@ -639,7 +652,7 @@ void TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::ifstream &
                     
                     //Tell the user they entered more than what was expected
                     if (vec_strList.size() > 2) { //Case: 3 or more numbers
-                        cout<<"TimingRunAnalyzer::setAnalysisConfig() - Sorry you entered 3 or more numbers for " << pair_strParam.first << endl;
+                        cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - Sorry you entered 3 or more numbers for " << pair_strParam.first << endl;
                         cout<<"\tI have only used the first two and ignored the rest:\n";
                         cout<<"\t\t"<<setupHisto.fHisto_xLower<<endl;
                         cout<<"\t\t"<<setupHisto.fHisto_xUpper<<endl;
@@ -655,7 +668,7 @@ void TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::ifstream &
                     setupHisto.fHisto_xUpper = std::max(setupHisto.fHisto_xLower, setupHisto.fHisto_xUpper);
                     
                     //Output to User
-                    cout<<"TimingRunAnalyzer::setAnalysisConfig() - Sorry I was expecting a comma separated list of 2 numbers for: " << pair_strParam.first << endl;
+                    cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - Sorry I was expecting a comma separated list of 2 numbers for: " << pair_strParam.first << endl;
                     cout<<"\tRight Now I have set:\n";
                     cout<<"\t\tLower Histo Value = "<<setupHisto.fHisto_xLower<<endl;
                     cout<<"\t\tUpper Histo Value"<<setupHisto.fHisto_xUpper<<endl;
@@ -671,7 +684,7 @@ void TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::ifstream &
                 setupHisto.bFit_AutoRanging = Timing::convert2bool(pair_strParam.second, bExitSuccess);
                 
                 if (!bExitSuccess) {
-                    cout<<"TimingRunAnalyzer::setAnalysisConfig() - Attempted to Assign 'Fit_Autoranging' value failed!!!\n";
+                    cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - Attempted to Assign 'Fit_Autoranging' value failed!!!\n";
                     cout<<"\tYour (Field name, Field value) pair = (" << pair_strParam.first << "," << pair_strParam.second << ")\n";
                     cout<<"\tField value should be from the set {t,true,1,f,false,0}\n";
                     cout<<"\tUndefined behavior may occur!!!";
@@ -693,14 +706,14 @@ void TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::ifstream &
                 setupHisto.vec_strFit_ParamIGuess = getCommaSeparatedList(pair_strParam.second);
             }
             else{ //Case: Parameter not recognized
-                cout<<"TimingRunAnalyzer::setHistoSetuo() - Unrecognized field!!!\n";
+                cout<<"Timing::TimingRunAnalyzer::setHistoSetuo() - Unrecognized field!!!\n";
                 cout<<"\tField Name = " << pair_strParam.first << "; Value = " << pair_strParam.second << endl;
                 cout<<"\tParameter not set!!! Please cross-check config file: " << strInputFile << endl;
                 cout<<"\tMaybe you made a type?\n";
             } //End Case: Parameter not recognized
         } //End Case: Parameter Fetched Successfully
         else{ //Case: Parameter was NOT fetched Successfully
-            cout<<"TimingRunAnalyzer::setHistoSetuo() - Sorry I didn't parse parameter correctly\n";
+            cout<<"Timing::TimingRunAnalyzer::setHistoSetuo() - Sorry I didn't parse parameter correctly\n";
             cout<<"\tWorking on file: " << strInputFile << endl;
             cout<<"\tCurrent line: " << strLine << endl;
             cout<<"\tPlease cross-check! Skipping!!!\n";
@@ -708,12 +721,12 @@ void TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::ifstream &
     } //End Loop through Section
     
     return;
-} //End TimingRunAnalyzer::setHistoSetup()
+} //End Timing::TimingRunAnalyzer::setHistoSetup()
 
 //Set Detector Data after all events of a given run have been analyzed
 //  ->timingResults struct containing detector & fit data
 //  ->hInput Detector Histogram
-void TimingRunAnalyzer::setPerformanceData(TDCAnalysisData &inputTimingResults, TH1F &hInput){
+void Timing::TimingRunAnalyzer::setPerformanceData(TDCAnalysisData &inputTimingResults, TH1F &hInput){
     //Variable Declaration
     TSpectrum *timingSpec = new TSpectrum();
     
@@ -742,12 +755,12 @@ void TimingRunAnalyzer::setPerformanceData(TDCAnalysisData &inputTimingResults, 
     inputTimingResults.hTDC_Histo = &hInput;
     
     return;
-} //End TimingRunAnalyzer::setPerformanceData() - Histogram Version
+} //End Timing::TimingRunAnalyzer::setPerformanceData() - Histogram Version
 
  //Set Detector Data after all events of a given run have been analyzed
  //  ->timingResults struct containing detector & fit data
  //  ->funcInput fit of detector histogram
-void TimingRunAnalyzer::setPerformanceData(TDCAnalysisData &inputTimingResults, TF1 &funcInput, HistoSetup &setupHisto){
+void Timing::TimingRunAnalyzer::setPerformanceData(TDCAnalysisData &inputTimingResults, TF1 &funcInput, HistoSetup &setupHisto){
     
     //Set the normalized Chi2 value
     inputTimingResults.fTDC_Fit_Chi2= funcInput.GetChisquare();
@@ -763,4 +776,4 @@ void TimingRunAnalyzer::setPerformanceData(TDCAnalysisData &inputTimingResults, 
     inputTimingResults.func_TDC_Fit = &funcInput;
     
     return;
-} //End TimingRunAnalyzer::setPerformanceData() - Histogram Version
+} //End Timing::TimingRunAnalyzer::setPerformanceData() - Histogram Version
