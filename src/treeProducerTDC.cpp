@@ -177,7 +177,7 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
         treeInput.Branch("iTrig_Mode",&inputRun.iTrig_Mode,"iTrig_Mode/I");
         
         //Detector Parameters
-        for (auto iterDet = inputRunmap_det.begin(); iterDet != treeInput.Branchmap_det.end(); ++iterDet) { //Loop over inputRun.map_det
+        for (auto iterDet = inputRun.map_det.begin(); iterDet != inputRun.map_det.end(); ++iterDet) { //Loop over inputRun.map_det
             //HV
             treeInput.Branch( ((*iterDet).first + "_fDet_Imon").c_str(), &((*iterDet).second).fDet_Imon, ((*iterDet).first + "_fDet_Imon/F").c_str() );
             
