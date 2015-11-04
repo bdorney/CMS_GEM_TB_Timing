@@ -41,6 +41,14 @@
 #include "TSpectrum.h"
 #include "TTree.h"
 
+//For working with stl containers and TTree
+#ifdef __MAKECINT__
+#pragma link C++ class vector<int>+;
+//#pragma link C++ class vector<float>+;
+#pragma link C++ class map<string,float>+;
+//#pragma link C++ class map<string,int>+;
+#endif
+
 using namespace ROOT;
 
 namespace Timing {
@@ -123,13 +131,17 @@ namespace Timing {
         virtual void setVerboseModePkCalc(bool inputMode){verbose_PkCalc = inputMode; return;};
         virtual void setVerboseModePrintRuns(bool inputMode){verbose_PrintRuns = inputMode; return;};
         
-        //Write To File (I/O)
-        //------------------------------------------------------------------------------------------------------------------------------------------
-        virtual void writeTree(std::string inputTreeName, std::string outputDataFile);
-        
         //Miscillaneous Methods
         //------------------------------------------------------------------------------------------------------------------------------------------
         virtual void clearIgnoredParameters(){ vecIgnoredParam.clear(); return; };
+        
+        //Loop over runs given in fileName_Data
+        virtual void readRuns(std::string inputTreeName, std::string outputDataFile);
+        virtual void readRuns(std::string inputTreeName, std::string outputDataFile, std::string inputFileName){
+            fileName_Data = inputFileName;
+            readRuns(inputTreeName, outputDataFile);
+            return;
+        }
         
     private:
         //Data Members
@@ -192,6 +204,10 @@ namespace Timing {
         virtual void setParsedLUTLine(std::string &inputLine, std::vector<std::string> &vec_strLUTIdents, std::string &strTreeName, std::string &strDataType, std::string &strDetName, int &iMthdIdx, bool &bExitFlag);
         
         virtual void setRun(std::string inputROOTFileName, std::string inputLUTFileName, TRunParameters &runLogger);
+        
+        //Write To File (I/O)
+        //------------------------------------------------------------------------------------------------------------------------------------------
+        virtual void writeTree(Timing::Run &inputRun, TTree &treeInput);
         
     }; //End Class Definition treeProducerTDC
 } //End namespace Timing

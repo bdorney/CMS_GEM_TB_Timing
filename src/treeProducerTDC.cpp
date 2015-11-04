@@ -67,6 +67,99 @@ void treeProducerTDC::setIgnoredParameter(string inputParameter){
     return;
 } //End treeProducerTDC::setIgnoredParameter()
 
+void treeProducerTDC::readRuns(string inputTreeName, string outputDataFile){
+    //Variable Declaration
+    Run run;
+    
+    string line;
+    
+    //Create Output ROOT File
+    //Make TFile first, prevents "memory-resident Tree" problems??
+    TFile *outputTFile = new TFile(outputDataFile.c_str(),"RECREATE",(inputTreeName + "Tree File").c_str() );
+    
+    //Create the TTree
+    //TTree *outputTDCTree = new TTree(inputTreeName.c_str(), "Tree of TDC Data");
+    TTree outputTDCTree(inputTreeName.c_str(), "Tree of TDC Data");
+    
+    //Open the Data File
+    //------------------------------------------------------
+    if (verbose_IO) { //Case: User Requested Verbose Error Messages - I/O
+        cout<< "treeProducerTDC::writeTree(): trying to open and read: " << fileName_Data << endl;
+    } //End Case: User Requested Verbose Error Messages - I/O
+    
+    ifstream dataInput( fileName_Data.c_str() );
+    
+    //Check to See if Data File Opened Successfully
+    //------------------------------------------------------
+    if (!dataInput.is_open() && verbose_IO) {
+        perror( ("treeProducerTDC::writeTree(): error while opening file: " + fileName_Data).c_str() );
+        printStreamStatus(dataInput);
+    }
+    
+    //Loop Over data Input File
+    //------------------------------------------------------
+    //Read the file via std::getline().  Obey good coding practice rules:
+    //  -first the I/O operation, then error check, then data processing
+    //  -failbit and badbit prevent data processing, eofbit does not
+    //See: http://gehrcke.de/2011/06/reading-files-in-c-using-ifstream-dealing-correctly-with-badbit-failbit-eofbit-and-perror/
+    while ( getline(dataInput, line) ) {
+        //Set File Names for later operations, use a std::stringstream
+        std::stringstream strStream;
+        
+        strStream<<line;
+        strStream>>fileName_ROOT>>fileName_LUT;
+        
+        //Does the user want to comment out this run?
+        if (fileName_ROOT.compare(0,1,"#") == 0) continue;
+        
+        //Output action to user, but only if line is not commented out!!!
+        cout<<"treeProducerTDC::writeTree() - Retreiving Line: " << fileName_ROOT << endl;
+        
+        //Create an instance of the Run Parameters and then get specific run info
+        TRunParameters runLog;
+        
+        setRun(fileName_ROOT, fileName_LUT, runLog);
+        
+        run = runLog.getRun();
+        
+        writeTree(run,outputTDCTree);
+    } //End Loop Over Input File
+    
+    //Check to see if we had problems while reading the file
+    if (dataInput.bad() && verbose_IO) {
+        perror( ("treeProducerTDC::writeTree(): error while reading file: " + fileName_Data).c_str() );
+        printStreamStatus(dataInput);
+    }
+    
+    //Write the Tree
+    outputTFile->cd();
+    //outputTDCTree->Print();
+    outputTDCTree->Write();
+    
+    //Print to the User all the information stored in outputTDCTree
+    //if (verbose_PrintRuns) {
+        //printStoredData(outputTDCTree);
+    //}
+    
+    //Close the File
+    //------------------------------------------------------
+    dataInput.close();
+    
+    //Close the Created ROOT File
+    //------------------------------------------------------
+    outputTFile->Close();
+    
+    return;
+    
+}
+
+//OKAY, new plan
+//We will change below method to just write a tree given an input Run
+//We will add a NEW method that is like "loop over runs, or read in runs"
+//In this method we will read in the run, and perform all the bells and whistles the below is doing
+//Then afterward we will pass the created run to the "writeTree" method, and it should correctly write the Tree for us after everything is set and created!!!
+//This should solve the implementation problem of how to load the detectors when it is unknown how many the user will want to analyze!!
+//Just need to sit down and execute the above!!!
 //Write the tree
 void treeProducerTDC::writeTree(string inputTreeName, string outputDataFile){
     //Variable Declaration
@@ -98,86 +191,77 @@ void treeProducerTDC::writeTree(string inputTreeName, string outputDataFile){
     outputTDCTree->Branch("iTrig_Mode",&run.iTrig_Mode,"iTrig_Mode/I");
     outputTDCTree->Branch("fTrig_Delay",&run.fTrig_Delay,"fTrig_Delay/F");
     
+    outputTDCTree->Branch("fSupermoduleHVSetpoint",&run.fSupermoduleHVSetpoint,"fSupermoduleHVSetpoint/F");
+    
+    outputTDCTree->Branch("iTDC_Chan_Trig",&run.iTDC_Chan_Trig,"iTDC_Chan_Trig/I");
+    
     //Det Info
-    outputTDCTree->Branch("iDet_Eta",&run.iDet_Eta,"iDet_Eta/I");
-    outputTDCTree->Branch("iDet_Phi",&run.iDet_Phi,"iDet_Phi/I");
+    //outputTDCTree->Branch("iDet_Eta",&run.iDet_Eta,"iDet_Eta/I");
+    //outputTDCTree->Branch("iDet_Phi",&run.iDet_Phi,"iDet_Phi/I");
     
-    outputTDCTree->Branch("fDet_Imon",&run.fDet_Imon,"fDet_Imon/F");
-    outputTDCTree->Branch("fDet_VDrift",&run.fDet_VDrift,"fDet_VDrift/F");
-    outputTDCTree->Branch("fDet_VG1_Top",&run.fDet_VG1_Top,"fDet_VG1_Top/F");
-    outputTDCTree->Branch("fDet_VG1_Bot",&run.fDet_VG1_Bot,"fDet_VG1_Bot/F");
-    outputTDCTree->Branch("fDet_VG2_Top",&run.fDet_VG2_Top,"fDet_VG2_Top/F");
-    outputTDCTree->Branch("fDet_VG2_Bot",&run.fDet_VG2_Bot,"fDet_VG2_Bot/F");
-    outputTDCTree->Branch("fDet_VG3_Top",&run.fDet_VG3_Top,"fDet_VG3_Top/F");
-    outputTDCTree->Branch("fDet_VG3_Bot",&run.fDet_VG3_Bot,"fDet_VG3_Bot/F");
+    //outputTDCTree->Branch("fDet_Imon",&run.fDet_Imon,"fDet_Imon/F");
+    //outputTDCTree->Branch("fDet_VDrift",&run.fDet_VDrift,"fDet_VDrift/F");
+    //outputTDCTree->Branch("fDet_VG1_Top",&run.fDet_VG1_Top,"fDet_VG1_Top/F");
+    //outputTDCTree->Branch("fDet_VG1_Bot",&run.fDet_VG1_Bot,"fDet_VG1_Bot/F");
+    //outputTDCTree->Branch("fDet_VG2_Top",&run.fDet_VG2_Top,"fDet_VG2_Top/F");
+    //outputTDCTree->Branch("fDet_VG2_Bot",&run.fDet_VG2_Bot,"fDet_VG2_Bot/F");
+    //outputTDCTree->Branch("fDet_VG3_Top",&run.fDet_VG3_Top,"fDet_VG3_Top/F");
+    //outputTDCTree->Branch("fDet_VG3_Bot",&run.fDet_VG3_Bot,"fDet_VG3_Bot/F");
     
-    outputTDCTree->Branch("fDet_Gain",&run.fDet_Gain,"fDet_Gain/F");
-    outputTDCTree->Branch("fDet_Gain_Err",&run.fDet_Gain_Err,"fDet_Gain_Err/F");
+    //outputTDCTree->Branch("fDet_Gain",&run.fDet_Gain,"fDet_Gain/F");
+    //outputTDCTree->Branch("fDet_Gain_Err",&run.fDet_Gain_Err,"fDet_Gain_Err/F");
     
-    outputTDCTree->Branch("fDet_GasFrac_Ar",&run.fDet_GasFrac_Ar,"fDet_GasFrac_Ar/F");
-    outputTDCTree->Branch("fDet_GasFrac_CO2",&run.fDet_GasFrac_CO2,"fDet_GasFrac_CO2/F");
-    outputTDCTree->Branch("fDet_GasFrac_CF4",&run.fDet_GasFrac_CF4,"fDet_GasFrac_CF4/F");
+    //outputTDCTree->Branch("fDet_GasFrac_Ar",&run.fDet_GasFrac_Ar,"fDet_GasFrac_Ar/F");
+    //outputTDCTree->Branch("fDet_GasFrac_CO2",&run.fDet_GasFrac_CO2,"fDet_GasFrac_CO2/F");
+    //outputTDCTree->Branch("fDet_GasFrac_CF4",&run.fDet_GasFrac_CF4,"fDet_GasFrac_CF4/F");
     
     //VFAT Info
-    outputTDCTree->Branch("iTURBO_ID",&run.iTURBO_ID,"iTURBO_ID/I");
-    outputTDCTree->Branch("iVFAT_Pos",&run.iVFAT_Pos,"iVFAT_Pos/I");
+    //outputTDCTree->Branch("iTURBO_ID",&run.iTURBO_ID,"iTURBO_ID/I");
+    //outputTDCTree->Branch("iVFAT_Pos",&run.iVFAT_Pos,"iVFAT_Pos/I");
     
-    outputTDCTree->Branch("strVFAT_ID",&run.strVFAT_ID,"strVFAT_Pos/C");
+    //outputTDCTree->Branch("strVFAT_ID",&run.strVFAT_ID.c_str(),"strVFAT_Pos/C");
     
-    outputTDCTree->Branch("iVFAT_IPreAmpIn",&run.iVFAT_IPreAmpIn,"iVFAT_IPreAmpIn/I");
-    outputTDCTree->Branch("iVFAT_IPreAmpFeed",&run.iVFAT_IPreAmpFeed,"iVFAT_IPreAmpFeed/I");
-    outputTDCTree->Branch("iVFAT_IPreAmpOut",&run.iVFAT_IPreAmpOut,"iVFAT_IPreAmpOut/I");
+    //outputTDCTree->Branch("iVFAT_IPreAmpIn",&run.iVFAT_IPreAmpIn,"iVFAT_IPreAmpIn/I");
+    //outputTDCTree->Branch("iVFAT_IPreAmpFeed",&run.iVFAT_IPreAmpFeed,"iVFAT_IPreAmpFeed/I");
+    //outputTDCTree->Branch("iVFAT_IPreAmpOut",&run.iVFAT_IPreAmpOut,"iVFAT_IPreAmpOut/I");
     
-    outputTDCTree->Branch("iVFAT_IShaper",&run.iVFAT_IShaper,"iVFAT_IShaper/I");
-    outputTDCTree->Branch("iVFAT_IShaperFeed",&run.iVFAT_IShaperFeed,"iVFAT_IShaperFeed/I");
+    //outputTDCTree->Branch("iVFAT_IShaper",&run.iVFAT_IShaper,"iVFAT_IShaper/I");
+    //outputTDCTree->Branch("iVFAT_IShaperFeed",&run.iVFAT_IShaperFeed,"iVFAT_IShaperFeed/I");
     
-    outputTDCTree->Branch("iVFAT_IComp",&run.iVFAT_IComp,"iVFAT_IComp/I");
+    //outputTDCTree->Branch("iVFAT_IComp",&run.iVFAT_IComp,"iVFAT_IComp/I");
     
-    outputTDCTree->Branch("iVFAT_MSPL",&run.iVFAT_MSPL,"iVFAT_MSPL/I");
+    //outputTDCTree->Branch("iVFAT_MSPL",&run.iVFAT_MSPL,"iVFAT_MSPL/I");
     
-    outputTDCTree->Branch("iVFAT_Latency",&run.iVFAT_Latency,"iVFAT_Latency/I");
+    //outputTDCTree->Branch("iVFAT_Latency",&run.iVFAT_Latency,"iVFAT_Latency/I");
     
-    outputTDCTree->Branch("fVFAT_Thresh",&run.fVFAT_Thresh,"fVFAT_Thresh/F");
+    //outputTDCTree->Branch("fVFAT_Thresh",&run.fVFAT_Thresh,"fVFAT_Thresh/F");
     
     //TDC Info
-    outputTDCTree->Branch("iTDC_CH_Number",&run.iTDC_CH_Number,"iTDC_CH_Number/I");
+    //outputTDCTree->Branch("iTDC_CH_Number",&run.iTDC_CH_Number,"iTDC_CH_Number/I");
     
-    outputTDCTree->Branch("fTDC_Histo_Mean",&run.fTDC_Histo_Mean,"fTDC_Histo_Mean/F");
-    outputTDCTree->Branch("fTDC_Histo_RMS",&run.fTDC_Histo_RMS,"fTDC_Histo_RMS/F");
-    outputTDCTree->Branch("fTDC_Histo_nPks",&run.fTDC_Histo_nPks,"fTDC_Histo_nPks/F");
+    //outputTDCTree->Branch("fTDC_Histo_Mean",&run.fTDC_Histo_Mean,"fTDC_Histo_Mean/F");
+    //outputTDCTree->Branch("fTDC_Histo_RMS",&run.fTDC_Histo_RMS,"fTDC_Histo_RMS/F");
+    //outputTDCTree->Branch("fTDC_Histo_nPks",&run.fTDC_Histo_nPks,"fTDC_Histo_nPks/F");
     
-    outputTDCTree->Branch("fTDC_Histo_PkInt_1stMax", &run.fTDC_Histo_PkInt_1stMax,"fTDC_Histo_PkInt_1stMax/F");
-    outputTDCTree->Branch("fTDC_Histo_PkInt_2ndMax", &run.fTDC_Histo_PkInt_2ndMax,"fTDC_Histo_PkInt_2ndMax/F");
-    outputTDCTree->Branch("fTDC_Histo_PkInt_3rdMax", &run.fTDC_Histo_PkInt_3rdMax,"fTDC_Histo_PkInt_3rdMax/F");
+    //outputTDCTree->Branch("fTDC_Histo_PkInt_1stMax", &run.fTDC_Histo_PkInt_1stMax,"fTDC_Histo_PkInt_1stMax/F");
+    //outputTDCTree->Branch("fTDC_Histo_PkInt_2ndMax", &run.fTDC_Histo_PkInt_2ndMax,"fTDC_Histo_PkInt_2ndMax/F");
+    //outputTDCTree->Branch("fTDC_Histo_PkInt_3rdMax", &run.fTDC_Histo_PkInt_3rdMax,"fTDC_Histo_PkInt_3rdMax/F");
     
-    outputTDCTree->Branch("fTDC_Histo_PkPos_1stMax", &run.fTDC_Histo_PkPos_1stMax,"fTDC_Histo_PkPos_1stMax/F");
-    outputTDCTree->Branch("fTDC_Histo_PkPos_2ndMax", &run.fTDC_Histo_PkPos_2ndMax,"fTDC_Histo_PkPos_2ndMax/F");
-    outputTDCTree->Branch("fTDC_Histo_PkPos_3rdMax", &run.fTDC_Histo_PkPos_3rdMax,"fTDC_Histo_PkPos_3rdMax/F");
+    //outputTDCTree->Branch("fTDC_Histo_PkPos_1stMax", &run.fTDC_Histo_PkPos_1stMax,"fTDC_Histo_PkPos_1stMax/F");
+    //outputTDCTree->Branch("fTDC_Histo_PkPos_2ndMax", &run.fTDC_Histo_PkPos_2ndMax,"fTDC_Histo_PkPos_2ndMax/F");
+    //outputTDCTree->Branch("fTDC_Histo_PkPos_3rdMax", &run.fTDC_Histo_PkPos_3rdMax,"fTDC_Histo_PkPos_3rdMax/F");
     
-    outputTDCTree->Branch("fTDC_Fit_Amp",&run.fTDC_Fit_Amp,"fTDC_Fit_Amp/F");
-    outputTDCTree->Branch("fTDC_Fit_Amp_Err",&run.fTDC_Fit_Amp_Err,"fTDC_Fit_Amp_Err/F");
-    outputTDCTree->Branch("fTDC_Fit_Mean",&run.fTDC_Fit_Mean,"fTDC_Fit_Mean/F");
-    outputTDCTree->Branch("fTDC_Fit_Mean_Err",&run.fTDC_Fit_Mean_Err,"fTDC_Fit_Mean_Err/F");
-    outputTDCTree->Branch("fTDC_Fit_Sigma",&run.fTDC_Fit_Sigma,"fTDC_Fit_Sigma/F");
-    outputTDCTree->Branch("fTDC_Fit_Sigma_Err",&run.fTDC_Fit_Sigma_Err,"fTDC_Fit_Sigma_Err/F");
-    outputTDCTree->Branch("fTDC_Fit_Chi2",&run.fTDC_Fit_Chi2,"fTDC_Fit_Chi2/F");
-    outputTDCTree->Branch("fTDC_Fit_NDF",&run.fTDC_Fit_NDF,"fTDC_Fit_NDF/F");
+    //outputTDCTree->Branch("fTDC_Fit_Amp",&run.fTDC_Fit_Amp,"fTDC_Fit_Amp/F");
+    //outputTDCTree->Branch("fTDC_Fit_Amp_Err",&run.fTDC_Fit_Amp_Err,"fTDC_Fit_Amp_Err/F");
+    //outputTDCTree->Branch("fTDC_Fit_Mean",&run.fTDC_Fit_Mean,"fTDC_Fit_Mean/F");
+    //outputTDCTree->Branch("fTDC_Fit_Mean_Err",&run.fTDC_Fit_Mean_Err,"fTDC_Fit_Mean_Err/F");
+    //outputTDCTree->Branch("fTDC_Fit_Sigma",&run.fTDC_Fit_Sigma,"fTDC_Fit_Sigma/F");
+    //outputTDCTree->Branch("fTDC_Fit_Sigma_Err",&run.fTDC_Fit_Sigma_Err,"fTDC_Fit_Sigma_Err/F");
+    //outputTDCTree->Branch("fTDC_Fit_Chi2",&run.fTDC_Fit_Chi2,"fTDC_Fit_Chi2/F");
+    //outputTDCTree->Branch("fTDC_Fit_NDF",&run.fTDC_Fit_NDF,"fTDC_Fit_NDF/F");
     
-    outputTDCTree->Branch("fTDC_Fit_ContConvo_Amp", &run.fTDC_Fit_Convo_Amp, "fTDC_Fit_ContConvo_Amp/F");
-    outputTDCTree->Branch("fTDC_Fit_ContConvo_Amp_Err", &run.fTDC_Fit_Convo_Amp_Err, "fTDC_Fit_ContConvo_Amp_Err/F");
-    outputTDCTree->Branch("fTDC_Fit_ContConvo_Mean", &run.fTDC_Fit_Convo_Mean, "fTDC_Fit_ContConvo_Mean/F");
-    outputTDCTree->Branch("fTDC_Fit_ContConvo_Mean_Err", &run.fTDC_Fit_Convo_Mean_Err, "fTDC_Fit_ContConvo_Mean_Err/F");
-    outputTDCTree->Branch("fTDC_Fit_ContConvo_Sigma", &run.fTDC_Fit_Convo_Sigma, "fTDC_Fit_ContConvo_Sigma/F");
-    outputTDCTree->Branch("fTDC_Fit_ContConvo_Sigma_Err", &run.fTDC_Fit_Convo_Sigma_Err, "fTDC_Fit_ContConvo_Sigma_Err/F");
-    outputTDCTree->Branch("fTDC_Fit_ContConvo_Chi2", &run.fTDC_Fit_Convo_Chi2, "fTDC_Fit_ContConvo_Chi2/F");
-    outputTDCTree->Branch("fTDC_Fit_ContConvo_NDF", &run.fTDC_Fit_Convo_NDF, "fTDC_Fit_ContConvo_NDF/F");
     
-    outputTDCTree->Branch("fTDC_NumDeconvo_TimeResp", &run.fTDC_NumDeconvo_TimeResp, "fTDC_NumDeconvo_TimeResp/F");
-    
-    outputTDCTree->Branch("hTDC_Histo","TH1F", &run.hTDC_Histo,32000,0);
-    
-    outputTDCTree->Branch("func_TDC_Gaus","TF1", &run.func_Gaus,32000,0 );
-    outputTDCTree->Branch("func_TDC_Convo","TF1", &run.func_Convo,32000,0 );
+    //outputTDCTree->Branch("hTDC_Histo","TH1F", &run.hTDC_Histo,32000,0);
     
     //Open the Data File
     //------------------------------------------------------
