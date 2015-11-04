@@ -251,7 +251,7 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
                  iterFitParam != ((*iterDet).second).timingResults.map_fTDC_Fit_Param.end();
                  ++iterFitParam) {
                 //Set Parameters
-                treeInput.Branch( ((*iterDet).first + "_" + (*iterFitParam).first).c_str(), &((*iterFitParam).first).second, ((*iterDet).first + "_" + (*iterFitParam).first +"/F").c_str() );
+                treeInput.Branch( ((*iterDet).first + "_" + (*iterFitParam).first).c_str(), &((*iterFitParam).second), ((*iterDet).first + "_" + (*iterFitParam).first +"/F").c_str() );
             }
             
             //TDC Info - Fit Parameters Error
@@ -259,7 +259,7 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
                  iterFitParamErr != ((*iterDet).second).timingResults.map_fTDC_Fit_ParamErr.end();
                  ++iterFitParamErr) {
                 //Set Parameters
-                treeInput.Branch( ((*iterDet).first + "_" + (*iterFitParamErr).first).c_str(), &((*iterFitParamErr).first).second, ((*iterDet).first + "_" + (*iterFitParamErr).first +"_Err/F").c_str() );
+                treeInput.Branch( ((*iterDet).first + "_" + (*iterFitParamErr).first).c_str(), &((*iterFitParamErr).second), ((*iterDet).first + "_" + (*iterFitParamErr).first +"_Err/F").c_str() );
             }
             
             //TDC Info - Data
