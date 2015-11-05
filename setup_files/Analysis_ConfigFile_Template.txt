@@ -4,7 +4,7 @@
     Match_Arrival_Time = 'true'; #Data from all detectors will be shifted so <t_i> = <t_j> for all i,j
     [BEGIN_OR_INFO]
         Histo_Name = 'timingHisto_OR';
-        Histo_NumBins = '1200';
+        Histo_NumBins = '400';
         Histo_BinRange = '0,1200';
         Histo_XTitle = 'min#left(t_{1}, t_{2}#right) #left(ns#right)';
         Histo_YTitle = 'Counts #left(N/ns#right)';
@@ -17,7 +17,7 @@
     [END_OR_INFO]
     [BEGIN_AND_INFO]
         Histo_Name = 'timingHisto_AND';
-        Histo_NumBins = '1200';
+        Histo_NumBins = '400';
         Histo_BinRange = '0,1200';
         Histo_XTitle = 'min#left(t_{1}, t_{2}#right) #left(ns#right)';
         Histo_YTitle = 'Counts #left(N/ns#right)';
@@ -32,7 +32,7 @@
         #The 'Detector_Name' field must appear as the first parameter
         Detector_Name = 'GE11-VI-L-CERN-0001'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
         Histo_Name = 'timingHisto_GE11_1'; #TName of the TH1F created from this detector's data
-        Histo_NumBins = '1200';
+        Histo_NumBins = '400';
         Histo_BinRange = '0,1200';
         Histo_XTitle = 'time #left(ns#right)';
         Histo_YTitle = 'Counts #left(N/ns#right)';
@@ -47,7 +47,7 @@
         #The 'Detector_Name' field must appear as the first parameter
         Detector_Name = 'GE11-VI-L-CERN-0002'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
         Histo_Name = 'timingHisto_GE11_2'; #TName of the TH1F created from this detector's data
-        Histo_NumBins = '1200';
+        Histo_NumBins = '400';
         Histo_BinRange = '0,1200';
         Histo_XTitle = 'time #left(ns#right)';
         Histo_YTitle = 'Counts #left(N/ns#right)';
