@@ -95,6 +95,8 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
         return;
     } //End Case: failed to load ROOT file
     
+    cout<<" run.strTreeName_Run = " << run.strTreeName_Run << endl;
+    
     tree_Run = (TTree*) file_ROOT_Run->Get( run.strTreeName_Run.c_str() );
     
     if ( nullptr == tree_Run ) { //Case: failed to load TTree
