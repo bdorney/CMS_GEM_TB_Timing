@@ -65,12 +65,14 @@
  case 119: setDetGEM3TopV(std::string strDet_Name, float fInput); break;                //float
  case 120: setDetGEM3BotV(std::string strDet_Name, float fInput); break;                //float
  case 121: setDetMultiChanHVCase(std::string strDet_Name, std::string strMultiChan)     //string
- case 122: setDetGEM1TopV(std::string strDet_Name, std::string strBranchName); break;   //string
- case 123: setDetGEM1BotV(std::string strDet_Name, std::string strBranchName); break;   //string
- case 124: setDetGEM2TopV(std::string strDet_Name, std::string strBranchName); break;   //string
- case 125: setDetGEM2BotV(std::string strDet_Name, std::string strBranchName); break;   //string
- case 126: setDetGEM3TopV(std::string strDet_Name, std::string strBranchName); break;   //string
- case 127: setDetGEM3BotV(std::string strDet_Name, std::string strBranchName); break;   //string
+ case 122: setDetDriftV(std::string strDet_Name, std::string strBranchName); break;     //string
+ case 123: setDetGEM1TopV(std::string strDet_Name, std::string strBranchName); break;   //string
+ case 124: setDetGEM1BotV(std::string strDet_Name, std::string strBranchName); break;   //string
+ case 125: setDetGEM2TopV(std::string strDet_Name, std::string strBranchName); break;   //string
+ case 126: setDetGEM2BotV(std::string strDet_Name, std::string strBranchName); break;   //string
+ case 127: setDetGEM3TopV(std::string strDet_Name, std::string strBranchName); break;   //string
+ case 128: setDetGEM3BotV(std::string strDet_Name, std::string strBranchName); break;   //string
+ case 129: setDetCurrent(std::string strDet_Name, std::string strBranchName); break;    //string
  
  //VFAT Methods
  case 202: setVFATPos(std::string strDet_Name, int iInput); break;                      //int
