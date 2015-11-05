@@ -822,6 +822,8 @@ list<string> treeProducerTDC::getParsedFileName(string input){
 //  0->Tree Name; 1->Data Type; 2->Value/Identifier
 void treeProducerTDC::setParsedLUTLine(string &inputLine, vector<string> &vec_strLUTIdents, string &strTreeName, string &strDataType, string &strDetOrRunName, int &iMthdIdx, bool &bExitFlag){
     //Variable Declaration
+    bool bConvert2Upper = true;
+    
     int iPos_Paren1 = inputLine.find("(",0);
     int iPos_VertLine=inputLine.find("|",0);
     int iPos_Paren2 = inputLine.find(")",0);
@@ -912,6 +914,8 @@ void treeProducerTDC::setParsedLUTLine(string &inputLine, vector<string> &vec_st
         //Loop Through All comma positions to find value identifiers
         //There are N+1 elements for N commas
         for (int i=0; i<= vec_iPos_Commas.size(); ++i) { //Loop Over vec_iPos_Commas
+            bConvert2Upper = true;
+            
             if ( i == 0 ) { //Case: First Element
                 strStoredIdentifier = inputLine.substr(iPos_Equals + 1,vec_iPos_Commas[i] - iPos_Equals - 1 );
             } //End Case: First Element
@@ -923,8 +927,17 @@ void treeProducerTDC::setParsedLUTLine(string &inputLine, vector<string> &vec_st
                 strStoredIdentifier = inputLine.substr(vec_iPos_Commas[i-1] + 1,vec_iPos_Commas[i] - vec_iPos_Commas[i-1] - 1 );
             } //End Case: All Other Elements
             
-            //Transform the LUT Identifier?
-            if ( std::find(vecDoNotConvertToUpper.begin(),vecDoNotConvertToUpper.end(), strStoredIdentifier ) != vecDoNotConvertToUpper.end() ){
+            //Now the code is set to take TTree and TBranch names at runtime from the LUT file
+            //Converting this to upper case might lead to a PROBLEM
+            //Should we not convert this LUT Identifier to uppercase?
+            for (int i=0; i < vecDoNotConvertToUpper.size(); ++i) { //Loop Over vecDoNotConverToUpper
+                if ( 0 == vecDoNotConvertToUpper[i].compare(strStoredIdentifier) ){
+                    bConvert2Upper = false; break;
+                }
+            } //End Loop Over vecDoNotConverToUpper
+            
+            //Convert to upper case
+            if (bConvert2Upper) {
                 transform(strStoredIdentifier.begin(),strStoredIdentifier.end(),strStoredIdentifier.begin(),toupper);
             }
             
@@ -936,8 +949,17 @@ void treeProducerTDC::setParsedLUTLine(string &inputLine, vector<string> &vec_st
         //Get the LUT Identifier
         strStoredIdentifier = inputLine.substr(iPos_Equals+1,iPos_Colon - iPos_Equals - 1 );
         
-        //Transform the LUT Identifier?
-        if ( std::find(vecDoNotConvertToUpper.begin(),vecDoNotConvertToUpper.end(), strStoredIdentifier ) != vecDoNotConvertToUpper.end() ){
+        //Now the code is set to take TTree and TBranch names at runtime from the LUT file
+        //Converting this to upper case might lead to a PROBLEM
+        //Should we not convert this LUT Identifier to uppercase?
+        for (int i=0; i < vecDoNotConvertToUpper.size(); ++i) { //Loop Over vecDoNotConverToUpper
+            if ( 0 == vecDoNotConvertToUpper[i].compare(strStoredIdentifier) ){
+                bConvert2Upper = false; break;
+            }
+        } //End Loop Over vecDoNotConverToUpper
+        
+        //Convert to upper case
+        if (bConvert2Upper) {
             transform(strStoredIdentifier.begin(),strStoredIdentifier.end(),strStoredIdentifier.begin(),toupper);
         }
         
