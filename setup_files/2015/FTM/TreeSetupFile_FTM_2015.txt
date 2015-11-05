@@ -58,11 +58,11 @@ BEAM_PARTICLE(string|RUN)=Muon:2;
 #Intrinsic to the Run
 TRIG_MODE(string|RUN)=Async:3;
 #First Detector
-DET_VDRIFT(string|Drift)=fHV_Det1_Drift:105;
-DET_VGEM1_TOP(string|Drift)=fHV_Det1_G1Top:115;
-DET_VGEM1_BOT(string|Drift)=fHV_Det1_G1Bot:116;
-DET_VGEM2_TOP(string|Drift)=fHV_Det1_G2Top:117;
-#DET_VGEM2_BOT(string|Drift)=fHV_Det1_G2Bot:118;
+DET_VDRIFT(string|Drift)=fHV_Det1_Drift:122;
+DET_VGEM1_TOP(string|Drift)=fHV_Det1_G1Top:123;
+DET_VGEM1_BOT(string|Drift)=fHV_Det1_G1Bot:124;
+DET_VGEM2_TOP(string|Drift)=fHV_Det1_G2Top:125;
+#DET_VGEM2_BOT(string|Drift)=fHV_Det1_G2Bot:126;
 DET_VGEM2_BOT(float|Drift)=0:118;
 DET_GASFRAC_AR(float|Drift)=70:107;
 DET_GASFRAC_CO2(float|Drift)=30:108;
@@ -74,11 +74,11 @@ DET_GASFRAC_CF4(float|Drift)=0:109;
 #DET_GAIN_SLOPE_ERR(float|Drift)= <Manual Entry Value>:113;
 #DET_GAIN_INDEPVAR_CURRENT(bool|Drift)=<Manual Entry Value>:114;
 #Second Detector
-DET_VDRIFT(string|Readout)=fHV_Det1_Drift:105;
-DET_VGEM1_TOP(string|Readout)=fHV_Det1_G1Top:115;
-DET_VGEM1_BOT(string|Readout)=fHV_Det1_G1Bot:116;
-DET_VGEM2_TOP(string|Readout)=fHV_Det1_G2Top:117;
-#DET_VGEM2_BOT(string|Readout)=fHV_Det1_G2Bot:118;
+DET_VDRIFT(string|Readout)=fHV_Det1_Drift:122;
+DET_VGEM1_TOP(string|Readout)=fHV_Det1_G1Top:123;
+DET_VGEM1_BOT(string|Readout)=fHV_Det1_G1Bot:124;
+DET_VGEM2_TOP(string|Readout)=fHV_Det1_G2Top:125;
+#DET_VGEM2_BOT(string|Readout)=fHV_Det1_G2Bot:126;
 DET_VGEM2_BOT(float|Readout)=0:118;
 DET_GASFRAC_AR(float|Readout)=70:107;
 DET_GASFRAC_CO2(float|Readout)=30:108;

@@ -375,12 +375,14 @@ void TRunParameters::setParameter(std::string strDetOrRunName, std::string strIn
             
             //Detector Methods
         case 121: setDetMultiChanHVCase(strDetOrRunName, strInput); break;     //string
-        case 122: setDetGEM1TopV(strDetOrRunName, strInput); break;   //string
-        case 123: setDetGEM1BotV(strDetOrRunName, strInput); break;   //string
-        case 124: setDetGEM2TopV(strDetOrRunName, strInput); break;   //string
-        case 125: setDetGEM2BotV(strDetOrRunName, strInput); break;   //string
-        case 126: setDetGEM3TopV(strDetOrRunName, strInput); break;   //string
-        case 127: setDetGEM3BotV(strDetOrRunName, strInput); break;   //string
+        case 122: setDetDriftV(strDetOrRunName, strInput); break;
+        case 123: setDetGEM1TopV(strDetOrRunName, strInput); break;   //string
+        case 124: setDetGEM1BotV(strDetOrRunName, strInput); break;   //string
+        case 125: setDetGEM2TopV(strDetOrRunName, strInput); break;   //string
+        case 126: setDetGEM2BotV(strDetOrRunName, strInput); break;   //string
+        case 127: setDetGEM3TopV(strDetOrRunName, strInput); break;   //string
+        case 128: setDetGEM3BotV(strDetOrRunName, strInput); break;   //string
+        case 129: setDetCurrent(strDetOrRunName, strInput); break;      //string
             
             //VFAT Methods
             
