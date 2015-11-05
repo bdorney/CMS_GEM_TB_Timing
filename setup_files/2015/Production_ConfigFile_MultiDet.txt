@@ -1,0 +1,37 @@
+[BEGIN_PROD_INFO]
+	FitOption='NR';
+	PFP_RawData='/afs/cern.ch/user/d/dorney/scratch0/CMS_GEM/CMS_GEM_TB_Timing/data/2015/GE11';
+	#-----------------------------	
+	#GE1/1 2015
+	#-----------------------------
+	PFN_RunList='lists_runs/RunList_2015_GE11_Trial.txt';
+	OutputRootFileName='TestBeamDataset_TDC_Fall2015_GE11_MultiDetTrial.root';
+	OutputTreeName='GE11_Trial';
+	#-----------------------------
+	VerboseMode_IO='false';
+	VerboseMode_LUT='false';
+	VerboseMode_Parsing='false';
+	VerboseMode_PrintRuns='false';
+[END_PROD_INFO]
+[BEGIN_IGNORED_IDENTIFIERS]
+#List of identifiers in run file names to be ignroed; one parameter per line
+    FTM
+    GE11
+	2015.root
+    LayerBoth
+	#Trial01    	
+	#TDC.ROOT    	
+    #Lat24
+    #Lat26
+    #Lat27
+    #Lat30
+    #Lat31
+    #Ch10
+    #Ch10GE2.root
+    #VFAT0.root
+    #VFAT2.root
+    #VFAT3.root
+    #WithFuncGen
+    #Optimal
+    #values
+[END_IGNORED_IDENTIFIERS]
