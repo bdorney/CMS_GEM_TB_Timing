@@ -134,6 +134,7 @@ namespace Timing {
         //Miscillaneous Methods
         //------------------------------------------------------------------------------------------------------------------------------------------
         virtual void clearIgnoredParameters(){ vecIgnoredParam.clear(); return; };
+        virtual void doNotConvertToUpper(std::string strInput){vecDoNotConvertToUpper.push_back(strInput);return;};
         
         //Loop over runs given in fileName_Data
         virtual void readRuns(std::string inputTreeName, std::string outputDataFile);
@@ -167,6 +168,7 @@ namespace Timing {
         Timing::TimingRunAnalyzer *analyzer;  //Generic Analyzer class set by the user; a default one is provided but the user can make an inherited class whose methods are over written
         
         std::vector<std::string> vecIgnoredParam; //Vector of Parameters to be ignored during getParsedFileName()
+        std::vector<std::string> vecDoNotConvertToUpper;
         
         enum dataType_t {
             typeBool=0,

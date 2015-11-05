@@ -359,6 +359,14 @@ int main( int argc_, char * argv_[]){
     myProducer.setVerboseModePFN(pInfo.bVerboseMode_PFN);
     myProducer.setVerboseModeLUT(pInfo.bVerboseMode_LUT);
     myProducer.setVerboseModePrintRuns(pInfo.bVerboseMode_PrintRuns);
+    myProducer.doNotConvertToUpper("fHV_Det2_DividerCurrent");
+    myProducer.doNotConvertToUpper("fHV_Det1_Drift");
+    myProducer.doNotConvertToUpper("fHV_Det1_G1Top");
+    myProducer.doNotConvertToUpper("fHV_Det1_G1Bot");
+    myProducer.doNotConvertToUpper("fHV_Det1_G2Top");
+    myProducer.doNotConvertToUpper("fHV_Det1_G2Bot");
+    myProducer.doNotConvertToUpper("fHV_Det1_G3Top");
+    myProducer.doNotConvertToUpper("fHV_Det1_G3Bot");
     myProducer.setFilesData(pInfo.strPFN_RunList_PFP);
     myProducer.setAnalyzer(myAnalyzer);
     //myProducer.writeTree(pInfo.strOutput_Tree, pInfo.strOutput_ROOTFile);
