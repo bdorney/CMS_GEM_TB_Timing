@@ -942,7 +942,7 @@ void treeProducerTDC::setParsedLUTLine(string &inputLine, vector<string> &vec_st
     } //End Case: Only One Value Identifier
     
     //transform to all capitals (allows case-insensitive comparison
-    transform( strTreeName.begin(), strTreeName.end(), strTreeName.begin(), toupper);
+    //transform( strTreeName.begin(), strTreeName.end(), strTreeName.begin(), toupper);
     transform( strDataType.begin(), strDataType.end(), strDataType.begin(), toupper);
     transform( strDetOrRunName.begin(), strDetOrRunName.end(), strDetOrRunName.begin(), toupper);
     
@@ -1247,6 +1247,10 @@ void treeProducerTDC::setRun(string inputROOTFileName, string inputLUTFileName, 
     //Perform the Analysis
     runLogger.setRunName(inputROOTFileName);
     
+    Timing::Run run = runLogger.getRun();
+
+    cout<<"Timing:treeProducerTDC::setRun() - run.strTreeName_Run = " << run.strTreeName_Run << endl;
+
     if (analyzer != nullptr) { //Case: ANALYZE
         analyzer->setRun(runLogger);
         analyzer->analyzeRun();
