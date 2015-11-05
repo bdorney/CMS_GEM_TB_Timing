@@ -332,11 +332,11 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     run.hTDC_Correlation= &hTDC_Correlation;//Set the run's histogram
     run.hTDC_DeltaT     = &hTDC_DeltaT;     //Set the run's histogram
     
-    //Close the file and delete the tree
+    //Close the file
     //------------------------------------------------------
     file_ROOT_Run->Close();
     
-    delete tree_Run;
+    //delete tree_Run;
     
     return;
 } //End Timing::TimingRunAnalyzer::analyze()
