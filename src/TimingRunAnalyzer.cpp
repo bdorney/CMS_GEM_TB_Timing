@@ -743,7 +743,7 @@ void Timing::TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::if
 //  ->hInput Detector Histogram
 void Timing::TimingRunAnalyzer::setPerformanceData(TDCAnalysisData &inputTimingResults, TH1F &hInput){
     //Variable Declaration
-    TSpectrum *timingSpec = new TSpectrum();
+    /*TSpectrum *timingSpec = new TSpectrum();
     
     //Get Number of peaks identified
     //Determine the number of Peaks in the Histogram (this may require additional user inputs...we'll see)
@@ -765,7 +765,15 @@ void Timing::TimingRunAnalyzer::setPerformanceData(TDCAnalysisData &inputTimingR
     else{ //Case: No Peak Found
         inputTimingResults.fTDC_Histo_Mean = -1;
         inputTimingResults.fTDC_Histo_RMS  = -1;
-    } //End Case: No Peak Found
+    }*/ //End Case: No Peak Found
+    
+    //For now don't use TSpectrum
+    hInput.GetXaxis()->SetRangeUser(hInput.GetMean() - 5. * hInput.GetRMS(), hInput.GetMean() + 5. * hInput.GetRMS() );
+    
+    //Ideally dHistoPeakPos_X[0] == hInput.GetMean()
+    //May need to implement a background subtraction method
+    inputTimingResults.fTDC_Histo_Mean = hInput.GetMean();
+    inputTimingResults.fTDC_Histo_RMS  = hInput.GetRMS();
     
     //Set the Histogram
     inputTimingResults.hTDC_Histo = &hInput;

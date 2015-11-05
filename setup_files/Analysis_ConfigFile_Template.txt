@@ -30,7 +30,8 @@
     [END_AND_INFO]
     [BEGIN_DETECTOR_INFO]
         #The 'Detector_Name' field must appear as the first parameter
-        Detector_Name = 'GE11-VI-L-CERN-0001'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
+        #Detector_Name = 'GE11-VI-L-CERN-0001'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
+        Detector_Name = 'Drift';
         Histo_Name = 'timingHisto_GE11_1'; #TName of the TH1F created from this detector's data
         Histo_NumBins = '400';
         Histo_BinRange = '0,1200';
@@ -45,7 +46,8 @@
     [END_DETECTOR_INFO]
     [BEGIN_DETECTOR_INFO]
         #The 'Detector_Name' field must appear as the first parameter
-        Detector_Name = 'GE11-VI-L-CERN-0002'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
+        #Detector_Name = 'GE11-VI-L-CERN-0002'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
+        Detector_Name = 'Readout';
         Histo_Name = 'timingHisto_GE11_2'; #TName of the TH1F created from this detector's data
         Histo_NumBins = '400';
         Histo_BinRange = '0,1200';
