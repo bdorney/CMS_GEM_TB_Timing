@@ -941,7 +941,7 @@ void treeProducerTDC::setParsedLUTLine(string &inputLine, vector<string> &vec_st
         vec_strLUTIdents.push_back( strStoredIdentifier );
     } //End Case: Only One Value Identifier
     
-    //transform to all capitals (allows case-insensitive comparison
+    //transform to all capitals (allows case-insensitive comparison)
     //transform( strTreeName.begin(), strTreeName.end(), strTreeName.begin(), toupper);
     transform( strDataType.begin(), strDataType.end(), strDataType.begin(), toupper);
     transform( strDetOrRunName.begin(), strDetOrRunName.end(), strDetOrRunName.begin(), toupper);
