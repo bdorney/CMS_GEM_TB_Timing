@@ -923,8 +923,10 @@ void treeProducerTDC::setParsedLUTLine(string &inputLine, vector<string> &vec_st
                 strStoredIdentifier = inputLine.substr(vec_iPos_Commas[i-1] + 1,vec_iPos_Commas[i] - vec_iPos_Commas[i-1] - 1 );
             } //End Case: All Other Elements
             
-            //Transform the LUT Identifier
-            transform(strStoredIdentifier.begin(),strStoredIdentifier.end(),strStoredIdentifier.begin(),toupper);
+            //Transform the LUT Identifier?
+            if ( std::find(vecDoNotConvertToUpper.begin(),vecDoNotConvertToUpper.end(), strStoredIdentifier ) != vecDoNotConvertToUpper.end() ){
+                transform(strStoredIdentifier.begin(),strStoredIdentifier.end(),strStoredIdentifier.begin(),toupper);
+            }
             
             //Store the LUT Identifier
             vec_strLUTIdents.push_back( strStoredIdentifier );
@@ -934,8 +936,10 @@ void treeProducerTDC::setParsedLUTLine(string &inputLine, vector<string> &vec_st
         //Get the LUT Identifier
         strStoredIdentifier = inputLine.substr(iPos_Equals+1,iPos_Colon - iPos_Equals - 1 );
         
-        //Transform the LUT Identifier
-        transform(strStoredIdentifier.begin(),strStoredIdentifier.end(),strStoredIdentifier.begin(),toupper);
+        //Transform the LUT Identifier?
+        if ( std::find(vecDoNotConvertToUpper.begin(),vecDoNotConvertToUpper.end(), strStoredIdentifier ) != vecDoNotConvertToUpper.end() ){
+            transform(strStoredIdentifier.begin(),strStoredIdentifier.end(),strStoredIdentifier.begin(),toupper);
+        }
         
         //Store the LUT Identifier
         vec_strLUTIdents.push_back( strStoredIdentifier );
