@@ -83,6 +83,8 @@ namespace Timing {
         
         //Getters - Methods that Get (i.e. Return) Something
         //------------------------------------------------------------------------------------------------------------------------------------------
+        virtual Timing::AnalysisSetup getAnalysisSetup(){return analysisSetup;};
+        
         virtual Timing::Run getRun(){return run;};
         
         //Miscillaneous Methods

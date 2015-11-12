@@ -25,7 +25,7 @@
  *
  */
 
-using namespace ROOT;
+using namespace ROOT; //This is application specific code...no one would overwrite these classes...ever...
 
 namespace Timing {
     //Common Data Types Goes Here
@@ -64,7 +64,7 @@ namespace Timing {
             strHisto_Name = "histo_Timing";
             strHisto_Title_X = "time #left(ns#right)";
             strHisto_Title_Y = "Counts #left(N/ns#right)";
-        };
+        }
     };
     
     struct AnalysisSetup{
