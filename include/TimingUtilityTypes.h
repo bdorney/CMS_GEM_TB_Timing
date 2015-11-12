@@ -29,6 +29,67 @@ using namespace ROOT;
 
 namespace Timing {
     //Common Data Types Goes Here
+    struct HistoSetup{
+        bool bFit_AutoRanging;  //Fit range determined automatically?
+        
+        float fHisto_xLower;  //lower x range of histo
+        float fHisto_xUpper;  //upper x range of histo
+        
+        int iHisto_nBins;   //number of bins
+        
+        std::string strFit_Formula; //Fit formula
+        std::string strFit_Name;    //
+        std::string strFit_Option;
+        
+        std::string strHisto_Name;
+        std::string strHisto_Title_X;
+        std::string strHisto_Title_Y;
+        
+        std::vector<std::string> vec_strFit_ParamMeaning;
+        std::vector<std::string> vec_strFit_ParamIGuess;
+        
+        HistoSetup(){
+            bFit_AutoRanging = false;
+            
+            fHisto_xLower = 0;
+            fHisto_xUpper = 1200;
+            
+            iHisto_nBins = 1200;
+            
+            
+            strFit_Formula = "[0]*[2]*sqrt(TMath::Pi()/2.)*(TMath::Erf( (12.5 + (x-[1])) / ([2] * sqrt(2.) ) ) - TMath::Erf( ((x-[1]) - 12.5) / ([2] * sqrt(2.) ) ) )";
+            strFit_Name = "func_Timing";
+            strFit_Option = "R";
+            
+            strHisto_Name = "histo_Timing";
+            strHisto_Title_X = "time #left(ns#right)";
+            strHisto_Title_Y = "Counts #left(N/ns#right)";
+        };
+    };
+    
+    struct AnalysisSetup{
+        bool bCompute_OR;
+        bool bCompute_AND;
+        bool bInvertTime;
+        bool bMatchArrivalTime;
+        
+        float fTDCWinSize;
+        
+        HistoSetup setupOR;
+        HistoSetup setupAND;
+        
+        std::map<std::string, HistoSetup, map_cmp_str> map_DetSetup;
+        
+        AnalysisSetup(){
+            bCompute_AND = bCompute_OR = bMatchArrivalTime = false;
+            //bInvertTime = true;
+            
+            bInvertTime = false;
+            
+            fTDCWinSize = 1200;
+        }
+    };
+    
     struct TDCAnalysisData{
         float fTDC_Fit_Chi2;
         float fTDC_Fit_NDF;
