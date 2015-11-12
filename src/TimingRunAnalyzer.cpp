@@ -75,7 +75,8 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     TH1F hTDC_OR = getHistogram( analysisSetup.setupOR );
     
     //TTree *tree_Run = nullptr;
-    
+    //std::shared_ptr<TTree> tree_Run(nullptr);    
+
     vector<string> vec_strMapDetKeyVal; //List of detector names for random access to the map...
     
     //Set Errors on DeltaT & Correlation histograms (this is done automatically for those created with getHistogram)
@@ -103,8 +104,10 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     
     cout<<" run.strTreeName_Run = " << run.strTreeName_Run << endl;
     
-    auto tree_Run = make_shared<TTree>( (TTree*) file_ROOT_Run.Get( run.strTreeName_Run.c_str() ) );
-    
+    //auto tree_Run = std::make_shared<TTree>( (TTree*) file_ROOT_Run.Get( run.strTreeName_Run.c_str() ) );
+    //tree_Run = (TTree*) file_ROOT_Run.Get( run.strTreeName_Run.c_str() );
+    std::shared_ptr<TTree> tree_Run( (TTree*) file_ROOT_Run.Get( run.strTreeName_Run.c_str() ) );
+
     if ( nullptr == tree_Run ) { //Case: failed to load TTree
         std::cout<<"Timing::TimingRunAnalyzer::analyze() - error while fetching: " << run.strTreeName_Run << endl;
         std::cout<<"\tTree Returns nullptr; tree_Run = " << tree_Run << endl;
@@ -353,8 +356,8 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     //cout<<"Timig::TimingRunAnalyzer::analyzeRun() - Trying to delete tree pointer\n";
     //delete tree_Run;
     
-    cout<<"Timing::TimingRunAnalyzer::analyzeRun() - Trying to close file\n";
-    file_ROOT_Run.Close();
+    //cout<<"Timing::TimingRunAnalyzer::analyzeRun() - Trying to close file\n";
+    //file_ROOT_Run.Close();
     
     return;
 } //End Timing::TimingRunAnalyzer::analyze()
