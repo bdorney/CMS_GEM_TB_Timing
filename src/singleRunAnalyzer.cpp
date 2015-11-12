@@ -1,10 +1,13 @@
 //
-//  timeResponse_OR_AND.cpp
+//  singleRunAnalyzer.cpp
 //
 //
 //  Created by Brian L Dorney on 24/10/15.
 //
 //
+
+#ifndef ____singleRunAnalyzer__
+#define ____singleRunAnalyzer__
 
 //C++ Includes
 #include <algorithm>
@@ -177,3 +180,5 @@ int main( int argc_, char * argv_[]){
 
     return 0;
 } //End main()
+
+#endif /* defined(____singleRunAnalyzer__) */
