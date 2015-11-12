@@ -185,9 +185,15 @@ int main( int argc_, char * argv_[]){
     
     //Analyze!
     //------------------------------------------------------
+    cout<<"main() - No Fault 1\n";
+    
     timingAnalyzer.analyzeRun();
     
+    cout<<"main() - No Fault 2\n";
+    
     run = timingAnalyzer.getRun();
+    
+    cout<<"main() - No Fault 3\n";
     
     //Debugging
     

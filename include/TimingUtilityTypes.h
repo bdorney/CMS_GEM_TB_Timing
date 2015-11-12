@@ -31,6 +31,7 @@ namespace Timing {
     //Common Data Types Goes Here
     struct HistoSetup{
         bool bFit_AutoRanging;  //Fit range determined automatically?
+        //bool bSubtractBkg;      //Background subtraction
         
         float fHisto_xLower;  //lower x range of histo
         float fHisto_xUpper;  //upper x range of histo
