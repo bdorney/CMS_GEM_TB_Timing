@@ -11,6 +11,7 @@
 #include <fstream>
 #include <iostream>
 //#include <ifstream>
+#include <mcheck.h> //for mcheck_check_all()
 //#include <ofstream>
 #include <stdio.h>
 #include <string>
@@ -346,6 +347,9 @@ int main( int argc_, char * argv_[]){
     myProducer.setIgnoredParameter("Optimal");
     myProducer.setIgnoredParameter("values");*/
 
+    //Memory check?
+    mcheck_check_all();
+    
     //Setup the Analyzer
     TimingRunAnalyzer *myAnalyzer = new TimingRunAnalyzer();
     myAnalyzer->setAnalysisConfig(vec_strInputArgs[2]);

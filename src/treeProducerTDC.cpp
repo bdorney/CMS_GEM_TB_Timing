@@ -122,6 +122,7 @@ void treeProducerTDC::readRuns(string inputTreeName, string outputDataFile){
 
         //Create an instance of the Run Parameters and then get specific run info
         TRunParameters runLog;
+        runLog.setRunName(fileName_ROOT);
         
 	//Debugging
 	cout<<"treeProducerTDC::readRuns() - run.hTDC_DeltaT (Expect Null, but it isn't) = " << run.hTDC_DeltaT << endl;
