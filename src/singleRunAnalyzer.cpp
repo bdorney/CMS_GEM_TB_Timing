@@ -57,6 +57,8 @@ using namespace Timing;
 
 int main( int argc_, char * argv_[]){
     //Variable Declaration
+    Timing::AnalysisSetup aSetup;
+    
     bool bVerboseMode;
     
     float fVersion = 1.0;
@@ -154,6 +156,8 @@ int main( int argc_, char * argv_[]){
     timingAnalyzer.setAnalysisConfig( strName_analysisFile );
     timingAnalyzer.setTDCResolution(0.300);
     
+    aSetup = timingAnalyzer.getAnalysisSetup();
+    
     //Setup the Run
     //------------------------------------------------------
     run.iRun = 0;       //Filler for Now
@@ -163,11 +167,11 @@ int main( int argc_, char * argv_[]){
     run.strTreeName_Run = strName_tree;
     
     //Setup the detector map
-    if ( vec_strTDCChan.size() == timingAnalyzer.analysisSetup.map_DetSetup.size() ) {
+    if ( vec_strTDCChan.size() == aSetup.map_DetSetup.size() ) {
         //map<string, HistoSetup, map_cmp_str>::iterator iterAnaSetup = timingAnalyzer.analysisSetup.map_DetSetup.begin();
         
-        for (auto iterAnaSetup = timingAnalyzer.analysisSetup.map_DetSetup.begin(); iterAnaSetup != timingAnalyzer.analysisSetup.map_DetSetup.end(); ++iterAnaSetup) {
-            cout<<"Detector  = " << (*iterAnaSetup).first << ";\t" << "TDC Channel = " << vec_strTDCChan[std::distance( )] << endl;
+        for (auto iterAnaSetup = aSetup.map_DetSetup.begin(); iterAnaSetup != aSetup.map_DetSetup.end(); ++iterAnaSetup) {
+            cout<<"Detector  = " << (*iterAnaSetup).first << ";\t" << "TDC Channel = " << vec_strTDCChan[std::distance(aSetup.map_DetSetup.begin(), iterAnaSetup)] << endl;
         }
     } //End Case configuration file & user input match
 
