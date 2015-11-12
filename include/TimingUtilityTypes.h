@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <stdio.h>
 #include <sstream>
 #include <string>
@@ -109,8 +110,10 @@ namespace Timing {
         //float fTDC_Histo_PkPos_2ndMax = -1;
         //float fTDC_Histo_PkPos_3rdMax = -1;
         
-        TF1 *func_TDC_Fit;     //User Specified
-        TH1F *hTDC_Histo;      //Made from Detector.vec_iTDC_Data
+        //TF1 *func_TDC_Fit;     //User Specified
+        std::shared_ptr<TF1> func_TDC_Fit;//(nullptr);
+        //TH1F *hTDC_Histo;      //Made from Detector.vec_iTDC_Data
+        std::shared_ptr<TH1F> hTDC_Histo; //(nullptr);
         
         std::map<std::string, float> map_fTDC_Fit_Param; //Fit parameters
         std::map<std::string, float> map_fTDC_Fit_ParamErr; //Error on fit parameters
@@ -121,8 +124,8 @@ namespace Timing {
             fTDC_Histo_Mean = fTDC_Histo_RMS = fTDC_Eff = fTDC_Fit_Chi2 = fTDC_Fit_NDF = -1;
             iTDC_Histo_nPks = -1;
             
-            func_TDC_Fit = nullptr;     //User Specified
-            hTDC_Histo = nullptr;          //Made from vec_iTDC_Data
+            //func_TDC_Fit = nullptr;     //User Specified
+            //hTDC_Histo = nullptr;          //Made from vec_iTDC_Data
 
         }
     };

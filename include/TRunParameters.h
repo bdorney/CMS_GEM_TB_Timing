@@ -14,6 +14,7 @@
 #include <iostream>
 #include <map>
 //#include <math>
+#include <memory>
 #include <stdio.h>
 #include <string>
 #include <utility>
@@ -366,7 +367,7 @@ namespace Timing {
         virtual void setTDCData(std::string strDet_Name, std::vector<int> vec_iData){run.map_det[strDet_Name].vec_iTDC_Data = vec_iData; return;};
         
         virtual void setTDCHistoDet(std::string strDet_Name, TH1F *hInput){
-            run.map_det[strDet_Name].timingResults.hTDC_Histo = hInput;
+            run.map_det[strDet_Name].timingResults.hTDC_Histo = std::make_shared<TH1F>(*hInput);
             run.map_det[strDet_Name].timingResults.fTDC_Histo_Mean = hInput->GetMean();
             run.map_det[strDet_Name].timingResults.fTDC_Histo_RMS = hInput->GetRMS();
             return;
@@ -395,7 +396,7 @@ namespace Timing {
         //Complex Analysis Histograms - DETECTOR OR
         //=============================
         virtual void setTDCHistoOR(TH1F *hInput){
-            run.timingResultsOR.hTDC_Histo = hInput;
+            run.timingResultsOR.hTDC_Histo = std::make_shared<TH1F>(*hInput);
             run.timingResultsOR.fTDC_Histo_Mean = hInput->GetMean();
             run.timingResultsOR.fTDC_Histo_RMS = hInput->GetRMS();
             return;
@@ -412,7 +413,7 @@ namespace Timing {
         //Complex Analysis Histograms - DETECTOR AND
         //=============================
         virtual void setTDCHistoAND(TH1F *hInput){
-            run.timingResultsAND.hTDC_Histo = hInput;
+            run.timingResultsAND.hTDC_Histo = std::make_shared<TH1F>(*hInput);
             run.timingResultsAND.fTDC_Histo_Mean = hInput->GetMean();
             run.timingResultsAND.fTDC_Histo_RMS = hInput->GetRMS();
             return;

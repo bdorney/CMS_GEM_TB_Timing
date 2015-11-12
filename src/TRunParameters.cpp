@@ -203,7 +203,7 @@ void TRunParameters::setTDCFit(std::string strDet_Name, TF1 *func_Input, std::ve
     run.map_det[strDet_Name].timingResults.map_fTDC_Fit_ParamErr.clear();
     //run.map_det[strDet_Name].vec_strParamName.clear();
     
-    run.map_det[strDet_Name].timingResults.func_TDC_Fit = func_Input;
+    run.map_det[strDet_Name].timingResults.func_TDC_Fit = std::make_shared<TF1>(*func_Input);
     
     //for (int i=0; i < func_Input->GetNpar(); ++i) {
     //run.map_det[strDet_Name].vec_fTDC_Fit_Param.push_back( func_Input->GetParameter(i) );
@@ -225,7 +225,7 @@ void TRunParameters::setTDCFitOR(TF1 *func_Input, std::vector<std::string> vec_s
     run.timingResultsOR.map_fTDC_Fit_Param.clear();
     run.timingResultsOR.map_fTDC_Fit_ParamErr.clear();
     
-    run.timingResultsOR.func_TDC_Fit = func_Input;
+    run.timingResultsOR.func_TDC_Fit = std::make_shared<TF1>(*func_Input);
     
     for (int i = 0; i < vec_strParamName.size(); ++i) {
         run.timingResultsOR.map_fTDC_Fit_Param[vec_strParamName[i]] = func_Input->GetParameter(i);
@@ -243,7 +243,7 @@ void TRunParameters::setTDCFitAND(TF1 *func_Input, std::vector<std::string> vec_
     run.timingResultsAND.map_fTDC_Fit_Param.clear();
     run.timingResultsAND.map_fTDC_Fit_ParamErr.clear();
     
-    run.timingResultsAND.func_TDC_Fit = func_Input;
+    run.timingResultsAND.func_TDC_Fit = std::make_shared<TF1>(*func_Input);
     
     for (int i = 0; i < vec_strParamName.size(); ++i) {
         run.timingResultsAND.map_fTDC_Fit_Param[vec_strParamName[i]] = func_Input->GetParameter(i);

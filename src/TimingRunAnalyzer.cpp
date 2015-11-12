@@ -799,7 +799,8 @@ void Timing::TimingRunAnalyzer::setPerformanceData(TDCAnalysisData &inputTimingR
     inputTimingResults.fTDC_Histo_RMS  = hInput.GetRMS();
     
     //Set the Histogram
-    inputTimingResults.hTDC_Histo = &hInput;
+    //inputTimingResults.hTDC_Histo = &hInput;
+    inputTimingResults.hTDC_Histo = std::make_shared<TH1F>(hInput);
     
     return;
 } //End Timing::TimingRunAnalyzer::setPerformanceData() - Histogram Version
@@ -820,7 +821,8 @@ void Timing::TimingRunAnalyzer::setPerformanceData(TDCAnalysisData &inputTimingR
     } //End Loop Over Function Parameters
     
     //Set the Function
-    inputTimingResults.func_TDC_Fit = &funcInput;
+    //inputTimingResults.func_TDC_Fit = &funcInput;
+    inputTimingResults.func_TDC_Fit = std::make_shared<TF1>(funcInput);
     
     return;
 } //End Timing::TimingRunAnalyzer::setPerformanceData() - Histogram Version
