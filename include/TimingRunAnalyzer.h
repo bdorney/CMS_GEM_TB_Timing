@@ -27,6 +27,7 @@
 //#include <functional>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <numeric>
 #include <stdio.h>
 #include <string>

@@ -74,7 +74,7 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     TH2F hTDC_Correlation( ("hTDC_Corr_R" + getString(run.iRun) ).c_str(),"Correlation",analysisSetup.fTDCWinSize, 0., analysisSetup.fTDCWinSize,analysisSetup.fTDCWinSize, 0., analysisSetup.fTDCWinSize );
     TH1F hTDC_OR = getHistogram( analysisSetup.setupOR );
     
-    TTree *tree_Run = nullptr;
+    //TTree *tree_Run = nullptr;
     
     vector<string> vec_strMapDetKeyVal; //List of detector names for random access to the map...
     
@@ -103,7 +103,7 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     
     cout<<" run.strTreeName_Run = " << run.strTreeName_Run << endl;
     
-    tree_Run = (TTree*) file_ROOT_Run.Get( run.strTreeName_Run.c_str() );
+    auto tree_Run = make_shared<TTree>( (TTree*) file_ROOT_Run.Get( run.strTreeName_Run.c_str() ) );
     
     if ( nullptr == tree_Run ) { //Case: failed to load TTree
         std::cout<<"Timing::TimingRunAnalyzer::analyze() - error while fetching: " << run.strTreeName_Run << endl;
@@ -156,6 +156,8 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     //Get Data event-by-event from individual channels and nonzero invert times if requested
     for (int i=0; i < tree_Run->GetEntries(); ++i) {
         tree_Run->GetEntry(i);
+        
+        if (i % 1000 == 0) cout <<i<<" Events Analyzed\n";
         
         //Get data event-by-event
         for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) {
@@ -348,8 +350,8 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     printROOTFileStatus(&file_ROOT_Run);
     cout<<"Timing::TimingRunAnalyzer::analyzeRun() - file_ROOT_Run = " << &file_ROOT_Run << endl;
 
-    cout<<"Timig::TimingRunAnalyzer::analyzeRun() - Trying to delete tree pointer\n";
-    delete tree_Run;
+    //cout<<"Timig::TimingRunAnalyzer::analyzeRun() - Trying to delete tree pointer\n";
+    //delete tree_Run;
     
     cout<<"Timing::TimingRunAnalyzer::analyzeRun() - Trying to close file\n";
     file_ROOT_Run.Close();
