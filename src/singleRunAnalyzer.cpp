@@ -175,9 +175,22 @@ int main( int argc_, char * argv_[]){
         
         for (auto iterAnaSetup = aSetup.map_DetSetup.begin(); iterAnaSetup != aSetup.map_DetSetup.end(); ++iterAnaSetup) {
             cout<<"Detector  = " << (*iterAnaSetup).first << ";\t" << "TDC Channel = " << vec_strTDCChan[std::distance(aSetup.map_DetSetup.begin(), iterAnaSetup)] << endl;
+            
+            run.map_det[(*iterAnaSetup).first].iDet_Pos = std::distance(aSetup.map_DetSetup.begin(), iterAnaSetup);
+            run.map_det[(*iterAnaSetup).first].iTDC_Chan = stofSafe( "TDC_Chan" , vec_strTDCChan[std::distance(aSetup.map_DetSetup.begin(), iterAnaSetup)] );
         }
     } //End Case configuration file & user input match
 
+    timingAnalyzer.setRun(run);
+    
+    //Analyze!
+    //------------------------------------------------------
+    timingAnalyzer.analyzeRun();
+    
+    run = timingAnalyzer.getRun();
+    
+    //Debugging
+    
     return 0;
 } //End main()
 
