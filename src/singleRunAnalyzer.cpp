@@ -9,6 +9,7 @@
 //C++ Includes
 #include <algorithm>
 #include <iostream>
+#include <iterator>
 #include <map>
 #include <stdio.h>
 #include <sstream>
@@ -71,6 +72,7 @@ int main( int argc_, char * argv_[]){
     TimingRunAnalyzer timingAnalyzer;
     
     std::vector<std::string> vec_strInputArgs;
+    std::vector<std::string> vec_strTDCChan;
     
     //Transfer Input Arguments into vec_strInputArgs
     //------------------------------------------------------
@@ -158,14 +160,14 @@ int main( int argc_, char * argv_[]){
     run.iTrig_Mode = 0; //Asynchronous
     
     run.strRunName      = strName_inputRootFile;
-    run.strTreeName_Run = strName_tree
+    run.strTreeName_Run = strName_tree;
     
     //Setup the detector map
-    if ( vec_strTDCChan.size() == TimingRunAnalyzer.analysisSetup.map_DetSetup.size() ) {
-        //map<string, HistoSetup, map_cmp_str>::iterator iterAnaSetup = TimingRunAnalyzer.analysisSetup.map_DetSetup.begin();
+    if ( vec_strTDCChan.size() == timingAnalyzer.analysisSetup.map_DetSetup.size() ) {
+        //map<string, HistoSetup, map_cmp_str>::iterator iterAnaSetup = timingAnalyzer.analysisSetup.map_DetSetup.begin();
         
-        for (auto iterAnaSetup = TimingRunAnalyzer.analysisSetup.map_DetSetup.begin(); iterAnaSetup != TimingRunAnalyzer.analysisSetup.map_DetSetup.end(); ++iterAnaSetup) {
-         
+        for (auto iterAnaSetup = timingAnalyzer.analysisSetup.map_DetSetup.begin(); iterAnaSetup != timingAnalyzer.analysisSetup.map_DetSetup.end(); ++iterAnaSetup) {
+            cout<<"Detector  = " << (*iterAnaSetup).first << ";\t" << "TDC Channel = " << vec_strTDCChan[std::distance( )] << endl;
         }
     } //End Case configuration file & user input match
 

@@ -78,7 +78,7 @@ namespace Timing {
         HistoSetup setupOR;
         HistoSetup setupAND;
         
-        std::map<std::string, HistoSetup, map_cmp_str> map_DetSetup;
+        std::map<std::string, HistoSetup, Timing::map_cmp_str> map_DetSetup;
         
         AnalysisSetup(){
             bCompute_AND = bCompute_OR = bMatchArrivalTime = false;
