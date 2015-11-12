@@ -65,8 +65,9 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     TF1 func_TDC_Fit_AND;
     TF1 func_TDC_Fit_OR;
     
-    TFile *file_ROOT_Run;
-    
+    //TFile *file_ROOT_Run;
+    TFile file_ROOT_Run(run.strRunName.c_str(),"READ","",1);
+
     //Setup the OR, AND, deltaT, & correlation histograms
     TH1F hTDC_AND = getHistogram( analysisSetup.setupAND );
     TH1F hTDC_DeltaT( ("hTDC_DeltaT_R" + getString(run.iRun) ).c_str(),"DeltaT:t_{Det1} - t_{Det2} #left( ns #right): A.U.",2 * analysisSetup.fTDCWinSize, -1. * analysisSetup.fTDCWinSize, analysisSetup.fTDCWinSize );
@@ -83,13 +84,18 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     
     //Open this run's root file
     //------------------------------------------------------
-    file_ROOT_Run = new TFile(run.strRunName.c_str(),"READ","",1);
-    
+    //file_ROOT_Run = new TFile(run.strRunName.c_str(),"READ","",1);
+    //file_ROOT_Run.Open(run.strRunName.c_str(),"READ","",1,0);
+
+    cout<<"TimingRunAnalyzer::analyzeRun() - run.strRunName = " << run.strRunName << endl;
+
     //Check to see if data file opened successfully, if so load the tree
     //------------------------------------------------------
-    if ( !file_ROOT_Run->IsOpen() || file_ROOT_Run->IsZombie() ) { //Case: failed to load ROOT file
-        perror( ("Timing::TimingRunAnalyzer::analyze() - error while opening file: " + run.strRunName ).c_str() );
-        printROOTFileStatus(file_ROOT_Run);
+    if ( !file_ROOT_Run.IsOpen() || file_ROOT_Run.IsZombie() ) { //Case: failed to load ROOT file
+        perror( ("Timing::TimingRunAnalyzer::analyzeRun() - error while opening file: " + run.strRunName ).c_str() );
+	cout<<"file_ROOT_Run.IsOpen() = " << file_ROOT_Run.IsOpen() << endl;
+        cout<<"file_ROOT_Run.IsZombie() = " << file_ROOT_Run.IsZombie() << endl;
+        //printROOTFileStatus(file_ROOT_Run);
         std::cout << "Exiting!!!\n";
         
         return;
@@ -97,7 +103,7 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     
     cout<<" run.strTreeName_Run = " << run.strTreeName_Run << endl;
     
-    tree_Run = (TTree*) file_ROOT_Run->Get( run.strTreeName_Run.c_str() );
+    tree_Run = (TTree*) file_ROOT_Run.Get( run.strTreeName_Run.c_str() );
     
     if ( nullptr == tree_Run ) { //Case: failed to load TTree
         std::cout<<"Timing::TimingRunAnalyzer::analyze() - error while fetching: " << run.strTreeName_Run << endl;
@@ -332,9 +338,17 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     run.hTDC_Correlation= &hTDC_Correlation;//Set the run's histogram
     run.hTDC_DeltaT     = &hTDC_DeltaT;     //Set the run's histogram
     
+    //Debugging
+    	cout<<"TimingRunAnalyzer::analyze() - run.hTDC_DeltaT (Expect Non-Null)= " << run.hTDC_DeltaT << endl;
+
     //Close the file
     //------------------------------------------------------
-    file_ROOT_Run->Close();
+    
+    //Debugging
+    //printROOTFileStatus(file_ROOT_Run);
+    //cout<<"file_ROOT_Run = " << file_ROOT_Run << endl;
+
+    //file_ROOT_Run.Close();
     
     //delete tree_Run;
     

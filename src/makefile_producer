@@ -8,7 +8,7 @@ ROOTCONFIG = $(ROOTSYS)/bin/root-config
 # Define any compile-time flags
 #CFLAGS = -c `root-config --cflags --glibs --libs` -std=c++11	#the -c option causes this to compile but not link, problem!!!
 #CFLAGS = `$(ROOTCONFIG) --cflags --glibs --libs` -std=c++11
-CFLAGS = -g3 `$(ROOTCONFIG) --cflags --glibs --libs` -std=c++11
+CFLAGS = -g3 -O0 `$(ROOTCONFIG) --cflags --glibs --libs` -std=c++11
 
 # Define any directories containing header files other than "/usr/include"
 INCLUDES = -I../include -I$(ROOTSYS)/include

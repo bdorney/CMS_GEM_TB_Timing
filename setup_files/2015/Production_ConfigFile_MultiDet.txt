@@ -16,7 +16,7 @@
 	OutputTreeName='FTM_Trial';
 	#-----------------------------
 	VerboseMode_IO='false';
-	VerboseMode_LUT='true';
+	VerboseMode_LUT='false';
 	VerboseMode_Parsing='false';
 	VerboseMode_PrintRuns='false';
 [END_PROD_INFO]

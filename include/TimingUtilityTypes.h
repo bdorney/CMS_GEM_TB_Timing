@@ -232,6 +232,8 @@ namespace Timing {
             //=============================
             iTDC_Chan_Trig = 0;         //Channel of the Trigger in the TDC
             
+	    hTDC_DeltaT = nullptr;
+	    hTDC_Correlation = nullptr;
         }
     };
     

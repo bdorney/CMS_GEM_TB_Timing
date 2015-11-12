@@ -116,14 +116,23 @@ void treeProducerTDC::readRuns(string inputTreeName, string outputDataFile){
         
         //Output action to user, but only if line is not commented out!!!
         cout<<"treeProducerTDC::readRuns() - Retreiving Line: " << fileName_ROOT << endl;
-        
+
+	//Debugging
+	cout<<"treeProducerTDC::readRuns() - run.hTDC_DeltaT (Expect Null) = " << run.hTDC_DeltaT << endl;        
+
         //Create an instance of the Run Parameters and then get specific run info
         TRunParameters runLog;
         
+	//Debugging
+	cout<<"treeProducerTDC::readRuns() - run.hTDC_DeltaT (Expect Null, but it isn't) = " << run.hTDC_DeltaT << endl;
+
         setRun(fileName_ROOT, fileName_LUT, runLog);
         
         run = runLog.getRun();
         
+    	//Debugging
+    	cout<<"treeProducerTDC::readRuns() - run.hTDC_DeltaT (Expect Non-Null)= " << run.hTDC_DeltaT << endl;
+
         writeTree(run,outputTDCTree);
         
         if (b1stRun) {b1stRun = false;}
@@ -316,7 +325,12 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
             treeInput.Branch( ((*iterFitParamErr).first + "_ERR_OR").c_str() ,&((*iterFitParamErr).second), ( ((*iterFitParamErr).first) + "_Err_OR/F" ).c_str() );
         }
         
-        treeInput.Branch("hTDC_DeltaT",&inputRun.hTDC_DeltaT);
+	cout<<"treeProducer::writeTree() - inputRun.hTDC_DeltaT = " << inputRun.hTDC_DeltaT << endl;
+	cout<<"treeProducer::writeTree() - &inputRun.hTDC_DeltaT = " << &inputRun.hTDC_DeltaT << endl;
+
+	inputRun.hTDC_DeltaT->Draw();
+        //treeInput.Branch("hTDC_DeltaT",&inputRun.hTDC_DeltaT);
+        treeInput.Branch("hTDC_DeltaT","TH1F",inputRun.hTDC_DeltaT);
         treeInput.Branch("hTDC_Correlation",&inputRun.hTDC_Correlation);
     } //End Case: First Run
     
@@ -1270,9 +1284,15 @@ void treeProducerTDC::setRun(string inputROOTFileName, string inputLUTFileName, 
     //Map the Parameters
     setMappedParam(parsedFileNames, lookUpTable, runLogger);
     
+    //Debugging
+    cout<<"treeProducerTDC::setRun() - (runLogger).getRun().hTDC_DeltaT (Expect Null)= " << (runLogger).getRun().hTDC_DeltaT << endl;
+
     //Perform the Analysis
     runLogger.setRunName(inputROOTFileName);
     
+    //Debugging
+    cout<<"treeProducerTDC::setRun() - (runLogger).getRun().hTDC_DeltaT (Expect Null)= " << (runLogger).getRun().hTDC_DeltaT << endl;
+
     Timing::Run run = runLogger.getRun();
 
     cout<<"Timing:treeProducerTDC::setRun() - run.strTreeName_Run = " << run.strTreeName_Run << endl;
@@ -1280,8 +1300,13 @@ void treeProducerTDC::setRun(string inputROOTFileName, string inputLUTFileName, 
     if (analyzer != nullptr) { //Case: ANALYZE
         analyzer->setRun(runLogger);
         analyzer->analyzeRun();
+
+	//Debugging
+    cout<<"treeProducerTDC::setRun() - (runLogger).getRun().hTDC_DeltaT (Expect Null)= " << (runLogger).getRun().hTDC_DeltaT << endl;
         
         runLogger.setRun( analyzer->getRun() );
+
+	    cout<<"treeProducerTDC::setRun() - (runLogger).getRun().hTDC_DeltaT (Expect Non-Null)= " << (runLogger).getRun().hTDC_DeltaT << endl;
     } //End Case: ANALYZE
     else{ //Case: analyzer is a nullpointer
         cout<<"treeProducerTDC::setRun() - Error!!!\n";
@@ -1292,7 +1317,7 @@ void treeProducerTDC::setRun(string inputROOTFileName, string inputLUTFileName, 
     
     //Set the gain
     //runLogger.getDetGainIndepVarIsCurrent() ? runLogger.calcGain( runLogger.getDetCurrent() ) : runLogger.calcGain( runLogger.getDetDriftV() );
-    
+        cout<<"treeProducerTDC::setRun() - (runLogger).getRun().hTDC_DeltaT (Expect Null)= " << (runLogger).getRun().hTDC_DeltaT << endl;
     //Set the Histogram
     //setHistogram(inputROOTFileName, timingHisto, runLogger.getTDCChanNumber(), bExitFlag );
     
