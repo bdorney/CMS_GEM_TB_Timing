@@ -47,32 +47,34 @@ Timing::TimingRunAnalyzer::TimingRunAnalyzer(){
 //Analyze method, this is the central access point for the analysis
 //Inherited class can over ride this method but it MUST exist
 //The entire analysis needs to be executed through this method (but not necessarily in this method)
-void Timing::TimingRunAnalyzer::analyzeRun(){
+void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     //Check to see if a run was set
-    if (!bRunSet) {
-        cout<<"Timing::TimingRunAnalyzer::analyze() - Sorry, but you asked for analysis on a blank run!!!\n";
-        cout<<"\tSkipping!!! Please cross-check your usage of the TimingRunAnalyzer class\n";
-        
-        return;
-    }
+    //if (!bRunSet) {
+    //    cout<<"Timing::TimingRunAnalyzer::analyze() - Sorry, but you asked for analysis on a blank run!!!\n";
+    //    cout<<"\tSkipping!!! Please cross-check your usage of the TimingRunAnalyzer class\n";
+    //    
+    //    return;
+    //}
     
     //Variable Declaration
     map<string,int> map_iTDCData;
     //map<string,float> map_fTDCData;
-    map<string,TF1, map_cmp_str> map_fTDCFits;
-    map<string,TH1F, map_cmp_str> map_fTDCHistos;
+    //map<string,TF1, map_cmp_str> map_fTDCFits;
+    map<string,TF1> map_fTDCFits;
+    //map<string,TH1F, map_cmp_str> map_fTDCHistos;
+    map<string,TH1F> map_fTDCHistos;
     
     TF1 func_TDC_Fit_AND;
     TF1 func_TDC_Fit_OR;
     
-    //TFile *file_ROOT_Run;
-    TFile file_ROOT_Run(run.strRunName.c_str(),"READ","",1);
+    TFile *file_ROOT_Run = NULL;
+    //TFile file_ROOT_Run(run.strRunName.c_str(),"READ","",1);
 
     //Setup the OR, AND, deltaT, & correlation histograms
-    TH1F hTDC_AND = getHistogram( analysisSetup.setupAND );
+    TH1F hTDC_AND = getHistogram( analysisSetup.setupAND, run );
     TH1F hTDC_DeltaT( ("hTDC_DeltaT_R" + getString(run.iRun) ).c_str(),"DeltaT:t_{Det1} - t_{Det2} #left( ns #right): A.U.",2 * analysisSetup.fTDCWinSize, -1. * analysisSetup.fTDCWinSize, analysisSetup.fTDCWinSize );
     TH2F hTDC_Correlation( ("hTDC_Corr_R" + getString(run.iRun) ).c_str(),"Correlation",analysisSetup.fTDCWinSize, 0., analysisSetup.fTDCWinSize,analysisSetup.fTDCWinSize, 0., analysisSetup.fTDCWinSize );
-    TH1F hTDC_OR = getHistogram( analysisSetup.setupOR );
+    TH1F hTDC_OR = getHistogram( analysisSetup.setupOR, run );
     
     TTree *tree_Run = nullptr;
     //std::shared_ptr<TTree> tree_Run(nullptr);    
@@ -85,18 +87,18 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     
     //Open this run's root file
     //------------------------------------------------------
-    //file_ROOT_Run = new TFile(run.strRunName.c_str(),"READ","",1);
+    file_ROOT_Run = new TFile(run.strRunName.c_str(),"READ","",1);
     //file_ROOT_Run.Open(run.strRunName.c_str(),"READ","",1,0);
 
     cout<<"TimingRunAnalyzer::analyzeRun() - run.strRunName = " << run.strRunName << endl;
 
     //Check to see if data file opened successfully, if so load the tree
     //------------------------------------------------------
-    if ( !file_ROOT_Run.IsOpen() || file_ROOT_Run.IsZombie() ) { //Case: failed to load ROOT file
+    if ( !file_ROOT_Run->IsOpen() || file_ROOT_Run->IsZombie() ) { //Case: failed to load ROOT file
         perror( ("Timing::TimingRunAnalyzer::analyzeRun() - error while opening file: " + run.strRunName ).c_str() );
-	cout<<"file_ROOT_Run.IsOpen() = " << file_ROOT_Run.IsOpen() << endl;
-        cout<<"file_ROOT_Run.IsZombie() = " << file_ROOT_Run.IsZombie() << endl;
-        //printROOTFileStatus(file_ROOT_Run);
+	//cout<<"file_ROOT_Run.IsOpen() = " << file_ROOT_Run.IsOpen() << endl;
+        //cout<<"file_ROOT_Run.IsZombie() = " << file_ROOT_Run.IsZombie() << endl;
+        printROOTFileStatus(file_ROOT_Run);
         std::cout << "Exiting!!!\n";
         
         return;
@@ -105,7 +107,8 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     cout<<" run.strTreeName_Run = " << run.strTreeName_Run << endl;
     
     //auto tree_Run = std::make_shared<TTree>( (TTree*) file_ROOT_Run.Get( run.strTreeName_Run.c_str() ) );
-    tree_Run = (TTree*) file_ROOT_Run.Get( run.strTreeName_Run.c_str() );
+    tree_Run = (TTree*) file_ROOT_Run->Get( run.strTreeName_Run.c_str() );
+	tree_Run->SetDirectory(gROOT);
     //std::shared_ptr<TTree> tree_Run( (TTree*) file_ROOT_Run.Get( run.strTreeName_Run.c_str() ) );
 
     if ( nullptr == tree_Run ) { //Case: failed to load TTree
@@ -125,20 +128,11 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     
     //Initialize map_iTDCData for each detector
     for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Through Detectors
-        std::vector<int> vec_iData;
-        ((*iterDet).second).vec_iTDC_Data = vec_iData;	//Hack?
-        ((*iterDet).second).vec_iTDC_Data.clear();	//Hack?
-
         map_iTDCData[(*iterDet).first];
-        
-        //NOTE: Changed, we do this below because we use inputs from the histogram to setup the function
-        //Form fit for this detector
-        //((*iterDet).second).func_TDC_Fit = &getFunction( analysisSetup.map_DetSetup[(*iterDet).first] );
-        //map_fTDCFits[(*iterDet).first] = getFunction( analysisSetup.map_DetSetup[(*iterDet).first] );
-        
+            
         //Form histogram for this detector
-        //((*iterDet).second).hTDC_Histo = &getHistogram( analysisSetup.map_DetSetup[(*iterDet).first] );
-        map_fTDCHistos[(*iterDet).first] = getHistogram( analysisSetup.map_DetSetup[(*iterDet).first] );
+	TH1F hTemp = getHistogram( analysisSetup.map_DetSetup[(*iterDet).first], run );
+        map_fTDCHistos[(*iterDet).first] = hTemp;
         
         //Append the Histo name with the run number
         //map_fTDCHistos[(*iterDet).first].SetName( ( analysisSetup.map_DetSetup[(*iterDet).first].strHisto_Name + "_" + getString(run.iRun ) ).c_str() );
@@ -149,9 +143,11 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     
     //Set TBranch Address for each detector (e.g. TDC Channel)
     //  NOTE: Yes it needs to be done in TWO separate loops; yes ROOT is stupid
-    for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Through Detectors
+    //for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Through Detectors
+    for (int i=0; i<vec_strMapDetKeyVal.size(); ++i){ //Loop Through Detectors
         //Set branch address
-        tree_Run->SetBranchAddress( ("TDC_Ch" + getString( ((*iterDet).second).iTDC_Chan ) ).c_str(), &(map_iTDCData[(*iterDet).first]) );
+        //tree_Run->SetBranchAddress( ("TDC_Ch" + getString( ((*iterDet).second).iTDC_Chan ) ).c_str(), &(map_iTDCData[(*iterDet).first]) );
+        //tree_Run->SetBranchAddress( ("TDC_Ch" + getString( run.map_det[vec_strMapDetKeyVal[i]].iTDC_Chan ) ).c_str(), &(map_iTDCData[vec_strMapDetKeyVal[i]]) );
     } //End Loop Through Detectors
     
     //Set Axis titles on Correlation histogram
@@ -168,6 +164,9 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
         for (int i=0; i < tree_Run->GetEntries(); ++i) { //Loop Over Events
             tree_Run->GetEntry(i);
             
+		//debugging
+		//if (i > 5); break;
+
             if (i % 1000 == 0) cout <<i<<" Events Analyzed\n";
             
             //Correct for inverted times due to common_stop technique of TDC
@@ -183,7 +182,7 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
                 cout<<(*iterDebug).first<<"\t"<<(*iterDebug).second<<endl;
             }
             
-            cout<<"map_iTDCData.count("<<(*iterDet).first>>") = " << map_iTDCData.count((*iterDet).first) << endl;
+            cout<<"map_iTDCData.count("<<(*iterDet).first<<") = " << map_iTDCData.count((*iterDet).first) << endl;
             
             cout<<"getInvertedTime(" << map_iTDCData[(*iterDet).first] << ") = ";
             cout<< getInvertedTime( map_iTDCData[(*iterDet).first] ) << endl;
@@ -280,6 +279,9 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
         //This works since by design run.map_det[some_det].vec_iTDC_Data.size() == tree_Run->GetEntries()
         //For each i we are going to fill the histograms, and reset the value of map_iTDCData
         
+	//debugging
+	//if( i > 4 ) break;
+
         for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Over Detectors
             //Reset the value of the map_iTDCData
             map_iTDCData[(*iterDet).first] = ((*iterDet).second).vec_iTDC_Data[i];
@@ -313,12 +315,12 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     //------------------------------------------------------
     //Event loop finished set performance data for single detectors
     for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Over Detectors
-        setPerformanceData( ((*iterDet).second).timingResults, map_fTDCHistos[(*iterDet).first] );
+        //setPerformanceData( ((*iterDet).second).timingResults, map_fTDCHistos[(*iterDet).first] );
     } //End Loop Over Detectors
     
     //Store the AND and the OR of the detectors
-    setPerformanceData( run.timingResultsAND, hTDC_AND );
-    setPerformanceData( run.timingResultsOR, hTDC_OR );
+    //setPerformanceData( run.timingResultsAND, hTDC_AND );
+    //setPerformanceData( run.timingResultsOR, hTDC_OR );
     
     //Fit Histograms
     //------------------------------------------------------
@@ -327,26 +329,26 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
         //Initialize map_fTDCFits for each detector and then fit
         for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Through Detectors
             //Initialize
-            map_fTDCFits[(*iterDet).first] = getFunction( analysisSetup.map_DetSetup[(*iterDet).first], map_fTDCHistos[(*iterDet).first] );
+            map_fTDCFits[(*iterDet).first] = getFunction( analysisSetup.map_DetSetup[(*iterDet).first], map_fTDCHistos[(*iterDet).first], run );
             
             //Fit histogram
-            fitHistogram( analysisSetup.map_DetSetup[(*iterDet).first], map_fTDCHistos[(*iterDet).first], map_fTDCFits[(*iterDet).first] );
+            //fitHistogram( analysisSetup.map_DetSetup[(*iterDet).first], map_fTDCHistos[(*iterDet).first], map_fTDCFits[(*iterDet).first] );
             
             //Store the performance data
-            setPerformanceData( ((*iterDet).second).timingResults, map_fTDCFits[(*iterDet).first], analysisSetup.map_DetSetup[(*iterDet).first] );
+            //setPerformanceData( ((*iterDet).second).timingResults, map_fTDCFits[(*iterDet).first], analysisSetup.map_DetSetup[(*iterDet).first] );
         } //End Loop Through Detectors
         
         //Initialize AND & OR fits
-        func_TDC_Fit_AND= getFunction( analysisSetup.setupAND, hTDC_AND );
-        func_TDC_Fit_OR = getFunction( analysisSetup.setupOR, hTDC_OR );
+        func_TDC_Fit_AND= getFunction( analysisSetup.setupAND, hTDC_AND, run );
+        func_TDC_Fit_OR = getFunction( analysisSetup.setupOR, hTDC_OR, run );
         
         //Fit AND & OR
-        fitHistogram(analysisSetup.setupAND, hTDC_AND, func_TDC_Fit_AND);
-        fitHistogram(analysisSetup.setupOR, hTDC_OR, func_TDC_Fit_OR);
+        //fitHistogram(analysisSetup.setupAND, hTDC_AND, func_TDC_Fit_AND);
+        //fitHistogram(analysisSetup.setupOR, hTDC_OR, func_TDC_Fit_OR);
         
         //Store the performance data for the AND & OR
-        setPerformanceData( run.timingResultsAND, func_TDC_Fit_AND, analysisSetup.setupAND );
-        setPerformanceData( run.timingResultsOR, func_TDC_Fit_OR, analysisSetup.setupOR );
+        //setPerformanceData( run.timingResultsAND, func_TDC_Fit_AND, analysisSetup.setupAND );
+        //setPerformanceData( run.timingResultsOR, func_TDC_Fit_OR, analysisSetup.setupOR );
     } //End Case: Async Trigger Mode
     else if ( 1 == run.iTrig_Mode) { //Case: Sync Trigger Mode
         //Blank for now
@@ -410,25 +412,41 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     //We are done with the analysis now, store everything into the run
     //  NOTE: We do not work with the TObjects stored in the run above because passing the pointers "TH1F *" and "TF1 *" around has lead to problems in the past
     //------------------------------------------------------
-    run.hTDC_Correlation= &hTDC_Correlation;//Set the run's histogram
-    run.hTDC_DeltaT     = &hTDC_DeltaT;     //Set the run's histogram
-    
+    //run.hTDC_Correlation= &hTDC_Correlation;//Set the run's histogram
+    //run.hTDC_DeltaT     = &hTDC_DeltaT;     //Set the run's histogram
+
+	//run.hTDC_Correlation = std::make_shared<TH2F>(hTDC_Correlation);
+	//run.hTDC_DeltaT	= std::make_shared<TH1F>(hTDC_DeltaT);    
+
     //Debugging
-    	cout<<"TimingRunAnalyzer::analyze() - run.hTDC_DeltaT (Expect Non-Null)= " << run.hTDC_DeltaT << endl;
+    	//cout<<"TimingRunAnalyzer::analyze() - run.hTDC_DeltaT (Expect Non-Null)= " << run.hTDC_DeltaT << endl;
+	//cout<<"TimingRunAnalyzer::analyze() - run.hTDC_Correlation (Expect Non-Null)= " << run.hTDC_Correlation << endl;
+
+	//Debugging
+cout<<"AnalyzeRun Finished, please enter 1\n";
+int dummy;
+std::cin>>dummy;
+
+    //Clear the mapped contents?
+    //------------------------------------------------------
+    map_iTDCData.clear();
+    map_fTDCFits.clear();
+    map_fTDCHistos.clear();
 
     //Close the file
     //------------------------------------------------------
     
     //Debugging
-    printROOTFileStatus(&file_ROOT_Run);
-    cout<<"Timing::TimingRunAnalyzer::analyzeRun() - file_ROOT_Run = " << &file_ROOT_Run << endl;
+    printROOTFileStatus(file_ROOT_Run);
+    cout<<"Timing::TimingRunAnalyzer::analyzeRun() - file_ROOT_Run = " << file_ROOT_Run << endl;
 
     //cout<<"Timig::TimingRunAnalyzer::analyzeRun() - Trying to delete tree pointer\n";
     //delete tree_Run;
     
-    //cout<<"Timing::TimingRunAnalyzer::analyzeRun() - Trying to close file\n";
-    //file_ROOT_Run.Close();
-    
+    cout<<"Timing::TimingRunAnalyzer::analyzeRun() - Trying to close file\n";
+    file_ROOT_Run->Close();
+    cout<<"Timing::TimingRunAnalyzer::analyzeRun() - successfully closed file\n";    
+
     return;
 } //End Timing::TimingRunAnalyzer::analyze()
 
@@ -447,7 +465,7 @@ void Timing::TimingRunAnalyzer::fitHistogram(HistoSetup &setupHisto, TH1F & hInp
 
 //Returns a TF1 (function) whose parameters are set by setupHisto
 //Good candidate for TimingUtitlityFunctions.h?
-TF1 Timing::TimingRunAnalyzer::getFunction(HistoSetup &setupHisto, TH1F & hInput){
+TF1 Timing::TimingRunAnalyzer::getFunction(HistoSetup &setupHisto, TH1F & hInput, Run & run){
     //Variable Declaration
     TF1 ret_Func(setupHisto.strFit_Name.c_str(), setupHisto.strFit_Formula.c_str(), setupHisto.fHisto_xLower, setupHisto.fHisto_xUpper);
     
@@ -469,12 +487,12 @@ TF1 Timing::TimingRunAnalyzer::getFunction(HistoSetup &setupHisto, TH1F & hInput
         //We assume the user has correctly matched the indices of setupHisto.vec_strFit_ParamMeaning and setupHisto.vec_strFit_ParamIGuess to the formula given in setupHisto.strFit_Formula
         for (int i=0; i<setupHisto.vec_strFit_ParamMeaning.size(); ++i) {
 	    //Debugging
-	    cout<<"Timing::TimingRunAnalyzer::getFunction() - setupHist.vec_strFit_ParamMeaning[" << i << "]=" << setupHisto.vec_strFit_ParamMeaning[i] << endl;
-	    cout<<"Timing::TimingRunAnalyzer::getFunction() - setupHist.vec_strFit_ParamIGuess[" << i << "]=" << setupHisto.vec_strFit_ParamIGuess[i] << endl;
+	    //cout<<"Timing::TimingRunAnalyzer::getFunction() - setupHist.vec_strFit_ParamMeaning[" << i << "]=" << setupHisto.vec_strFit_ParamMeaning[i] << endl;
+	    //cout<<"Timing::TimingRunAnalyzer::getFunction() - setupHist.vec_strFit_ParamIGuess[" << i << "]=" << setupHisto.vec_strFit_ParamIGuess[i] << endl;
 
-	    cout<<"setupHisto.vec_strFit_ParamIGuess[i].compare('AMPLITUDE')=" << setupHisto.vec_strFit_ParamIGuess[i].compare("AMPLITUDE") << endl;
-	    cout<<"setupHisto.vec_strFit_ParamIGuess[i].compare('MEAN')=" << setupHisto.vec_strFit_ParamIGuess[i].compare("MEAN") << endl;
-	    cout<<"setupHisto.vec_strFit_ParamIGuess[i].compare('SIGMA')=" << setupHisto.vec_strFit_ParamIGuess[i].compare("SIGMA") << endl;
+	    //cout<<"setupHisto.vec_strFit_ParamIGuess[i].compare('AMPLITUDE')=" << setupHisto.vec_strFit_ParamIGuess[i].compare("AMPLITUDE") << endl;
+	    //cout<<"setupHisto.vec_strFit_ParamIGuess[i].compare('MEAN')=" << setupHisto.vec_strFit_ParamIGuess[i].compare("MEAN") << endl;
+	    //cout<<"setupHisto.vec_strFit_ParamIGuess[i].compare('SIGMA')=" << setupHisto.vec_strFit_ParamIGuess[i].compare("SIGMA") << endl;
 
 	    //Try to automatically assign a value
             if (0 == setupHisto.vec_strFit_ParamIGuess[i].compare("AMPLITUDE") ) { //Case: Histo Amplitude
@@ -515,7 +533,7 @@ TF1 Timing::TimingRunAnalyzer::getFunction(HistoSetup &setupHisto, TH1F & hInput
 
 //Returns a TH1F (histogram) whose parameters are set by setupHisto
 //Good candidate for TimingUtitlityFunctions.h
-TH1F Timing::TimingRunAnalyzer::getHistogram(HistoSetup &setupHisto){
+TH1F Timing::TimingRunAnalyzer::getHistogram(HistoSetup &setupHisto, Run & run){
     //Variable Declaration
     TH1F ret_Histo(setupHisto.strHisto_Name.c_str(), "", setupHisto.iHisto_nBins, setupHisto.fHisto_xLower, setupHisto.fHisto_xUpper );
     
@@ -745,9 +763,9 @@ void Timing::TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::if
                 vec_strList = Timing::getCommaSeparatedList(pair_strParam.second);
                 
 		//Debugging
-		for(int i=0; i<vec_strList.size(); ++i){
-			cout<<"vec_strList["<<i<<"] = " << vec_strList[i] << endl;
-		}
+		//for(int i=0; i<vec_strList.size(); ++i){
+		//	cout<<"vec_strList["<<i<<"] = " << vec_strList[i] << endl;
+		//}
 
                 if (vec_strList.size() >= 2) { //Case: at least 2 numbers
                     //Fetch

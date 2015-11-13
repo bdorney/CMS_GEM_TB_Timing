@@ -275,9 +275,9 @@ namespace Timing {
         TDCAnalysisData timingResultsAND;
         TDCAnalysisData timingResultsOR;
         
-        TH1F *hTDC_DeltaT;
+	std::shared_ptr<TH1F> hTDC_DeltaT;
         
-        TH2F *hTDC_Correlation;
+	std::shared_ptr<TH2F> hTDC_Correlation;
         
         Run(){
             //Run info
@@ -297,8 +297,8 @@ namespace Timing {
             //=============================
             iTDC_Chan_Trig = 0;         //Channel of the Trigger in the TDC
             
-	    hTDC_DeltaT = nullptr;
-	    hTDC_Correlation = nullptr;
+	    //hTDC_DeltaT = nullptr;
+	    //hTDC_Correlation = nullptr;
         }
     };
     

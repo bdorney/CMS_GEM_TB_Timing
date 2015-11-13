@@ -26,11 +26,11 @@
 #include "TROOT.h"
 #include "TTree.h"
 
-//#ifdef __MAKECINT__
-//#pragma link C++ class vector<int>+;
+#ifdef __MAKECINT__
+#pragma link C++ class vector<int>+;
 //#pragma link C++ class vector<float>+;
-//#pragma link C++ class map<string,int>+;
-//#endif
+#pragma link C++ class map<string,int>+;
+#endif
 
 //My Includes
 #include "TimingRunAnalyzer.h"
@@ -181,17 +181,17 @@ int main( int argc_, char * argv_[]){
         }
     } //End Case configuration file & user input match
 
-    timingAnalyzer.setRun(run);
+    //timingAnalyzer.setRun(run);
     
     //Analyze!
     //------------------------------------------------------
     cout<<"main() - No Fault 1\n";
     
-    timingAnalyzer.analyzeRun();
+    timingAnalyzer.analyzeRun(run);
     
     cout<<"main() - No Fault 2\n";
     
-    run = timingAnalyzer.getRun();
+    //run = timingAnalyzer.getRun();
     
     cout<<"main() - No Fault 3\n";
     

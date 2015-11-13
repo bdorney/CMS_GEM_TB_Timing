@@ -70,23 +70,23 @@ namespace Timing {
         //Actions - Methods that DO Something
         //------------------------------------------------------------------------------------------------------------------------------------------
         //Analyze the input run
-        virtual void analyzeRun();
-        virtual void analyzeRun(Timing::Run &runInput){
-            setRun(runInput);
-            analyzeRun();
-            return;
-        }
-        virtual void analyzeRun(Timing::TRunParameters &inputRunParam){
-            setRun(inputRunParam);
-            analyzeRun();
-            return;
-        }
+        virtual void analyzeRun(Timing::Run &run);
+        //virtual void analyzeRun(Timing::Run &runInput){
+        //    setRun(runInput);
+        //    analyzeRun();
+        //    return;
+        //}
+        //virtual void analyzeRun(Timing::TRunParameters &inputRunParam){
+        //    setRun(inputRunParam);
+        //    analyzeRun();
+        //    return;
+        //}
         
         //Getters - Methods that Get (i.e. Return) Something
         //------------------------------------------------------------------------------------------------------------------------------------------
         virtual Timing::AnalysisSetup getAnalysisSetup(){return analysisSetup;};
         
-        virtual Timing::Run getRun(){return run;};
+        //virtual Timing::Run getRun(){return run;};
         
         //Miscillaneous Methods
         //------------------------------------------------------------------------------------------------------------------------------------------
@@ -100,8 +100,8 @@ namespace Timing {
         //Analysis Config File
         virtual void setAnalysisConfig(std::string &strInputFile);
         
-        virtual void setRun(Timing::Run &runInput){run = runInput; bRunSet = true; return;};
-        virtual void setRun(Timing::TRunParameters &inputRunParam){run = inputRunParam.getRun(); bRunSet = true; return;};
+        //virtual void setRun(Timing::Run &runInput){run = runInput; bRunSet = true; return;};
+        //virtual void setRun(Timing::TRunParameters &inputRunParam){run = inputRunParam.getRun(); bRunSet = true; return;};
         
         virtual void setTDCResolution(float fInput){
             fTDCResolution = fInput;
@@ -134,7 +134,7 @@ namespace Timing {
         std::string strSecEnd_DET;
         
         //TRunParameters runLogger
-        Timing::Run run;            //The run!!!
+        //Timing::Run run;            //The run!!!
         
         //Actions - Methods that DO Something
         //------------------------------------------------------------------------------------------------------------------------------------------
@@ -151,8 +151,10 @@ namespace Timing {
             return (iInput > 0) ? (analysisSetup.fTDCWinSize - iInput) : iInput;
         };
 
-        TF1 getFunction(HistoSetup &setupHisto, TH1F & hInput);
-        TH1F getHistogram(HistoSetup &setupHisto);
+        //TF1 getFunction(HistoSetup &setupHisto, TH1F & hInput);
+        TF1 getFunction(HistoSetup &setupHisto, TH1F & hInput, Timing::Run & run);
+        //TH1F getHistogram(HistoSetup &setupHisto);
+        TH1F getHistogram(HistoSetup &setupHisto, Timing::Run & run);
         
         //Miscillaneous Methods
         //------------------------------------------------------------------------------------------------------------------------------------------

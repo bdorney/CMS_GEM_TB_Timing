@@ -429,8 +429,8 @@ namespace Timing {
         
         //Complex Analysis Histograms - Delta Detector Signal & Correlation
         //=============================
-        virtual void setTDCHistoDeltaT(TH1F *hInput){run.hTDC_DeltaT = hInput; return;};
-        virtual void setTDCHistoCorr(TH2F *hInput2D){run.hTDC_Correlation = hInput2D; return;};
+        virtual void setTDCHistoDeltaT(TH1F *hInput){run.hTDC_DeltaT = std::make_shared<TH1F>(*hInput); return;};
+        virtual void setTDCHistoCorr(TH2F *hInput2D){run.hTDC_Correlation = std::make_shared<TH2F>(*hInput2D); return;};
         
         //New Methods are added below pre-existing ones to preserve backwards compatibile numbering
         
