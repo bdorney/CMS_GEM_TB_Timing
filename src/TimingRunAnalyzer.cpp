@@ -74,7 +74,7 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     TH2F hTDC_Correlation( ("hTDC_Corr_R" + getString(run.iRun) ).c_str(),"Correlation",analysisSetup.fTDCWinSize, 0., analysisSetup.fTDCWinSize,analysisSetup.fTDCWinSize, 0., analysisSetup.fTDCWinSize );
     TH1F hTDC_OR = getHistogram( analysisSetup.setupOR );
     
-    //TTree *tree_Run = nullptr;
+    TTree *tree_Run = nullptr;
     //std::shared_ptr<TTree> tree_Run(nullptr);    
 
     vector<string> vec_strMapDetKeyVal; //List of detector names for random access to the map...
@@ -105,8 +105,8 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     cout<<" run.strTreeName_Run = " << run.strTreeName_Run << endl;
     
     //auto tree_Run = std::make_shared<TTree>( (TTree*) file_ROOT_Run.Get( run.strTreeName_Run.c_str() ) );
-    //tree_Run = (TTree*) file_ROOT_Run.Get( run.strTreeName_Run.c_str() );
-    std::shared_ptr<TTree> tree_Run( (TTree*) file_ROOT_Run.Get( run.strTreeName_Run.c_str() ) );
+    tree_Run = (TTree*) file_ROOT_Run.Get( run.strTreeName_Run.c_str() );
+    //std::shared_ptr<TTree> tree_Run( (TTree*) file_ROOT_Run.Get( run.strTreeName_Run.c_str() ) );
 
     if ( nullptr == tree_Run ) { //Case: failed to load TTree
         std::cout<<"Timing::TimingRunAnalyzer::analyze() - error while fetching: " << run.strTreeName_Run << endl;
@@ -125,7 +125,11 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     
     //Initialize map_iTDCData for each detector
     for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Through Detectors
-        map_iTDCData[(*iterDet).first];
+	std::vector<int> vec_iData;	
+	((*iterDet).second).vec_iTDC_Data = vec_iData;	//Hack?        
+	((*iterDet).second).vec_iTDC_Data.clear();	//Hack?        
+
+	map_iTDCData[(*iterDet).first];
         
         //NOTE: Changed, we do this below because we use inputs from the histogram to setup the function
         //Form fit for this detector
@@ -163,15 +167,37 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
         if (i % 1000 == 0) cout <<i<<" Events Analyzed\n";
         
         //Get data event-by-event
-        for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) {
+        //for (map<string, Detector>::iterator iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) {
+	for(int i=0; i<vec_strMapDetKeyVal.size(); ++i){
             //Correct for inverted times due to common_stop technique of TDC
             //  NOTE: this does not mean 0 is the trigger if this correction is made
             //        this moves the trigger time from t=0 to t=analysisSetup.fTDCWinSize
+
+	    //cout<<"(*iterDet).first = ";
+   	    //cout<<(*iterDet).first<<endl;
+
+	    cout<<"map_iTDCData.size() = " << map_iTDCData.size() << endl;
+   
+  		for(auto iterDebug = map_iTDCData.begin(); iterDebug != map_iTDCData.end(); ++iterDebug){
+			cout<<(*iterDebug).first<<"\t"<<(*iterDebug).second<<endl;
+		}	    
+
+		cout<<"run.map_det[vec_strMapDetKeyVal["<<i<<"]].vec_iTDC_Data.size() = " << run.map_det[vec_strMapDetKeyVal[i]].vec_iTDC_Data.size() << endl;
+
+		cout<<"getInvertedTime(" << map_iTDCData[vec_strMapDetKeyVal[i]] << ") = ";
+		cout<< getInvertedTime( map_iTDCData[vec_strMapDetKeyVal[i]] ) << endl;
+
+		//((*iterDet).second).vec_iTDC_Data.push_back(4);
+		
+		float myData = 	getInvertedTime( map_iTDCData[vec_strMapDetKeyVal[i]] );
+		
             if (analysisSetup.bInvertTime){ //Case: Invert non-zer times
-                ((*iterDet).second).vec_iTDC_Data.push_back( getInvertedTime( map_iTDCData[(*iterDet).first] ) );
+                //((*iterDet).second).vec_iTDC_Data.push_back( getInvertedTime( map_iTDCData[(*iterDet).first] ) );
+		cout<<"myData = " << myData << endl;
+		run.map_det[vec_strMapDetKeyVal[i]].vec_iTDC_Data.push_back(myData);
             } //End Case: Invert non-zero times
             else{ //Case: Use Raw Times
-                ((*iterDet).second).vec_iTDC_Data.push_back( map_iTDCData[(*iterDet).first] );
+                //((*iterDet).second).vec_iTDC_Data.push_back( map_iTDCData[(*iterDet).first] );
             } //End Case: Use Raw Times
         } //End
     } //End Loop Through Tree
