@@ -195,7 +195,29 @@ int main( int argc_, char * argv_[]){
     
     cout<<"main() - No Fault 3\n";
     
-    //Debugging
+    //Store
+    //------------------------------------------------------
+    TFile *file_Output = new TFile("singleRunAnalyzer_Output.root","RECREATE","",1);
+    
+    for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Over Detectors
+        TDirectory *dir_thisDet = file_Output->mkdir( ( (*iterDet).first ).c_str() );
+        
+        dir_thisDet->cd();
+        ((*iterDet).second).timingResults.func_TDC_Fit->Write();
+        ((*iterDet).second).timingResults.hTDC_Histo->Write();
+    } //End Loop Over Detectors
+    
+    TDirectory *dir_detOR = file_Output->mkdir( "Detector_OR" );
+    run.timingResultsOR.func_TDC_Fit->Write();
+    run.timingResultsOR.hTDC_Histo->Write();
+    
+    TDirectory *dir_detAND = file_Output->mkdir( "Detector_AND" );
+    run.hTDC_DeltaT->Write();
+    run.hTDC_Correlation->Write();
+    run.timingResultsAND.func_TDC_Fit->Write();
+    run.timingResultsAND.hTDC_Histo->Write();
+    
+    file_Output->Close();
     
     return 0;
 } //End main()

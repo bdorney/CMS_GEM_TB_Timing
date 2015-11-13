@@ -294,9 +294,6 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     //We are done with the analysis now, store everything into the run
     //  NOTE: We do not work with the TObjects stored in the run above because passing the pointers "TH1F *" and "TF1 *" around has lead to problems in the past
     //------------------------------------------------------
-    run.hTDC_Correlation= &hTDC_Correlation;//Set the run's histogram
-    run.hTDC_DeltaT     = &hTDC_DeltaT;     //Set the run's histogram
-
 	run.hTDC_Correlation = std::make_shared<TH2F>(hTDC_Correlation);
 	run.hTDC_DeltaT	= std::make_shared<TH1F>(hTDC_DeltaT);
 
@@ -468,7 +465,7 @@ void Timing::TimingRunAnalyzer::setAnalysisConfig(string &strInputFile){
         }
         else if ( 0 == strLine.compare(strSecBegin_AND) ) { //Case: AND SECTION
             //Set the flag to compute the AND of all detectors
-            analysisSetup.bCompute_AND = true;
+            //analysisSetup.bCompute_AND = true;
             
             //Setup the Histogram struct for analysis
             setHistoSetup(strInputFile, fStream, analysisSetup.setupAND );
@@ -541,7 +538,7 @@ void Timing::TimingRunAnalyzer::setAnalysisConfig(string &strInputFile){
         } //End Case: DET SECTION
         else if ( 0 == strLine.compare(strSecBegin_OR) ){ //Case: OR SECTION
             //Set the flag to compute the OR of all detectors
-            analysisSetup.bCompute_OR = true;
+            //analysisSetup.bCompute_OR = true;
             
             //Setup the Histogram struct for analysis
             setHistoSetup(strInputFile, fStream, analysisSetup.setupOR );
