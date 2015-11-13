@@ -71,12 +71,12 @@ namespace Timing {
         //------------------------------------------------------------------------------------------------------------------------------------------
         //Analyze the input run
         virtual void analyzeRun();
-        virtual void analyzeRun(Timing::Run runInput){
+        virtual void analyzeRun(Timing::Run &runInput){
             setRun(runInput);
             analyzeRun();
             return;
         }
-        virtual void analyzeRun(Timing::TRunParameters inputRunParam){
+        virtual void analyzeRun(Timing::TRunParameters &inputRunParam){
             setRun(inputRunParam);
             analyzeRun();
             return;
@@ -98,10 +98,10 @@ namespace Timing {
         //Setters - Methods that Set Something
         //------------------------------------------------------------------------------------------------------------------------------------------
         //Analysis Config File
-        virtual void setAnalysisConfig(std::string strInputFile);
+        virtual void setAnalysisConfig(std::string &strInputFile);
         
-        virtual void setRun(Timing::Run runInput){run = runInput; bRunSet = true; return;};
-        virtual void setRun(Timing::TRunParameters inputRunParam){run = inputRunParam.getRun(); bRunSet = true; return;};
+        virtual void setRun(Timing::Run &runInput){run = runInput; bRunSet = true; return;};
+        virtual void setRun(Timing::TRunParameters &inputRunParam){run = inputRunParam.getRun(); bRunSet = true; return;};
         
         virtual void setTDCResolution(float fInput){
             fTDCResolution = fInput;

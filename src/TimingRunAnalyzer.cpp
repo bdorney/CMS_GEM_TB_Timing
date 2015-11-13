@@ -125,11 +125,11 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     
     //Initialize map_iTDCData for each detector
     for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Through Detectors
-	std::vector<int> vec_iData;	
-	((*iterDet).second).vec_iTDC_Data = vec_iData;	//Hack?        
-	((*iterDet).second).vec_iTDC_Data.clear();	//Hack?        
+        std::vector<int> vec_iData;
+        ((*iterDet).second).vec_iTDC_Data = vec_iData;	//Hack?
+        ((*iterDet).second).vec_iTDC_Data.clear();	//Hack?
 
-	map_iTDCData[(*iterDet).first];
+        map_iTDCData[(*iterDet).first];
         
         //NOTE: Changed, we do this below because we use inputs from the histogram to setup the function
         //Form fit for this detector
@@ -161,46 +161,90 @@ void Timing::TimingRunAnalyzer::analyzeRun(){
     }
     
     //Get Data event-by-event from individual channels and nonzero invert times if requested
-    for (int i=0; i < tree_Run->GetEntries(); ++i) {
+    for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet){ //Loop Over Detectors
+        vector<int> vec_iData;
+        
+        //Get data event-by-event
+        for (int i=0; i < tree_Run->GetEntries(); ++i) { //Loop Over Events
+            tree_Run->GetEntry(i);
+            
+            if (i % 1000 == 0) cout <<i<<" Events Analyzed\n";
+            
+            //Correct for inverted times due to common_stop technique of TDC
+            //  NOTE: this does not mean 0 is the trigger if this correction is made
+            //        this moves the trigger time from t=0 to t=analysisSetup.fTDCWinSize
+            
+            cout<<"(*iterDet).first = ";
+            cout<<(*iterDet).first<<endl;
+            
+            cout<<"map_iTDCData.size() = " << map_iTDCData.size() << endl;
+            
+            for(auto iterDebug = map_iTDCData.begin(); iterDebug != map_iTDCData.end(); ++iterDebug){
+                cout<<(*iterDebug).first<<"\t"<<(*iterDebug).second<<endl;
+            }
+            
+            cout<<"map_iTDCData.count("<<(*iterDet).first>>") = " << map_iTDCData.count((*iterDet).first) << endl;
+            
+            cout<<"getInvertedTime(" << map_iTDCData[(*iterDet).first] << ") = ";
+            cout<< getInvertedTime( map_iTDCData[(*iterDet).first] ) << endl;
+            
+            if (analysisSetup.bInvertTime){ //Case: Invert non-zer times
+                //run.map_det[vec_strMapDetKeyVal[i]].vec_iTDC_Data.push_back(myData);
+                vec_iData.push_back( getInvertedTime( map_iTDCData[(*iterDet).first] ) );
+            } //End Case: Invert non-zero times
+            else{ //Case: Use Raw Times
+                //((*iterDet).second).vec_iTDC_Data.push_back( map_iTDCData[(*iterDet).first] );
+                vec_iData.push_back( map_iTDCData[(*iterDet).first] );
+            } //End Case: Use Raw Times
+        } //End Loop Over Events
+        
+        ((*iterDet).second).vec_iTDC_Data = vec_iData;
+        
+        vec_iData.clear();
+    } //End Loop Over Detectors
+    
+    //Get Data event-by-event from individual channels and nonzero invert times if requested
+    /*for (int i=0; i < tree_Run->GetEntries(); ++i) {
         tree_Run->GetEntry(i);
         
         if (i % 1000 == 0) cout <<i<<" Events Analyzed\n";
         
         //Get data event-by-event
         //for (map<string, Detector>::iterator iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) {
-	for(int i=0; i<vec_strMapDetKeyVal.size(); ++i){
+        for(int i=0; i<vec_strMapDetKeyVal.size(); ++i){
             //Correct for inverted times due to common_stop technique of TDC
             //  NOTE: this does not mean 0 is the trigger if this correction is made
             //        this moves the trigger time from t=0 to t=analysisSetup.fTDCWinSize
 
-	    //cout<<"(*iterDet).first = ";
-   	    //cout<<(*iterDet).first<<endl;
+            //cout<<"(*iterDet).first = ";
+            //cout<<(*iterDet).first<<endl;
 
-	    cout<<"map_iTDCData.size() = " << map_iTDCData.size() << endl;
+            cout<<"map_iTDCData.size() = " << map_iTDCData.size() << endl;
    
-  		for(auto iterDebug = map_iTDCData.begin(); iterDebug != map_iTDCData.end(); ++iterDebug){
-			cout<<(*iterDebug).first<<"\t"<<(*iterDebug).second<<endl;
-		}	    
+            for(auto iterDebug = map_iTDCData.begin(); iterDebug != map_iTDCData.end(); ++iterDebug){
+                cout<<(*iterDebug).first<<"\t"<<(*iterDebug).second<<endl;
+            }
 
-		cout<<"run.map_det[vec_strMapDetKeyVal["<<i<<"]].vec_iTDC_Data.size() = " << run.map_det[vec_strMapDetKeyVal[i]].vec_iTDC_Data.size() << endl;
+            cout<<"run.map_det[vec_strMapDetKeyVal["<<i<<"]].vec_iTDC_Data.size() = " << run.map_det[vec_strMapDetKeyVal[i]].vec_iTDC_Data.size() << endl;
 
-		cout<<"getInvertedTime(" << map_iTDCData[vec_strMapDetKeyVal[i]] << ") = ";
-		cout<< getInvertedTime( map_iTDCData[vec_strMapDetKeyVal[i]] ) << endl;
+            cout<<"getInvertedTime(" << map_iTDCData[vec_strMapDetKeyVal[i]] << ") = ";
+            cout<< getInvertedTime( map_iTDCData[vec_strMapDetKeyVal[i]] ) << endl;
 
-		//((*iterDet).second).vec_iTDC_Data.push_back(4);
+            //((*iterDet).second).vec_iTDC_Data.push_back(4);
 		
-		float myData = 	getInvertedTime( map_iTDCData[vec_strMapDetKeyVal[i]] );
+            float myData = 	getInvertedTime( map_iTDCData[vec_strMapDetKeyVal[i]] );
 		
             if (analysisSetup.bInvertTime){ //Case: Invert non-zer times
                 //((*iterDet).second).vec_iTDC_Data.push_back( getInvertedTime( map_iTDCData[(*iterDet).first] ) );
-		cout<<"myData = " << myData << endl;
-		run.map_det[vec_strMapDetKeyVal[i]].vec_iTDC_Data.push_back(myData);
+                cout<<"myData = " << myData << endl;
+                run.map_det[vec_strMapDetKeyVal[i]].vec_iTDC_Data.push_back(myData);
             } //End Case: Invert non-zero times
             else{ //Case: Use Raw Times
                 //((*iterDet).second).vec_iTDC_Data.push_back( map_iTDCData[(*iterDet).first] );
             } //End Case: Use Raw Times
         } //End
     } //End Loop Through Tree
+    */
     
     //Correct for offset in mean arrival time?
     //Consider only the case were number of detectors is greater than 2 (obviously)
@@ -493,7 +537,7 @@ TH1F Timing::TimingRunAnalyzer::getHistogram(HistoSetup &setupHisto){
 } //End getHistogram
 
 //Loads all relevant analysis parameters from a text file
-void Timing::TimingRunAnalyzer::setAnalysisConfig(string strInputFile){
+void Timing::TimingRunAnalyzer::setAnalysisConfig(string &strInputFile){
     //Variable Declaration
     bool bExitSuccess = false;
     bool bDetSetup = false;
