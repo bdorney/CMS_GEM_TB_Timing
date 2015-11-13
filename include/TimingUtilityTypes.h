@@ -70,8 +70,8 @@ namespace Timing {
     };
     
     struct AnalysisSetup{
-        bool bCompute_OR;
-        bool bCompute_AND;
+        //bool bCompute_OR;
+        //bool bCompute_AND;
         bool bInvertTime;
         bool bMatchArrivalTime;
         
@@ -83,9 +83,8 @@ namespace Timing {
         std::map<std::string, HistoSetup> map_DetSetup;
         
         AnalysisSetup(){
-            bCompute_AND = bCompute_OR = bMatchArrivalTime = false;
-            //bInvertTime = true;
-            
+            //bCompute_AND = bCompute_OR = bMatchArrivalTime = false;
+            bMatchArrivalTime = false;
             bInvertTime = false;
             
             fTDCWinSize = 1200;
@@ -102,17 +101,7 @@ namespace Timing {
         float fTDC_Histo_RMS;
         float iTDC_Histo_nPks;
         
-        //float fTDC_Histo_PkInt_1stMax = -1;
-        //float fTDC_Histo_PkInt_2ndMax = -1;
-        //float fTDC_Histo_PkInt_3rdMax = -1;
-        
-        //float fTDC_Histo_PkPos_1stMax = -1;
-        //float fTDC_Histo_PkPos_2ndMax = -1;
-        //float fTDC_Histo_PkPos_3rdMax = -1;
-        
-        //TF1 *func_TDC_Fit;     //User Specified
         std::shared_ptr<TF1> func_TDC_Fit;//(nullptr);
-        //TH1F *hTDC_Histo;      //Made from Detector.vec_iTDC_Data
         std::shared_ptr<TH1F> hTDC_Histo; //(nullptr);
         
         std::map<std::string, float> map_fTDC_Fit_Param; //Fit parameters
@@ -123,10 +112,6 @@ namespace Timing {
         TDCAnalysisData(){
             fTDC_Histo_Mean = fTDC_Histo_RMS = fTDC_Eff = fTDC_Fit_Chi2 = fTDC_Fit_NDF = -1;
             iTDC_Histo_nPks = -1;
-            
-            //func_TDC_Fit = nullptr;     //User Specified
-            //hTDC_Histo = nullptr;          //Made from vec_iTDC_Data
-
         }
     };
     
@@ -195,7 +180,6 @@ namespace Timing {
         int iTDC_Chan;
         
         std::vector<int> vec_iTDC_Data; //Event-by-Event Data
-        //std::vector<float> vec_fTDC_Data; //Event-by-Event Data
         
         Detector(){
             //Detector Info
@@ -262,22 +246,17 @@ namespace Timing {
         
         //Detectors
         //=============================
-        //std::map<std::string, Detector, Timing::map_cmp_str> map_det;
         std::map<std::string, Detector> map_det;
         
         //TDC Info
         //=============================
-        //float fTDC_Fit_Chi2;
-        //float fTDC_Fit_NDF;
-        
         int iTDC_Chan_Trig;         //Channel of the Trigger in the TDC
         
         TDCAnalysisData timingResultsAND;
         TDCAnalysisData timingResultsOR;
         
-	std::shared_ptr<TH1F> hTDC_DeltaT;
-        
-	std::shared_ptr<TH2F> hTDC_Correlation;
+        std::shared_ptr<TH1F> hTDC_DeltaT;
+        std::shared_ptr<TH2F> hTDC_Correlation;
         
         Run(){
             //Run info
@@ -296,9 +275,6 @@ namespace Timing {
             //TDC Info
             //=============================
             iTDC_Chan_Trig = 0;         //Channel of the Trigger in the TDC
-            
-	    //hTDC_DeltaT = nullptr;
-	    //hTDC_Correlation = nullptr;
         }
     };
     

@@ -58,18 +58,14 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     
     //Variable Declaration
     map<string,int> map_iTDCData;
-    //map<string,float> map_fTDCData;
-    //map<string,TF1, map_cmp_str> map_fTDCFits;
     map<string,TF1> map_fTDCFits;
-    //map<string,TH1F, map_cmp_str> map_fTDCHistos;
     map<string,TH1F> map_fTDCHistos;
     
     TF1 func_TDC_Fit_AND;
     TF1 func_TDC_Fit_OR;
     
     TFile *file_ROOT_Run = NULL;
-    //TFile file_ROOT_Run(run.strRunName.c_str(),"READ","",1);
-
+    
     //Setup the OR, AND, deltaT, & correlation histograms
     TH1F hTDC_AND = getHistogram( analysisSetup.setupAND, run );
     TH1F hTDC_DeltaT( ("hTDC_DeltaT_R" + getString(run.iRun) ).c_str(),"DeltaT:t_{Det1} - t_{Det2} #left( ns #right): A.U.",2 * analysisSetup.fTDCWinSize, -1. * analysisSetup.fTDCWinSize, analysisSetup.fTDCWinSize );
@@ -77,7 +73,6 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     TH1F hTDC_OR = getHistogram( analysisSetup.setupOR, run );
     
     TTree *tree_Run = nullptr;
-    //std::shared_ptr<TTree> tree_Run(nullptr);    
 
     vector<string> vec_strMapDetKeyVal; //List of detector names for random access to the map...
     
@@ -88,7 +83,6 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     //Open this run's root file
     //------------------------------------------------------
     file_ROOT_Run = new TFile(run.strRunName.c_str(),"READ","",1);
-    //file_ROOT_Run.Open(run.strRunName.c_str(),"READ","",1,0);
 
     cout<<"TimingRunAnalyzer::analyzeRun() - run.strRunName = " << run.strRunName << endl;
 
@@ -96,8 +90,6 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     //------------------------------------------------------
     if ( !file_ROOT_Run->IsOpen() || file_ROOT_Run->IsZombie() ) { //Case: failed to load ROOT file
         perror( ("Timing::TimingRunAnalyzer::analyzeRun() - error while opening file: " + run.strRunName ).c_str() );
-	//cout<<"file_ROOT_Run.IsOpen() = " << file_ROOT_Run.IsOpen() << endl;
-        //cout<<"file_ROOT_Run.IsZombie() = " << file_ROOT_Run.IsZombie() << endl;
         printROOTFileStatus(file_ROOT_Run);
         std::cout << "Exiting!!!\n";
         
@@ -106,10 +98,8 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     
     cout<<" run.strTreeName_Run = " << run.strTreeName_Run << endl;
     
-    //auto tree_Run = std::make_shared<TTree>( (TTree*) file_ROOT_Run.Get( run.strTreeName_Run.c_str() ) );
     tree_Run = (TTree*) file_ROOT_Run->Get( run.strTreeName_Run.c_str() );
-	tree_Run->SetDirectory(gROOT);
-    //std::shared_ptr<TTree> tree_Run( (TTree*) file_ROOT_Run.Get( run.strTreeName_Run.c_str() ) );
+	//tree_Run->SetDirectory(gROOT);
 
     if ( nullptr == tree_Run ) { //Case: failed to load TTree
         std::cout<<"Timing::TimingRunAnalyzer::analyze() - error while fetching: " << run.strTreeName_Run << endl;
@@ -131,11 +121,9 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
         map_iTDCData[(*iterDet).first];
             
         //Form histogram for this detector
-	TH1F hTemp = getHistogram( analysisSetup.map_DetSetup[(*iterDet).first], run );
-        map_fTDCHistos[(*iterDet).first] = hTemp;
-        
-        //Append the Histo name with the run number
-        //map_fTDCHistos[(*iterDet).first].SetName( ( analysisSetup.map_DetSetup[(*iterDet).first].strHisto_Name + "_" + getString(run.iRun ) ).c_str() );
+        //TH1F hTemp = getHistogram( analysisSetup.map_DetSetup[(*iterDet).first], run );
+        //map_fTDCHistos[(*iterDet).first] = hTemp;
+        map_fTDCHistos[(*iterDet).first] = getHistogram( analysisSetup.map_DetSetup[(*iterDet).first], run );
         
         //Store the key values
         vec_strMapDetKeyVal.push_back((*iterDet).first);
@@ -143,10 +131,10 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     
     //Set TBranch Address for each detector (e.g. TDC Channel)
     //  NOTE: Yes it needs to be done in TWO separate loops; yes ROOT is stupid
-    //for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Through Detectors
-    for (int i=0; i<vec_strMapDetKeyVal.size(); ++i){ //Loop Through Detectors
+    for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Through Detectors
+    //for (int i=0; i<vec_strMapDetKeyVal.size(); ++i){ //Loop Through Detectors
         //Set branch address
-        //tree_Run->SetBranchAddress( ("TDC_Ch" + getString( ((*iterDet).second).iTDC_Chan ) ).c_str(), &(map_iTDCData[(*iterDet).first]) );
+        tree_Run->SetBranchAddress( ("TDC_Ch" + getString( ((*iterDet).second).iTDC_Chan ) ).c_str(), &(map_iTDCData[(*iterDet).first]) );
         //tree_Run->SetBranchAddress( ("TDC_Ch" + getString( run.map_det[vec_strMapDetKeyVal[i]].iTDC_Chan ) ).c_str(), &(map_iTDCData[vec_strMapDetKeyVal[i]]) );
     } //End Loop Through Detectors
     
@@ -164,9 +152,6 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
         for (int i=0; i < tree_Run->GetEntries(); ++i) { //Loop Over Events
             tree_Run->GetEntry(i);
             
-		//debugging
-		//if (i > 5); break;
-
             if (i % 1000 == 0) cout <<i<<" Events Analyzed\n";
             
             //Correct for inverted times due to common_stop technique of TDC
@@ -202,49 +187,6 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
         vec_iData.clear();
     } //End Loop Over Detectors
     
-    //Get Data event-by-event from individual channels and nonzero invert times if requested
-    /*for (int i=0; i < tree_Run->GetEntries(); ++i) {
-        tree_Run->GetEntry(i);
-        
-        if (i % 1000 == 0) cout <<i<<" Events Analyzed\n";
-        
-        //Get data event-by-event
-        //for (map<string, Detector>::iterator iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) {
-        for(int i=0; i<vec_strMapDetKeyVal.size(); ++i){
-            //Correct for inverted times due to common_stop technique of TDC
-            //  NOTE: this does not mean 0 is the trigger if this correction is made
-            //        this moves the trigger time from t=0 to t=analysisSetup.fTDCWinSize
-
-            //cout<<"(*iterDet).first = ";
-            //cout<<(*iterDet).first<<endl;
-
-            cout<<"map_iTDCData.size() = " << map_iTDCData.size() << endl;
-   
-            for(auto iterDebug = map_iTDCData.begin(); iterDebug != map_iTDCData.end(); ++iterDebug){
-                cout<<(*iterDebug).first<<"\t"<<(*iterDebug).second<<endl;
-            }
-
-            cout<<"run.map_det[vec_strMapDetKeyVal["<<i<<"]].vec_iTDC_Data.size() = " << run.map_det[vec_strMapDetKeyVal[i]].vec_iTDC_Data.size() << endl;
-
-            cout<<"getInvertedTime(" << map_iTDCData[vec_strMapDetKeyVal[i]] << ") = ";
-            cout<< getInvertedTime( map_iTDCData[vec_strMapDetKeyVal[i]] ) << endl;
-
-            //((*iterDet).second).vec_iTDC_Data.push_back(4);
-		
-            float myData = 	getInvertedTime( map_iTDCData[vec_strMapDetKeyVal[i]] );
-		
-            if (analysisSetup.bInvertTime){ //Case: Invert non-zer times
-                //((*iterDet).second).vec_iTDC_Data.push_back( getInvertedTime( map_iTDCData[(*iterDet).first] ) );
-                cout<<"myData = " << myData << endl;
-                run.map_det[vec_strMapDetKeyVal[i]].vec_iTDC_Data.push_back(myData);
-            } //End Case: Invert non-zero times
-            else{ //Case: Use Raw Times
-                //((*iterDet).second).vec_iTDC_Data.push_back( map_iTDCData[(*iterDet).first] );
-            } //End Case: Use Raw Times
-        } //End
-    } //End Loop Through Tree
-    */
-    
     //Correct for offset in mean arrival time?
     //Consider only the case were number of detectors is greater than 2 (obviously)
     if (analysisSetup.bMatchArrivalTime && run.map_det.size() > 1) { //Case: Correct for Offsets in Arrival Time
@@ -279,9 +221,6 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
         //This works since by design run.map_det[some_det].vec_iTDC_Data.size() == tree_Run->GetEntries()
         //For each i we are going to fill the histograms, and reset the value of map_iTDCData
         
-	//debugging
-	//if( i > 4 ) break;
-
         for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Over Detectors
             //Reset the value of the map_iTDCData
             map_iTDCData[(*iterDet).first] = ((*iterDet).second).vec_iTDC_Data[i];
@@ -315,12 +254,12 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     //------------------------------------------------------
     //Event loop finished set performance data for single detectors
     for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Over Detectors
-        //setPerformanceData( ((*iterDet).second).timingResults, map_fTDCHistos[(*iterDet).first] );
+        setPerformanceData( ((*iterDet).second).timingResults, map_fTDCHistos[(*iterDet).first] );
     } //End Loop Over Detectors
     
     //Store the AND and the OR of the detectors
-    //setPerformanceData( run.timingResultsAND, hTDC_AND );
-    //setPerformanceData( run.timingResultsOR, hTDC_OR );
+    setPerformanceData( run.timingResultsAND, hTDC_AND );
+    setPerformanceData( run.timingResultsOR, hTDC_OR );
     
     //Fit Histograms
     //------------------------------------------------------
@@ -335,7 +274,7 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
             //fitHistogram( analysisSetup.map_DetSetup[(*iterDet).first], map_fTDCHistos[(*iterDet).first], map_fTDCFits[(*iterDet).first] );
             
             //Store the performance data
-            //setPerformanceData( ((*iterDet).second).timingResults, map_fTDCFits[(*iterDet).first], analysisSetup.map_DetSetup[(*iterDet).first] );
+            setPerformanceData( ((*iterDet).second).timingResults, map_fTDCFits[(*iterDet).first], analysisSetup.map_DetSetup[(*iterDet).first] );
         } //End Loop Through Detectors
         
         //Initialize AND & OR fits
@@ -347,87 +286,25 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
         //fitHistogram(analysisSetup.setupOR, hTDC_OR, func_TDC_Fit_OR);
         
         //Store the performance data for the AND & OR
-        //setPerformanceData( run.timingResultsAND, func_TDC_Fit_AND, analysisSetup.setupAND );
-        //setPerformanceData( run.timingResultsOR, func_TDC_Fit_OR, analysisSetup.setupOR );
+        setPerformanceData( run.timingResultsAND, func_TDC_Fit_AND, analysisSetup.setupAND );
+        setPerformanceData( run.timingResultsOR, func_TDC_Fit_OR, analysisSetup.setupOR );
     } //End Case: Async Trigger Mode
-    else if ( 1 == run.iTrig_Mode) { //Case: Sync Trigger Mode
-        //Blank for now
-        
-        //From the old analysis:
-        //Loop Over Found Peaks
-        /*Double_t *dHistoPeakPos_X = timingSpec->GetPositionX();
-        
-        vector<pair<float,float> > vec_PksInfo; //pair.first -> Integral; pair.second -> X-Pos
-        
-        //NOTE: This could be done with a std::map<float,float> but I want random access "[]" for easy usage
-        
-        //Get All the Peaks
-        cout<<"============================================" << endl;
-        cout<<"treeProducerTDC::setRun() - Searching for Peaks\n";
-        for (int i=0; i<timingSpec->GetNPeaks(); ++i) { //Loop Through Spec Peaks
-            //vec_PksInfo.push_back(std::make_pair( getPeakIntegral(timingHisto, float (dHistoPeakPos_X[i]) ), float (dHistoPeakPos_X[i]) ) );
-            vec_PksInfo.push_back(std::make_pair( getPeakIntegral(&timingHisto, float (dHistoPeakPos_X[i]) ), float (dHistoPeakPos_X[i]) ) );
-            
-            cout<<"treeProducerTDC::setRun() - Peak Found! Continuing Search!\n";
-            
-            //Map comparison by default is std::less which acts like "<" operator
-            //Upon completion map will be ordered by increasing key value
-            //map_Peaks[ float (dHistoPeakPos_X[i]) ] = getPeakIntegral(timingHisto, float (dHistoPeakPos_X[i]) );
-        } //End Loop Through Spec Peaks
-        cout<<"treeProducerTDC::setRun() - All Peaks Found!\n";
-        cout<<"============================================" << endl;
-        
-        //Sort the peaks in Ascending Order
-        std::sort(vec_PksInfo.begin(), vec_PksInfo.end() );
-        
-        //The Peaks are now sorted Lowest to Highest Integral
-        //NOTE: if Peak integrals are same they are then sorted by peak position (default std::pair comparator)
-        
-        //Store the Peaks
-        if ( vec_PksInfo.size() >= 3 ) {
-            runLogger.setTDCHistoPksInt_1stMax( (vec_PksInfo[vec_PksInfo.size()-1]).first );
-            runLogger.setTDCHistoPksInt_2ndMax( (vec_PksInfo[vec_PksInfo.size()-2]).first );
-            runLogger.setTDCHistoPksInt_3rdMax( (vec_PksInfo[vec_PksInfo.size()-3]).first );
-            
-            runLogger.setTDCHistoPksPos_1stMax( (vec_PksInfo[vec_PksInfo.size()-1]).second );
-            runLogger.setTDCHistoPksPos_2ndMax( (vec_PksInfo[vec_PksInfo.size()-2]).second );
-            runLogger.setTDCHistoPksPos_3rdMax( (vec_PksInfo[vec_PksInfo.size()-3]).second );
-        }
-        else if ( vec_PksInfo.size() >= 2 ) {
-            runLogger.setTDCHistoPksInt_1stMax( (vec_PksInfo[vec_PksInfo.size()-1]).first );
-            runLogger.setTDCHistoPksInt_2ndMax( (vec_PksInfo[vec_PksInfo.size()-2]).first );
-            
-            runLogger.setTDCHistoPksPos_1stMax( (vec_PksInfo[vec_PksInfo.size()-1]).second );
-            runLogger.setTDCHistoPksPos_2ndMax( (vec_PksInfo[vec_PksInfo.size()-2]).second );
-        }
-        else if ( vec_PksInfo.size() >= 1 ) {
-            runLogger.setTDCHistoPksInt_1stMax( (vec_PksInfo[vec_PksInfo.size()-1]).first );
-            
-            runLogger.setTDCHistoPksPos_1stMax( (vec_PksInfo[vec_PksInfo.size()-1]).second );
-        }*/
-
-    } //End Case: Sync Trigger Mode
     
     //Store Objects/Parameters into the Run
     //We are done with the analysis now, store everything into the run
     //  NOTE: We do not work with the TObjects stored in the run above because passing the pointers "TH1F *" and "TF1 *" around has lead to problems in the past
     //------------------------------------------------------
-    //run.hTDC_Correlation= &hTDC_Correlation;//Set the run's histogram
-    //run.hTDC_DeltaT     = &hTDC_DeltaT;     //Set the run's histogram
+    run.hTDC_Correlation= &hTDC_Correlation;//Set the run's histogram
+    run.hTDC_DeltaT     = &hTDC_DeltaT;     //Set the run's histogram
 
-	//run.hTDC_Correlation = std::make_shared<TH2F>(hTDC_Correlation);
-	//run.hTDC_DeltaT	= std::make_shared<TH1F>(hTDC_DeltaT);    
+	run.hTDC_Correlation = std::make_shared<TH2F>(hTDC_Correlation);
+	run.hTDC_DeltaT	= std::make_shared<TH1F>(hTDC_DeltaT);
 
     //Debugging
     	//cout<<"TimingRunAnalyzer::analyze() - run.hTDC_DeltaT (Expect Non-Null)= " << run.hTDC_DeltaT << endl;
 	//cout<<"TimingRunAnalyzer::analyze() - run.hTDC_Correlation (Expect Non-Null)= " << run.hTDC_Correlation << endl;
 
-	//Debugging
-cout<<"AnalyzeRun Finished, please enter 1\n";
-int dummy;
-std::cin>>dummy;
-
-    //Clear the mapped contents?
+    //Clear the mapped contents? (Not doing this seems to cause some pointer to be freed)
     //------------------------------------------------------
     map_iTDCData.clear();
     map_fTDCFits.clear();
@@ -486,15 +363,7 @@ TF1 Timing::TimingRunAnalyzer::getFunction(HistoSetup &setupHisto, TH1F & hInput
         //AMPLITUDE, MEAN, SIGMA
         //We assume the user has correctly matched the indices of setupHisto.vec_strFit_ParamMeaning and setupHisto.vec_strFit_ParamIGuess to the formula given in setupHisto.strFit_Formula
         for (int i=0; i<setupHisto.vec_strFit_ParamMeaning.size(); ++i) {
-	    //Debugging
-	    //cout<<"Timing::TimingRunAnalyzer::getFunction() - setupHist.vec_strFit_ParamMeaning[" << i << "]=" << setupHisto.vec_strFit_ParamMeaning[i] << endl;
-	    //cout<<"Timing::TimingRunAnalyzer::getFunction() - setupHist.vec_strFit_ParamIGuess[" << i << "]=" << setupHisto.vec_strFit_ParamIGuess[i] << endl;
-
-	    //cout<<"setupHisto.vec_strFit_ParamIGuess[i].compare('AMPLITUDE')=" << setupHisto.vec_strFit_ParamIGuess[i].compare("AMPLITUDE") << endl;
-	    //cout<<"setupHisto.vec_strFit_ParamIGuess[i].compare('MEAN')=" << setupHisto.vec_strFit_ParamIGuess[i].compare("MEAN") << endl;
-	    //cout<<"setupHisto.vec_strFit_ParamIGuess[i].compare('SIGMA')=" << setupHisto.vec_strFit_ParamIGuess[i].compare("SIGMA") << endl;
-
-	    //Try to automatically assign a value
+            //Try to automatically assign a value
             if (0 == setupHisto.vec_strFit_ParamIGuess[i].compare("AMPLITUDE") ) { //Case: Histo Amplitude
             	ret_Func.SetParameter(i, hInput.GetBinContent( hInput.GetMaximumBin() ) );
             } //End Case: Histo Amplitude
@@ -735,8 +604,8 @@ void Timing::TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::if
     while ( getlineNoSpaces(fStream, strLine) ) {
         bExitSuccess = false;
         
-	//Debugging
-	//cout<<"strLine = " << strLine << endl;
+        //Debugging
+        //cout<<"strLine = " << strLine << endl;
 
         //Does the user want to comment out this line?
         if ( 0 == strLine.compare(0,1,"#") ) continue;
@@ -762,10 +631,10 @@ void Timing::TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::if
                 //Get comma separated list
                 vec_strList = Timing::getCommaSeparatedList(pair_strParam.second);
                 
-		//Debugging
-		//for(int i=0; i<vec_strList.size(); ++i){
-		//	cout<<"vec_strList["<<i<<"] = " << vec_strList[i] << endl;
-		//}
+                //Debugging
+                //for(int i=0; i<vec_strList.size(); ++i){
+                //	cout<<"vec_strList["<<i<<"] = " << vec_strList[i] << endl;
+                //}
 
                 if (vec_strList.size() >= 2) { //Case: at least 2 numbers
                     //Fetch
