@@ -152,25 +152,26 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
         for (int i=0; i < tree_Run->GetEntries(); ++i) { //Loop Over Events
             tree_Run->GetEntry(i);
             
-            if (i % 1000 == 0) cout <<i<<" Events Analyzed\n";
+            if (i % 1000 == 0) cout<<"Detector: "<<(*iterDet).first <<"; " <<i<<" Events Analyzed\n";
             
             //Correct for inverted times due to common_stop technique of TDC
             //  NOTE: this does not mean 0 is the trigger if this correction is made
             //        this moves the trigger time from t=0 to t=analysisSetup.fTDCWinSize
             
-            cout<<"(*iterDet).first = ";
-            cout<<(*iterDet).first<<endl;
+		//Debugging
+            //cout<<"(*iterDet).first = ";
+            //cout<<(*iterDet).first<<endl;
             
-            cout<<"map_iTDCData.size() = " << map_iTDCData.size() << endl;
+            //cout<<"map_iTDCData.size() = " << map_iTDCData.size() << endl;
             
-            for(auto iterDebug = map_iTDCData.begin(); iterDebug != map_iTDCData.end(); ++iterDebug){
-                cout<<(*iterDebug).first<<"\t"<<(*iterDebug).second<<endl;
-            }
+            //for(auto iterDebug = map_iTDCData.begin(); iterDebug != map_iTDCData.end(); ++iterDebug){
+                //cout<<(*iterDebug).first<<"\t"<<(*iterDebug).second<<endl;
+            //}
             
-            cout<<"map_iTDCData.count("<<(*iterDet).first<<") = " << map_iTDCData.count((*iterDet).first) << endl;
+            //cout<<"map_iTDCData.count("<<(*iterDet).first<<") = " << map_iTDCData.count((*iterDet).first) << endl;
             
-            cout<<"getInvertedTime(" << map_iTDCData[(*iterDet).first] << ") = ";
-            cout<< getInvertedTime( map_iTDCData[(*iterDet).first] ) << endl;
+            //cout<<"getInvertedTime(" << map_iTDCData[(*iterDet).first] << ") = ";
+            //cout<< getInvertedTime( map_iTDCData[(*iterDet).first] ) << endl;
             
             if (analysisSetup.bInvertTime){ //Case: Invert non-zer times
                 //run.map_det[vec_strMapDetKeyVal[i]].vec_iTDC_Data.push_back(myData);
@@ -271,7 +272,7 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
             map_fTDCFits[(*iterDet).first] = getFunction( analysisSetup.map_DetSetup[(*iterDet).first], map_fTDCHistos[(*iterDet).first], run );
             
             //Fit histogram
-            //fitHistogram( analysisSetup.map_DetSetup[(*iterDet).first], map_fTDCHistos[(*iterDet).first], map_fTDCFits[(*iterDet).first] );
+            fitHistogram( analysisSetup.map_DetSetup[(*iterDet).first], map_fTDCHistos[(*iterDet).first], map_fTDCFits[(*iterDet).first] );
             
             //Store the performance data
             setPerformanceData( ((*iterDet).second).timingResults, map_fTDCFits[(*iterDet).first], analysisSetup.map_DetSetup[(*iterDet).first] );
@@ -282,8 +283,8 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
         func_TDC_Fit_OR = getFunction( analysisSetup.setupOR, hTDC_OR, run );
         
         //Fit AND & OR
-        //fitHistogram(analysisSetup.setupAND, hTDC_AND, func_TDC_Fit_AND);
-        //fitHistogram(analysisSetup.setupOR, hTDC_OR, func_TDC_Fit_OR);
+        fitHistogram(analysisSetup.setupAND, hTDC_AND, func_TDC_Fit_AND);
+        fitHistogram(analysisSetup.setupOR, hTDC_OR, func_TDC_Fit_OR);
         
         //Store the performance data for the AND & OR
         setPerformanceData( run.timingResultsAND, func_TDC_Fit_AND, analysisSetup.setupAND );
@@ -294,9 +295,27 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     //We are done with the analysis now, store everything into the run
     //  NOTE: We do not work with the TObjects stored in the run above because passing the pointers "TH1F *" and "TF1 *" around has lead to problems in the past
     //------------------------------------------------------
+	cout<<"run.hTDC_Correlation = ";
+	cout<< run.hTDC_Correlation << endl;
+
+	cout<<"run.hTDC_DeltaT = ";
+	cout<<run.hTDC_DeltaT<<endl;
+	
 	run.hTDC_Correlation = std::make_shared<TH2F>(hTDC_Correlation);
 	run.hTDC_DeltaT	= std::make_shared<TH1F>(hTDC_DeltaT);
 
+	cout<<"hTDC_Correlation = ";
+	cout<<&hTDC_Correlation<<endl;
+	cout<<"run.hTDC_Correlation = ";
+	cout<< run.hTDC_Correlation << endl;
+
+	cout<<"hTDC_DeltaT = ";
+	cout<<&hTDC_DeltaT<<endl;
+	cout<<"run.hTDC_DeltaT = ";
+	cout<<run.hTDC_DeltaT<<endl;
+
+	run.hTDC_DeltaT->SetDirectory(gROOT);
+	run.hTDC_Correlation->SetDirectory(gROOT);
     //Debugging
     	//cout<<"TimingRunAnalyzer::analyze() - run.hTDC_DeltaT (Expect Non-Null)= " << run.hTDC_DeltaT << endl;
 	//cout<<"TimingRunAnalyzer::analyze() - run.hTDC_Correlation (Expect Non-Null)= " << run.hTDC_Correlation << endl;

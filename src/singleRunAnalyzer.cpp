@@ -208,10 +208,12 @@ int main( int argc_, char * argv_[]){
     } //End Loop Over Detectors
     
     TDirectory *dir_detOR = file_Output->mkdir( "Detector_OR" );
+    dir_detOR->cd();
     run.timingResultsOR.func_TDC_Fit->Write();
     run.timingResultsOR.hTDC_Histo->Write();
     
     TDirectory *dir_detAND = file_Output->mkdir( "Detector_AND" );
+    dir_detAND->cd();
     run.hTDC_DeltaT->Write();
     run.hTDC_Correlation->Write();
     run.timingResultsAND.func_TDC_Fit->Write();

@@ -1,7 +1,8 @@
 [BEGIN_ANALYSIS_INFO]
     TDC_Window_Size = '1200'; #Invert_Timing = true -> timing data recorded as t = (TDC_Window_Size - t)
     Invert_Timing = 'true'; #In common stop TDC trigger is delayed, so t=0 is actually in the PAST
-    Match_Arrival_Time = 'true'; #Data from all detectors will be shifted so <t_i> = <t_j> for all i,j
+    #Match_Arrival_Time = 'true'; #Data from all detectors will be shifted so <t_i> = <t_j> for all i,j
+    Match_Arrival_Time = 'false'; #Data from all detectors will be shifted so <t_i> = <t_j> for all i,j
     [BEGIN_OR_INFO]
         Histo_Name = 'timingHisto_OR';
         Histo_NumBins = '400';
@@ -19,7 +20,7 @@
         Histo_Name = 'timingHisto_AND';
         Histo_NumBins = '400';
         Histo_BinRange = '0,1200';
-        Histo_XTitle = 'min#left(t_{1}, t_{2}#right) #left(ns#right)';
+        Histo_XTitle = 'max#left(t_{1}, t_{2}#right) #left(ns#right)';
         Histo_YTitle = 'Counts #left(N/ns#right)';
         Fit_Autoranging = 'true';
         Fit_Formula = '[0]*exp( -0.5 * (x-[1])^2 / [2]^2 )';
@@ -32,7 +33,8 @@
         #The 'Detector_Name' field must appear as the first parameter
         #Detector_Name = 'GE11-VI-L-CERN-0001'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
         Detector_Name = 'Drift';
-        Histo_Name = 'timingHisto_GE11_1'; #TName of the TH1F created from this detector's data
+        #Histo_Name = 'timingHisto_GE11_1'; #TName of the TH1F created from this detector's data
+        Histo_Name = 'timingHisto_Drift'; #TName of the TH1F created from this detector's data
         Histo_NumBins = '400';
         Histo_BinRange = '0,1200';
         Histo_XTitle = 'time #left(ns#right)';
@@ -48,7 +50,8 @@
         #The 'Detector_Name' field must appear as the first parameter
         #Detector_Name = 'GE11-VI-L-CERN-0002'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
         Detector_Name = 'Readout';
-        Histo_Name = 'timingHisto_GE11_2'; #TName of the TH1F created from this detector's data
+        #Histo_Name = 'timingHisto_GE11_2'; #TName of the TH1F created from this detector's data
+        Histo_Name = 'timingHisto_RO'; #TName of the TH1F created from this detector's data
         Histo_NumBins = '400';
         Histo_BinRange = '0,1200';
         Histo_XTitle = 'time #left(ns#right)';

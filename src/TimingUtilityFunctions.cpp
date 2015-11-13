@@ -262,8 +262,9 @@ std::pair<std::string,std::string> Timing::getParsedLine(std::string strInputLin
     int iPos_Equals = strInputLine.find("=",0);
     int iPos_End    = strInputLine.find(";",0);
     int iPos_Quote1 = strInputLine.find("'",0); //Position of first single-quote
-    int iPos_Quote2 = strInputLine.rfind("'");  //Position of last single-quite
-    
+    //int iPos_Quote2 = strInputLine.rfind("'");  //Position of last single-quote
+    int iPos_Quote2 = strInputLine.find("'",iPos_Quote1+1); //Position of last single-quote
+
     std::string strFieldName;
     std::string strFieldValue;
     
