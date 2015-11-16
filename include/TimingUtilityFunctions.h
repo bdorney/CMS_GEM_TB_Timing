@@ -28,7 +28,12 @@
  * getlineNoSpaces -> gets a line from a file, leading/trailing spaces and tabs are removed
  *
  * //Math
+ * addVal -> Performs addition of a value to a stl container; for use with stl algorithms
  * deltaMean -> Determines the difference in mean between two datasets
+ * getDeltaTForChannel() -> Determines the largest diff between a map's elements
+ * getMaxForChannelAND() -> Determines the maximum time of a map's elements (returns -1 if there are less than 2 nonzero elements)
+ * getMinForChannelOR() -> Determines the minimum time of a map's elements (returns -1 if there are no nonzero elements)
+ *
  *
  * //printers
  * printROOTFileStatus -> prints the status bits of a ROOT file
@@ -36,11 +41,11 @@
  * printStringNotFoundMsg -> prints a message instructing the user a specific pattern requested in file I/O not found; also informs user of which method, and which file the missing pattern is in
  *
  * //string manipulation
- * stofSafe -> converts a string to a float; checks for non-numeric characters; offers user chance to correct;
- * stoiSafe -> converts a string to an int; checks for non-numeric characters; offers user chance to correct
  * getCommaSeparatedList -> returns a std::vector<std::string> of a comma separated list, ignoring whitespaces
  * getParsedLine -> returns a std::pair<std::string,std::string> of a "Field,Value" under the format "Field = 'Value';" note the 4 important characters used for parsing {=,',',;}
  * getString -> converts an input type to a string
+ * stofSafe -> converts a string to a float; checks for non-numeric characters; offers user chance to correct;
+ * stoiSafe -> converts a string to an int; checks for non-numeric characters; offers user chance to correct
  *
  */
 
@@ -91,21 +96,22 @@ namespace Timing {
     template<typename T, typename A>
     float deltaMean( std::vector<T,A> const &vec1, std::vector<T,A> const &vec2);
     
+    int getDeltaTForChannel(std::map<std::string, int> inputMap);
     int getMaxForChannelAND(std::map<std::string, int> inputMap);
     int getMinForChannelOR(std::map<std::string, int> inputMap);
     
     //printers
-    void printStringNotFoundMsg(std::string strCallingMethod, std::string strPatternNotFound, std::string strLine, std::string strFilename);
     void printROOTFileStatus(TFile *file_ROOT);
     void printStreamStatus(std::ifstream &inputStream);
+    void printStringNotFoundMsg(std::string strCallingMethod, std::string strPatternNotFound, std::string strLine, std::string strFilename);
     
     //string manipulation
-    float stofSafe(std::string strInputField, std::string strInputValue);
-    int stoiSafe(std::string strInputField, std::string strInputValue);
+    std::vector<std::string> getCommaSeparatedList(std::string strInput);
     std::pair<std::string,std::string> getParsedLine(std::string strInputLine, bool &bExitSuccess);
     template<class TConversion>
     std::string getString(TConversion input);
-    std::vector<std::string> getCommaSeparatedList(std::string strInput);
+    float stofSafe(std::string strInputField, std::string strInputValue);
+    int stoiSafe(std::string strInputField, std::string strInputValue);
     
     //Code Begins for TEMPLATED functions
     //========================================================================================

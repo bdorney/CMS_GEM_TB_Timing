@@ -31,12 +31,14 @@ using namespace ROOT; //This is application specific code...no one would overwri
 namespace Timing {
     //Common Data Types Goes Here
     struct HistoSetup{
+        bool bIsTrig;
         bool bFit_AutoRanging;  //Fit range determined automatically?
         //bool bSubtractBkg;      //Background subtraction
         
         float fHisto_xLower;  //lower x range of histo
         float fHisto_xUpper;  //upper x range of histo
         
+        int iTDC_Chan;
         int iHisto_nBins;   //number of bins
         
         std::string strFit_Formula; //Fit formula
@@ -56,6 +58,7 @@ namespace Timing {
             fHisto_xLower = 0;
             fHisto_xUpper = 1200;
             
+            iTDC_Chan = 0;
             iHisto_nBins = 1200;
             
             
@@ -67,7 +70,7 @@ namespace Timing {
             strHisto_Title_X = "time #left(ns#right)";
             strHisto_Title_Y = "Counts #left(N/ns#right)";
         }
-    };
+    }; //End HistoSetup
     
     struct AnalysisSetup{
         //bool bCompute_OR;
@@ -75,11 +78,16 @@ namespace Timing {
         bool bInvertTime;
         bool bMatchArrivalTime;
         
+        float fCut_MaxDeltaT_Det; //Max allowed deltaT between detectors
+        float fCut_MaxDeltaT_PMT; //Max allowed deltaT between PMT's (who do not determine trigger)
+        float fCut_MaxDeltaT_Trig; //Max allowed deltaT between trigger determining PMT & other PMT's
+        
         float fTDCWinSize;
         
         HistoSetup setupOR;
         HistoSetup setupAND;
         
+        std::map<std::string, HistoSetup> map_PMTSetup;
         std::map<std::string, HistoSetup> map_DetSetup;
         
         AnalysisSetup(){
@@ -87,11 +95,11 @@ namespace Timing {
             bMatchArrivalTime = false;
             bInvertTime = false;
             
-            fTDCWinSize = 1200;
+            fCut_MaxDeltaT_Det = fCut_MaxDeltaT_PMT = fCut_MaxDeltaT_Trig = fTDCWinSize = 1200;
         }
-    };
+    }; //End AnalysisSetup
     
-    struct TDCAnalysisData{
+    struct TDCAnalysisResults{
         float fTDC_Fit_Chi2;
         float fTDC_Fit_NDF;
 
@@ -109,11 +117,11 @@ namespace Timing {
 
         std::vector<std::string> vec_strParamName;
         
-        TDCAnalysisData(){
+        TDCAnalysisResults(){
             fTDC_Histo_Mean = fTDC_Histo_RMS = fTDC_Eff = fTDC_Fit_Chi2 = fTDC_Fit_NDF = -1;
             iTDC_Histo_nPks = -1;
         }
-    };
+    }; //End TDCAnalysisResults
     
     struct Detector{
         //Detector Info
@@ -175,7 +183,7 @@ namespace Timing {
         
         //TDC
         //=============================
-        TDCAnalysisData timingResults;
+        TDCAnalysisResults timingResults;
         
         int iTDC_Chan;
         
@@ -220,6 +228,26 @@ namespace Timing {
         }
     };
     
+    struct PMT{
+        float fHV;      //HV Setpoint
+        
+        float fZPos;    //Position along beamline
+        
+        //TDC
+        //=============================
+        TDCAnalysisResults timingResults;
+        
+        int iTDC_Chan;
+        
+        std::vector<int> vec_iTDC_Data; //Event-by-Event Data
+        
+        PMT(){
+            fHV = fZPos = -1;
+            
+            iTDC_Chan = 0;
+        }
+    };
+    
     //Run Info
     //Most values initialized to -1 (iBeam_Type to 0)
     //Pointers initialized to nullptr
@@ -248,12 +276,16 @@ namespace Timing {
         //=============================
         std::map<std::string, Detector> map_det;
         
+        //Photomultipliers
+        //=============================
+        std::map<std::string, PMT> map_PMT;
+        
         //TDC Info
         //=============================
         int iTDC_Chan_Trig;         //Channel of the Trigger in the TDC
         
-        TDCAnalysisData timingResultsAND;
-        TDCAnalysisData timingResultsOR;
+        TDCAnalysisResults timingResultsAND;
+        TDCAnalysisResults timingResultsOR;
         
         std::shared_ptr<TH1F> hTDC_DeltaT;
         std::shared_ptr<TH2F> hTDC_Correlation;

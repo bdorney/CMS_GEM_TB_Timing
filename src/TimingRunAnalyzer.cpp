@@ -99,7 +99,6 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     cout<<" run.strTreeName_Run = " << run.strTreeName_Run << endl;
     
     tree_Run = (TTree*) file_ROOT_Run->Get( run.strTreeName_Run.c_str() );
-	//tree_Run->SetDirectory(gROOT);
 
     if ( nullptr == tree_Run ) { //Case: failed to load TTree
         std::cout<<"Timing::TimingRunAnalyzer::analyze() - error while fetching: " << run.strTreeName_Run << endl;
@@ -118,11 +117,14 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     
     //Initialize map_iTDCData for each detector
     for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Through Detectors
+        //Create this detector in the map
         map_iTDCData[(*iterDet).first];
-            
+        
+        //Create the vector of data for this detector
+        vector<int> vec_iData;
+        ((*iterDet).second).vec_iTDC_Data = vec_iData;
+        
         //Form histogram for this detector
-        //TH1F hTemp = getHistogram( analysisSetup.map_DetSetup[(*iterDet).first], run );
-        //map_fTDCHistos[(*iterDet).first] = hTemp;
         map_fTDCHistos[(*iterDet).first] = getHistogram( analysisSetup.map_DetSetup[(*iterDet).first], run );
         
         //Store the key values
@@ -132,10 +134,8 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     //Set TBranch Address for each detector (e.g. TDC Channel)
     //  NOTE: Yes it needs to be done in TWO separate loops; yes ROOT is stupid
     for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Through Detectors
-    //for (int i=0; i<vec_strMapDetKeyVal.size(); ++i){ //Loop Through Detectors
         //Set branch address
         tree_Run->SetBranchAddress( ("TDC_Ch" + getString( ((*iterDet).second).iTDC_Chan ) ).c_str(), &(map_iTDCData[(*iterDet).first]) );
-        //tree_Run->SetBranchAddress( ("TDC_Ch" + getString( run.map_det[vec_strMapDetKeyVal[i]].iTDC_Chan ) ).c_str(), &(map_iTDCData[vec_strMapDetKeyVal[i]]) );
     } //End Loop Through Detectors
     
     //Set Axis titles on Correlation histogram
@@ -144,49 +144,76 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
         hTDC_Correlation.SetYTitle( vec_strMapDetKeyVal[1].c_str() );
     }
     
-    //Get Data event-by-event from individual channels and nonzero invert times if requested
-    for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet){ //Loop Over Detectors
-        vector<int> vec_iData;
+    //Working for sure:
+    /*
+     //Get Data event-by-event from individual channels and nonzero invert times if requested
+     for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet){ //Loop Over Detectors
+     vector<int> vec_iData;
+     
+     //Get data event-by-event
+     for (int i=0; i < tree_Run->GetEntries(); ++i) { //Loop Over Events
+     tree_Run->GetEntry(i);
+     
+     if (i % 1000 == 0) cout<<"Detector: "<<(*iterDet).first <<"; " <<i<<" Events Analyzed\n";
+     
+     //Correct for inverted times due to common_stop technique of TDC
+     //  NOTE: this does not mean 0 is the trigger if this correction is made
+     //        this moves the trigger time from t=0 to t=analysisSetup.fTDCWinSize
+     
+     //Debugging
+     //cout<<"(*iterDet).first = ";
+     //cout<<(*iterDet).first<<endl;
+     
+     //cout<<"map_iTDCData.size() = " << map_iTDCData.size() << endl;
+     
+     //for(auto iterDebug = map_iTDCData.begin(); iterDebug != map_iTDCData.end(); ++iterDebug){
+     //cout<<(*iterDebug).first<<"\t"<<(*iterDebug).second<<endl;
+     //}
+     
+     //cout<<"map_iTDCData.count("<<(*iterDet).first<<") = " << map_iTDCData.count((*iterDet).first) << endl;
+     
+     //cout<<"getInvertedTime(" << map_iTDCData[(*iterDet).first] << ") = ";
+     //cout<< getInvertedTime( map_iTDCData[(*iterDet).first] ) << endl;
+     
+     if (analysisSetup.bInvertTime){ //Case: Invert non-zer times
+     //run.map_det[vec_strMapDetKeyVal[i]].vec_iTDC_Data.push_back(myData);
+     vec_iData.push_back( getInvertedTime( map_iTDCData[(*iterDet).first] ) );
+     } //End Case: Invert non-zero times
+     else{ //Case: Use Raw Times
+     //((*iterDet).second).vec_iTDC_Data.push_back( map_iTDCData[(*iterDet).first] );
+     vec_iData.push_back( map_iTDCData[(*iterDet).first] );
+     } //End Case: Use Raw Times
+     } //End Loop Over Events
+     
+     ((*iterDet).second).vec_iTDC_Data = vec_iData;
+     
+     vec_iData.clear();
+     } //End Loop Over Detectors
+     */
+    
+    //Get data event-by-event
+    for (int i=0; i < tree_Run->GetEntries(); ++i) { //Loop Over Events
+        tree_Run->GetEntry(i);
         
-        //Get data event-by-event
-        for (int i=0; i < tree_Run->GetEntries(); ++i) { //Loop Over Events
-            tree_Run->GetEntry(i);
-            
-            if (i % 1000 == 0) cout<<"Detector: "<<(*iterDet).first <<"; " <<i<<" Events Analyzed\n";
+        if (i % 1000 == 0) cout<<"Detector: "<<(*iterDet).first <<"; " <<i<<" Events Analyzed\n";
+        
+        //Selection Cuts
+        if (getDeltaTForChannel(map_iTDCData) > analysisSetup.fCut_MaxDeltaT_Det ) continue;
+        
+        //Get Data event-by-event from individual channels and nonzero invert times if requested
+        for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet){ //Loop Over Detectors
             
             //Correct for inverted times due to common_stop technique of TDC
             //  NOTE: this does not mean 0 is the trigger if this correction is made
             //        this moves the trigger time from t=0 to t=analysisSetup.fTDCWinSize
-            
-		//Debugging
-            //cout<<"(*iterDet).first = ";
-            //cout<<(*iterDet).first<<endl;
-            
-            //cout<<"map_iTDCData.size() = " << map_iTDCData.size() << endl;
-            
-            //for(auto iterDebug = map_iTDCData.begin(); iterDebug != map_iTDCData.end(); ++iterDebug){
-                //cout<<(*iterDebug).first<<"\t"<<(*iterDebug).second<<endl;
-            //}
-            
-            //cout<<"map_iTDCData.count("<<(*iterDet).first<<") = " << map_iTDCData.count((*iterDet).first) << endl;
-            
-            //cout<<"getInvertedTime(" << map_iTDCData[(*iterDet).first] << ") = ";
-            //cout<< getInvertedTime( map_iTDCData[(*iterDet).first] ) << endl;
-            
             if (analysisSetup.bInvertTime){ //Case: Invert non-zer times
-                //run.map_det[vec_strMapDetKeyVal[i]].vec_iTDC_Data.push_back(myData);
-                vec_iData.push_back( getInvertedTime( map_iTDCData[(*iterDet).first] ) );
+                ((*iterDet).second).vec_iTDC_Data.push_back( getInvertedTime( map_iTDCData[(*iterDet).first] ) );
             } //End Case: Invert non-zero times
             else{ //Case: Use Raw Times
-                //((*iterDet).second).vec_iTDC_Data.push_back( map_iTDCData[(*iterDet).first] );
-                vec_iData.push_back( map_iTDCData[(*iterDet).first] );
+                ((*iterDet).second).vec_iTDC_Data.push_back( map_iTDCData[(*iterDet).first] );
             } //End Case: Use Raw Times
-        } //End Loop Over Events
-        
-        ((*iterDet).second).vec_iTDC_Data = vec_iData;
-        
-        vec_iData.clear();
-    } //End Loop Over Detectors
+        } //End Loop Over Detectors
+    } //End Loop Over Events
     
     //Correct for offset in mean arrival time?
     //Consider only the case were number of detectors is greater than 2 (obviously)
@@ -562,23 +589,26 @@ void Timing::TimingRunAnalyzer::setAnalysisConfig(string &strInputFile){
             //Setup the Histogram struct for analysis
             setHistoSetup(strInputFile, fStream, analysisSetup.setupOR );
         } //End Case: OR SECTION
-	else if ( 0 == strLine.compare(strSecEnd_ANAL) ){ //Case: END OF FILE
-	    break;
-	} //End Case: END OF FILE
+        else if ( 0 == strLine.compare(strSecEnd_ANAL) ){ //Case: END OF FILE
+            break;
+        } //End Case: END OF FILE
         else{ //Case: Unsorted Parameters
             pair_strParam = getParsedLine(strLine, bExitSuccess);
             
             if (bExitSuccess) { //Case: Parameter Fetched Successfully
                 transform(pair_strParam.first.begin(),pair_strParam.first.end(),pair_strParam.first.begin(),toupper);
                 
-                if ( 0 == pair_strParam.first.compare("TDC_WINDOW_SIZE") ) {
-                    analysisSetup.fTDCWinSize = stofSafe(pair_strParam.first, pair_strParam.second);
+                if( 0 == pair_strParam.first.compare("CUT_MAXDELTAT_DET") ){
+                    analysisSetup.fCut_MaxDeltaT_Det = stofSafe(pair_strParam.first, pair_strParam.second);
                 }
                 else if( 0 == pair_strParam.first.compare("INVERT_TIMING") ){
                     analysisSetup.bInvertTime = convert2bool(pair_strParam.second, bExitSuccess);
                 }
                 else if( 0 == pair_strParam.first.compare("MATCH_ARRIVAL_TIME") ){
                     analysisSetup.bMatchArrivalTime = convert2bool(pair_strParam.second, bExitSuccess);
+                }
+                else if ( 0 == pair_strParam.first.compare("TDC_WINDOW_SIZE") ) {
+                    analysisSetup.fTDCWinSize = stofSafe(pair_strParam.first, pair_strParam.second);
                 }
                 else{ //Case: Parameter not recognized
                     cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - Unrecognized field!!!\n";

@@ -74,10 +74,22 @@ std::istream & Timing::getlineNoSpaces(std::istream & stream, std::string & str)
 //    return fMean1 - fMean2;
 //} //End deltaMean
 
+int Timing::getDeltaTForChannel(std::map<std::string, int> inputMap){
+    int max = getMaxForChannelAND(inputMap);
+    int min = getMinForChannelOR(inputMap);
+    
+    if (max > 0 && min > 0 ) {
+        return max - min;
+    }
+    else{
+        return -1;
+    }
+} //End getDeltaTForChannel()
+
 //Gets the maximum value for two channels (both channels required to be nonzero)
 int Timing::getMaxForChannelAND(std::map<std::string, int> inputMap){
     //Variable Declaration
-    int iRetVal;
+    //int iRetVal;
     
     std::pair<std::string, int> min = *min_element(inputMap.begin(), inputMap.end(), CompareSecond_Min());
     
@@ -86,14 +98,15 @@ int Timing::getMaxForChannelAND(std::map<std::string, int> inputMap){
         std::pair<std::string, int> max = *max_element(inputMap.begin(), inputMap.end(), CompareSecond_Max() );
         
         //iRetVal = getMaxForChannelAND(inputMap);
-        iRetVal = max.second;
+        //iRetVal = max.second;
+        return max.second;
     }
     else{
         //One or more channels off
-        iRetVal = -1;
+        //iRetVal = -1;
+        return -1;
     }
-    
-    return iRetVal;
+    //return iRetVal;
 } //End getMaxForChannel
 
 //Gets the minimum value for two channels
