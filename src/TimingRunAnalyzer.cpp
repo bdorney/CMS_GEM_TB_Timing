@@ -344,16 +344,15 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
 
 	run.hTDC_DeltaT->SetDirectory(gROOT);
 	run.hTDC_Correlation->SetDirectory(gROOT);
-    //Debugging
-    	//cout<<"TimingRunAnalyzer::analyze() - run.hTDC_DeltaT (Expect Non-Null)= " << run.hTDC_DeltaT << endl;
-	//cout<<"TimingRunAnalyzer::analyze() - run.hTDC_Correlation (Expect Non-Null)= " << run.hTDC_Correlation << endl;
-
-    //Clear the mapped contents? (Not doing this seems to cause some pointer to be freed)
+    
+    //Clear stl containers? (Not doing this seems to cause some pointer to be freed)
     //------------------------------------------------------
     map_iTDCData.clear();
     map_fTDCFits.clear();
     map_fTDCHistos.clear();
 
+    vec_strMapDetKeyVal.clear();
+    
     //Close the file
     //------------------------------------------------------
     
