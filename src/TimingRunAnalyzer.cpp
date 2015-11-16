@@ -811,7 +811,7 @@ void Timing::TimingRunAnalyzer::setPerformanceData(TDCAnalysisData &inputTimingR
  //Set Detector Data after all events of a given run have been analyzed
  //  ->timingResults struct containing detector & fit data
  //  ->funcInput fit of detector histogram
-void Timing::TimingRunAnalyzer::setPerformanceData(TDCAnalysisData &inputTimingResults, TF1 &funcInput, HistoSetup &setupHisto){
+void Timing::TimingRunAnalyzer::setPerformanceData(TDCAnalysisResults &inputTimingResults, TF1 &funcInput, HistoSetup &setupHisto){
     
     //Set the normalized Chi2 value
     inputTimingResults.fTDC_Fit_Chi2= funcInput.GetChisquare();

@@ -171,8 +171,8 @@ namespace Timing {
         //  ->timingResults struct containing detector & fit data
         //  ->hInput Detector Histogram
         //  ->funcInput fit of detector histogram
-        virtual void setPerformanceData(TDCAnalysisData &inputTimingResults, TH1F &hInput);
-        virtual void setPerformanceData(TDCAnalysisData &inputTimingResults, TF1 &funcInput, HistoSetup &setupHisto);
+        virtual void setPerformanceData(TDCAnalysisResults &inputTimingResults, TH1F &hInput);
+        virtual void setPerformanceData(TDCAnalysisResults &inputTimingResults, TF1 &funcInput, HistoSetup &setupHisto);
         
     //protected:
         
