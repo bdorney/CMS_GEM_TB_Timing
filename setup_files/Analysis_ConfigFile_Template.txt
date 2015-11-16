@@ -1,8 +1,8 @@
 [BEGIN_ANALYSIS_INFO]
     TDC_Window_Size = '1200'; #Invert_Timing = true -> timing data recorded as t = (TDC_Window_Size - t)
     Invert_Timing = 'true'; #In common stop TDC trigger is delayed, so t=0 is actually in the PAST
-    #Match_Arrival_Time = 'true'; #Data from all detectors will be shifted so <t_i> = <t_j> for all i,j
-    Match_Arrival_Time = 'false'; #Data from all detectors will be shifted so <t_i> = <t_j> for all i,j
+    Match_Arrival_Time = 'true'; #Data from all detectors will be shifted so <t_i> = <t_j> for all i,j
+    #Match_Arrival_Time = 'false'; #Data from all detectors will be shifted so <t_i> = <t_j> for all i,j
     Cut_MaxDeltaT_Det = '120'; #In Nanoseconds, max diff in detector arrival times
     #Cut_MaxDeltaT_PMT = '40'; #In Nanoseconds, max diff in time between non-coincidence determining PMTs
     #Cut_MaxDeltaT_Trig = '60'; In Nanoseconds, max diff in time between coincidence determining PMT
@@ -34,10 +34,10 @@
     [END_AND_INFO]
     [BEGIN_DETECTOR_INFO]
         #The 'Detector_Name' field must appear as the first parameter
-        #Detector_Name = 'GE11-VI-L-CERN-0001'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
-        Detector_Name = 'Drift';
-        #Histo_Name = 'timingHisto_GE11_1'; #TName of the TH1F created from this detector's data
-        Histo_Name = 'timingHisto_Drift'; #TName of the TH1F created from this detector's data
+        Detector_Name = 'GE11-VI-L-CERN-0001'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
+        #Detector_Name = 'Drift';
+        Histo_Name = 'timingHisto_GE11_1'; #TName of the TH1F created from this detector's data
+        #Histo_Name = 'timingHisto_Drift'; #TName of the TH1F created from this detector's data
         Histo_NumBins = '400';
         Histo_BinRange = '0,1200';
         Histo_XTitle = 'time #left(ns#right)';
@@ -51,10 +51,10 @@
     [END_DETECTOR_INFO]
     [BEGIN_DETECTOR_INFO]
         #The 'Detector_Name' field must appear as the first parameter
-        #Detector_Name = 'GE11-VI-L-CERN-0002'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
-        Detector_Name = 'Readout';
-        #Histo_Name = 'timingHisto_GE11_2'; #TName of the TH1F created from this detector's data
-        Histo_Name = 'timingHisto_RO'; #TName of the TH1F created from this detector's data
+        Detector_Name = 'GE11-VI-L-CERN-0002'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
+        #Detector_Name = 'Readout';
+        Histo_Name = 'timingHisto_GE11_2'; #TName of the TH1F created from this detector's data
+        #Histo_Name = 'timingHisto_RO'; #TName of the TH1F created from this detector's data
         Histo_NumBins = '400';
         Histo_BinRange = '0,1200';
         Histo_XTitle = 'time #left(ns#right)';
