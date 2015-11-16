@@ -195,7 +195,8 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     for (int i=0; i < tree_Run->GetEntries(); ++i) { //Loop Over Events
         tree_Run->GetEntry(i);
         
-        if (i % 1000 == 0) cout<<"Detector: "<<(*iterDet).first <<"; " <<i<<" Events Analyzed\n";
+        //if (i % 1000 == 0) cout<<"Detector: "<<(*iterDet).first <<"; " <<i<<" Events Analyzed\n";
+        if (i % 1000 == 0) cout<<i<<" Events Analyzed\n";
         
         //Selection Cuts
         if (getDeltaTForChannel(map_iTDCData) > analysisSetup.fCut_MaxDeltaT_Det ) continue;
@@ -767,7 +768,7 @@ void Timing::TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::if
 //Set Detector Data after all events of a given run have been analyzed
 //  ->timingResults struct containing detector & fit data
 //  ->hInput Detector Histogram
-void Timing::TimingRunAnalyzer::setPerformanceData(TDCAnalysisData &inputTimingResults, TH1F &hInput){
+void Timing::TimingRunAnalyzer::setPerformanceData(TDCAnalysisResults &inputTimingResults, TH1F &hInput){
     //Variable Declaration
     /*TSpectrum *timingSpec = new TSpectrum();
     
