@@ -345,6 +345,11 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
 	run.hTDC_DeltaT->SetDirectory(gROOT);
 	run.hTDC_Correlation->SetDirectory(gROOT);
     
+	for(auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet){
+		//(*iterDet).second.timingResults.func_TDC_Fit->SetDirectory(gROOT);
+		(*iterDet).second.timingResults.hTDC_Histo->SetDirectory(gROOT);		
+	}
+
     //Clear stl containers? (Not doing this seems to cause some pointer to be freed)
     //------------------------------------------------------
     map_iTDCData.clear();
@@ -352,7 +357,7 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     map_fTDCHistos.clear();
 
     vec_strMapDetKeyVal.clear();
-    
+
     //Close the file
     //------------------------------------------------------
     
