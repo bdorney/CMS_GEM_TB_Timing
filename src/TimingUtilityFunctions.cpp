@@ -81,10 +81,12 @@ int Timing::getDeltaTForChannel(std::map<std::string, int> inputMap){
     int max = getMaxForChannelAND(inputMap);
     int min = getMinForChannelOR(inputMap);
     
-	cout<<"Timing::getDeltaTForChannel() - max = " << max << "; min = " << min << endl;
+	//cout<<"Timing::getDeltaTForChannel() - max = " << max << "; min = " << min << endl;
 
     if (max > 0 && min > 0 ) {
-        return max - min;
+        //return max - min;
+	//return fabs(max - min);
+	return abs(max - min);
     }
     else{
         return -1;
@@ -96,12 +98,15 @@ int Timing::getMaxForChannelAND(std::map<std::string, int> inputMap){
     //Variable Declaration
     //int iRetVal;
     
-    std::pair<std::string, int> min = *min_element(inputMap.begin(), inputMap.end(), CompareSecond_Min());
-    
+    std::pair<std::string, int> min = *min_element(inputMap.begin(), inputMap.end(), CompareSecond_Min() );
+    //std::pair<std::string, int> min = *min_element(inputMap.begin(), inputMap.end() );    
+
     //Require All Elements to be nonzero (i.e. have a signal)
     if ( min.second > 0 ) {
-        std::pair<std::string, int> max = *max_element(inputMap.begin(), inputMap.end(), CompareSecond_Max() );
-        
+        //std::pair<std::string, int> max = *max_element(inputMap.begin(), inputMap.end(), CompareSecond_Max() );
+	std::pair<std::string, int> max = *max_element(inputMap.begin(), inputMap.end(), CompareSecond_Min() );	
+	//std::pair<std::string, int> max = *max_element(inputMap.begin(), inputMap.end() );        
+
         //iRetVal = getMaxForChannelAND(inputMap);
         //iRetVal = max.second;
         return max.second;
@@ -135,7 +140,8 @@ int Timing::getMinForChannelOR(std::map<std::string, int> inputMap){
     }
     else{
         std::pair<std::string, int> min = *std::min_element(inputMap.begin(), inputMap.end(), CompareSecond_Min());
-        
+        //std::pair<std::string, int> min = *std::min_element(inputMap.begin(), inputMap.end() );
+
         return min.second;
     }
 }

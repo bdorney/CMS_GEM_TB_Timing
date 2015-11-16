@@ -198,7 +198,11 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
         //if (i % 1000 == 0) cout<<"Detector: "<<(*iterDet).first <<"; " <<i<<" Events Analyzed\n";
         if (i % 1000 == 0) cout<<i<<" Events Analyzed\n";
         
-	cout<<"TimingRunAnalyzer::analyzeRun() - getDeltaTForChannel(map_iTDCData) = " << getDeltaTForChannel(map_iTDCData) << "; MaxDeltaT Allowed = " << analysisSetup.fCut_MaxDeltaT_Det << endl;
+	//cout<<"TimingRunAnalyzer::analyzeRun() - getDeltaTForChannel(map_iTDCData) = " << getDeltaTForChannel(map_iTDCData) << "; MaxDeltaT Allowed = " << analysisSetup.fCut_MaxDeltaT_Det << endl;
+
+	//for(auto iterData = map_iTDCData.begin(); iterData != map_iTDCData.end(); ++iterData){
+		//cout<<"map_iTDCData["<<(*iterData).first<<"] = " << (*iterData).second << endl;
+	//}
 
         //Selection Cuts
         if (getDeltaTForChannel(map_iTDCData) > analysisSetup.fCut_MaxDeltaT_Det ) continue;
@@ -256,12 +260,16 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
             //Reset the value of the map_iTDCData
             map_iTDCData[(*iterDet).first] = ((*iterDet).second).vec_iTDC_Data[i];
             
+		cout<< map_iTDCData[(*iterDet).first] << ";\t";
+
             //Fill the Histogram
             if ( ((*iterDet).second).vec_iTDC_Data[i] > 0 ) {
                 map_fTDCHistos[((*iterDet).first)].Fill( ((*iterDet).second).vec_iTDC_Data[i] );
             } //End Fill Histogram
         } //End Loop Over Detectors
         
+	cout<<"min = " << getMinForChannelOR(map_iTDCData) << ";\tmax = " << getMaxForChannelAND(map_iTDCData) << endl;
+
         //Fill the OR histogram
         if (getMinForChannelOR(map_iTDCData) > 0){ //Case: Any Detector fired this event
             hTDC_OR.Fill( getMinForChannelOR(map_iTDCData) );
