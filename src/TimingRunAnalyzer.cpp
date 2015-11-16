@@ -325,7 +325,8 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     //We are done with the analysis now, store everything into the run
     //  NOTE: We do not work with the TObjects stored in the run above because passing the pointers "TH1F *" and "TF1 *" around has lead to problems in the past
     //------------------------------------------------------
-	cout<<"run.hTDC_Correlation = ";
+	//Debugging
+    cout<<"run.hTDC_Correlation = ";
 	cout<< run.hTDC_Correlation << endl;
 
 	cout<<"run.hTDC_DeltaT = ";
@@ -347,10 +348,10 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
 	run.hTDC_DeltaT->SetDirectory(gROOT);
 	run.hTDC_Correlation->SetDirectory(gROOT);
     
-	for(auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet){
-		//(*iterDet).second.timingResults.func_TDC_Fit->SetDirectory(gROOT);
-		(*iterDet).second.timingResults.hTDC_Histo->SetDirectory(gROOT);		
-	}
+    //Moved to setPerformanceData
+	//for(auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet){
+		//(*iterDet).second.timingResults.hTDC_Histo->SetDirectory(gROOT);
+	//}
 
     //Clear stl containers? (Not doing this seems to cause some pointer to be freed)
     //------------------------------------------------------
@@ -811,6 +812,9 @@ void Timing::TimingRunAnalyzer::setPerformanceData(TDCAnalysisResults &inputTimi
     //Set the Histogram
     //inputTimingResults.hTDC_Histo = &hInput;
     inputTimingResults.hTDC_Histo = std::make_shared<TH1F>(hInput);
+    
+    //Set the directory to be the global directory
+    inputTimingResults.hTDC_Histo->SetDirectory(gROOT);
     
     return;
 } //End Timing::TimingRunAnalyzer::setPerformanceData() - Histogram Version
