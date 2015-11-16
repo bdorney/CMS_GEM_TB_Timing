@@ -198,6 +198,8 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
         //if (i % 1000 == 0) cout<<"Detector: "<<(*iterDet).first <<"; " <<i<<" Events Analyzed\n";
         if (i % 1000 == 0) cout<<i<<" Events Analyzed\n";
         
+	cout<<"TimingRunAnalyzer::analyzeRun() - getDeltaTForChannel(map_iTDCData) = " << getDeltaTForChannel(map_iTDCData) << "; MaxDeltaT Allowed = " << analysisSetup.fCut_MaxDeltaT_Det << endl;
+
         //Selection Cuts
         if (getDeltaTForChannel(map_iTDCData) > analysisSetup.fCut_MaxDeltaT_Det ) continue;
         

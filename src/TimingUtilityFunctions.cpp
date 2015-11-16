@@ -8,6 +8,9 @@
 
 #include "TimingUtilityFunctions.h"
 
+using std::cout;
+using std::endl;
+
 using namespace Timing;
 
 //Function Code Begins
@@ -78,6 +81,8 @@ int Timing::getDeltaTForChannel(std::map<std::string, int> inputMap){
     int max = getMaxForChannelAND(inputMap);
     int min = getMinForChannelOR(inputMap);
     
+	cout<<"Timing::getDeltaTForChannel() - max = " << max << "; min = " << min << endl;
+
     if (max > 0 && min > 0 ) {
         return max - min;
     }
