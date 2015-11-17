@@ -518,6 +518,8 @@ void Timing::TimingRunAnalyzer::setAnalysisConfig(string &strInputFile){
             
             strDetOrPMTHeading = strLine; //This should be set only once per execution
             
+		cout<<"TimingRunAnalyzer::setAnalysisConfig() - strDetOrPMTHeading = " << strDetOrPMTHeading << endl;
+
             while ( getlineNoSpaces(fStream, strLine) ) { //Loop through file to find "Name"
                 //Does the user want to comment out this line?
                 if ( 0 == strLine.compare(0,1,"#") ) continue;
@@ -549,7 +551,7 @@ void Timing::TimingRunAnalyzer::setAnalysisConfig(string &strInputFile){
                         if (0 == strDetOrPMTHeading.compare(strSecBegin_DET) ) { //Case: Detector Declaration
                             analysisSetup.map_DetSetup[pair_strParam.second] = hSetup;
                         } //End Case: Detector Declaration
-                        else if (0 == strDetOrPMTHeading.compare(strSecEnd_PMT) ) { //Case: PMT Declaration
+                        else if (0 == strDetOrPMTHeading.compare(strSecBegin_PMT) ) { //Case: PMT Declaration
                             analysisSetup.map_PMTSetup[pair_strParam.second] = hSetup;
                         } //End Case: PMT Declaration
                         else{ //Case: Undefined Behavior
@@ -593,7 +595,7 @@ void Timing::TimingRunAnalyzer::setAnalysisConfig(string &strInputFile){
                 if (0 == strDetOrPMTHeading.compare(strSecBegin_DET) ) { //Case: Detector Declaration
                     setHistoSetup(strInputFile, fStream, analysisSetup.map_DetSetup[strName] );
                 } //End Case: Detector Declaration
-                else if (0 == strDetOrPMTHeading.compare(strSecEnd_PMT) ) { //Case: PMT Declaration
+                else if (0 == strDetOrPMTHeading.compare(strSecBegin_PMT) ) { //Case: PMT Declaration
                     setHistoSetup(strInputFile, fStream, analysisSetup.map_PMTSetup[strName] );
                 } //End Case: PMT Declaration
                 else{ //Case: Undefined Behavior
@@ -686,7 +688,7 @@ void Timing::TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::if
         if ( 0 == strLine.compare(0,1,"#") ) continue;
         
         //Has this section ended?
-        if ( 0 == strLine.compare(strSecEnd_AND) || 0 == strLine.compare(strSecEnd_DET) || 0 == strLine.compare(strSecEnd_OR) ) break;
+        if ( 0 == strLine.compare(strSecEnd_AND) || 0 == strLine.compare(strSecEnd_DET) || 0 == strLine.compare(strSecEnd_PMT) || 0 == strLine.compare(strSecEnd_OR) ) break;
         
         //Get Parameter Pairing
         pair_strParam = Timing::getParsedLine(strLine, bExitSuccess);

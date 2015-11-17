@@ -391,9 +391,6 @@ std::vector<std::string> Timing::getCommaSeparatedList(std::string strInput){
         //if (sstream.peek() == ',' || sstream.peek() == ' ' || sstream.peek() == '\t') sstream.ignore();
     } //End loop through the string
     
-    //Debugging
-    std::cout<<std::endl;
-
     return vec_retStrings;
 } //End getCommaSeparatedList()
 
