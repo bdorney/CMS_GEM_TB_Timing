@@ -19,7 +19,7 @@
 
 		cd ../src/
 
-	Open makefile_analyzer, ensure the compiler is correct for your system
+	Open makefile_plotter, ensure the compiler is correct for your system
 
 		i.e. CC = g++ or clang (for Mac OS > 10.9 ???)
 
@@ -27,12 +27,13 @@
 
 	Build the project:
 
-		make -f makefile_analyzer	#(Tree Analyzer)
-		make -f makefile_producer	#(Tree Producer, experts only)
+		make -f makefile_plotter	#(Tree Plotter)
+		make -f makefile_producer	#(Tree Producer)
+		make -f makefile_singleRunAna	#(Single Run analyzer)
 
-	This will create two executables "analyzeTree" and "produceTree"
+	This will create three executables "plotTree," "produceTree," and "singleRunAnalyzer"
 	
-# Usage - analyzeTree
+# Usage - plotTree
 # ========================================================
 
 	On new shell execute the setup script:
@@ -42,11 +43,11 @@
 
 	To run the analysis:
 
-		./src/analyzeTree <plot_list_file>.txt
+		./src/plotTree <plot_list_file>.txt
 
 	Several sample <plot_list_files>.txt have been included in this repository, for example:
 
-		./src/analyzeTree lists_plots/PlotList_GE11_IV_iMSPL_iT.txt
+		./src/plotTree lists_plots/PlotList_GE11_IV_iMSPL_iT.txt
 
 	will generate an output file "PlotList_GE11_IV_iMSPL_iT.root" containing the prepared results.
 
@@ -113,3 +114,21 @@
 
     The last part of the Production_ConfigFile.txt are a list of strings in the filename that should
     be ignored because they could cause the parsing algorithm to crash or have undefined behavior.
+
+# Usage - singleRunAnalyzer
+# ========================================================
+
+    On new shell execute the setup script:
+
+        source scripts/setup_CMS_GEM.csh	#(csh)
+        source scripts/setup_CMS_GEM.sh		#(bash)
+
+    To run the single run analyzer:
+
+        ./src/singleRunAnalyzer <Physical_Filename_Of_Input_ROOT_File> <Name_Of_TTree_Inside_Input_ROOT_File> <Analysis_Config_File> <Verbose Mode true/false>
+
+    However you will first need to setup the analysis config text file; a sample 
+    can be found at:
+
+        setup_files/Analysis_ConfigFile_Template.txt
+
