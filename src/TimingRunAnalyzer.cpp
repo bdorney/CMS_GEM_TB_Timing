@@ -191,6 +191,12 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
      } //End Loop Over Detectors
      */
     
+    int iNEvt;
+    int iNEvt_Fail;
+    int iNEvt_Pass;
+    
+    iNEvt = iNEvt_Fail = iNEvt_Pass = 0;
+    
     //Get data event-by-event
     for (int i=0; i < tree_Run->GetEntries(); ++i) { //Loop Over Events
         tree_Run->GetEntry(i);
@@ -198,14 +204,21 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
         //if (i % 1000 == 0) cout<<"Detector: "<<(*iterDet).first <<"; " <<i<<" Events Analyzed\n";
         if (i % 1000 == 0) cout<<i<<" Events Analyzed\n";
         
-	//cout<<"TimingRunAnalyzer::analyzeRun() - getDeltaTForChannel(map_iTDCData) = " << getDeltaTForChannel(map_iTDCData) << "; MaxDeltaT Allowed = " << analysisSetup.fCut_MaxDeltaT_Det << endl;
+        //cout<<"TimingRunAnalyzer::analyzeRun() - getDeltaTForChannel(map_iTDCData) = " << getDeltaTForChannel(map_iTDCData) << "; MaxDeltaT Allowed = " << analysisSetup.fCut_MaxDeltaT_Det << endl;
 
-	//for(auto iterData = map_iTDCData.begin(); iterData != map_iTDCData.end(); ++iterData){
-		//cout<<"map_iTDCData["<<(*iterData).first<<"] = " << (*iterData).second << endl;
-	//}
+        //for(auto iterData = map_iTDCData.begin(); iterData != map_iTDCData.end(); ++iterData){
+            //cout<<"map_iTDCData["<<(*iterData).first<<"] = " << (*iterData).second << endl;
+        //}
 
+        iNEvt++;
+        
         //Selection Cuts
-        if (getDeltaTForChannel(map_iTDCData) > analysisSetup.fCut_MaxDeltaT_Det ) continue;
+        if (getDeltaTForChannel(map_iTDCData) > analysisSetup.fCut_MaxDeltaT_Det ){
+            iNEvt_Fail++;
+            continue;
+        }
+        
+        iNEvt_Pass++;
         
         //Get Data event-by-event from individual channels and nonzero invert times if requested
         for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet){ //Loop Over Detectors
@@ -221,6 +234,13 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
             } //End Case: Use Raw Times
         } //End Loop Over Detectors
     } //End Loop Over Events
+    
+    cout<<"======================================================\n";
+    cout<<"====================Selection Summary=================\n";
+    cout<<"======================================================\n";
+    cout<<"N_Evt\tN_Evt_Fail\tN_Evt_Pass\n";
+    cout<<iNEvt<<"\t"<<iNEvt_Fail<<"\t"<<iNEvt_Pass<<endl;
+    cout<<"======================================================\n";
     
     //Correct for offset in mean arrival time?
     //Consider only the case were number of detectors is greater than 2 (obviously)
@@ -260,23 +280,34 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
             //Reset the value of the map_iTDCData
             map_iTDCData[(*iterDet).first] = ((*iterDet).second).vec_iTDC_Data[i];
             
-		cout<< map_iTDCData[(*iterDet).first] << ";\t";
+            cout<< map_iTDCData[(*iterDet).first] << ";\t";
 
             //Fill the Histogram
-            if ( ((*iterDet).second).vec_iTDC_Data[i] > 0 ) {
-                map_fTDCHistos[((*iterDet).first)].Fill( ((*iterDet).second).vec_iTDC_Data[i] );
-            } //End Fill Histogram
+            map_fTDCHistos[((*iterDet).first)].Fill( ((*iterDet).second).vec_iTDC_Data[i] );
+            //if ( ((*iterDet).second).vec_iTDC_Data[i] > 0 ) {
+                //map_fTDCHistos[((*iterDet).first)].Fill( ((*iterDet).second).vec_iTDC_Data[i] );
+            //} //End Fill Histogram
         } //End Loop Over Detectors
         
-	cout<<"min = " << getMinForChannelOR(map_iTDCData) << ";\tmax = " << getMaxForChannelAND(map_iTDCData) << endl;
+        cout<<"min = " << getMinForChannelOR(map_iTDCData) << ";\tmax = " << getMaxForChannelAND(map_iTDCData) << endl;
 
         //Fill the OR histogram
-        if (getMinForChannelOR(map_iTDCData) > 0){ //Case: Any Detector fired this event
-            hTDC_OR.Fill( getMinForChannelOR(map_iTDCData) );
-        } //End Case: Any Detector fired this event
+        hTDC_OR.Fill( getMinForChannelOR(map_iTDCData) );
+        //if (getMinForChannelOR(map_iTDCData) > 0){ //Case: Any Detector fired this event
+            //hTDC_OR.Fill( getMinForChannelOR(map_iTDCData) );
+        //} //End Case: Any Detector fired this event
         
         //Fill the AND, DeltaT, and Correlation histograms
-        if (getMaxForChannelAND(map_iTDCData) > 0){
+        hTDC_AND.Fill( getMaxForChannelAND(map_iTDCData) );
+        
+        if (map_iTDCData.size() == 2) { //Case: Two Detectors
+            if (getMaxForChannelAND(map_iTDCData) > 0) {
+                hTDC_DeltaT.Fill( map_iTDCData[vec_strMapDetKeyVal[0]] - map_iTDCData[vec_strMapDetKeyVal[1]] );
+            }
+            
+            hTDC_Correlation.Fill(map_iTDCData[vec_strMapDetKeyVal[0]], map_iTDCData[vec_strMapDetKeyVal[1]]);
+        } //End Case: Two Detectors
+        /*if (getMaxForChannelAND(map_iTDCData) > 0){
             hTDC_AND.Fill( getMaxForChannelAND(map_iTDCData) );
             
             //Right now only providing support for the 2 detector case
@@ -286,7 +317,7 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
                 hTDC_DeltaT.Fill( map_iTDCData[vec_strMapDetKeyVal[0]] - map_iTDCData[vec_strMapDetKeyVal[1]] );
                 hTDC_Correlation.Fill(map_iTDCData[vec_strMapDetKeyVal[0]], map_iTDCData[vec_strMapDetKeyVal[1]]);
             } //End Case: Two Detectors
-        } //End Case: Both Detectors fired this event
+        }*/ //End Case: Both Detectors fired this event
     } //End Loop through Events
     
     //Record Detector Data
