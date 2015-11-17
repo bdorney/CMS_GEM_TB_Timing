@@ -181,7 +181,7 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
         run.iEvtPassing[kEvt_OOT_PMT]++; //Events Passing have PMT's in time
         
         //Are Detector's in time? (NOTE: if only 1 nonzero det evt is accepted automatically)
-	if ( !(map_iTDCData_Det.size() > 0) ) continue;
+        if ( !(map_iTDCData_Det.size() > 0) ) continue;
         if (getDeltaTForChannel(map_iTDCData_Det) > aSetup.fCut_MaxDeltaT_Det ) continue;
         
         run.iEvtPassing[kEvt_OOT_Det]++; //Events Passing have Detectors in time
