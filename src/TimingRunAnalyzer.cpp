@@ -431,10 +431,59 @@ void Timing::TimingRunAnalyzer::fitHistogram(HistoSetup &setupHisto, TH1F & hInp
 //Used in event selection
 //Returns false (true) if Det's are in (out of) time with trigger based on specified user input
 bool Timing::TimingRunAnalyzer::rejectEvtDetsOOT(AnalysisSetup &aSetup, std::map<std::string,int> mapInputPMTData, std::map<std::string,int> mapInputDetData){
-
-    //Dummy function for now
+    //Variable Declaration
+    //Variable Declaration
+    int iMaxTime = 0;   //Maximum Det time
+    int iMinTime = 0;   //Minimum Det time
     
-    return false;
+    int iTrigTime = 0;  //Time of the trigger
+    int iTrigCount = 0; //Number of "triggers" (track to make sure the user didn't make a mistake)
+    
+    vector<int> vec_iTDC_Data;
+    
+    for (auto iterPMT = mapInputPMTData.begin(); iterPMT != mapInputPMTData.end(); ++iterPMT) { //Loop Over input PMT Data
+        
+        if ( aSetup.map_PMTSetup[(*iterPMT).first].bIsTrig ) { //Case: This PMT is the coincidence determining PMT
+            iTrigTime = (*iterPMT).second;
+            ++iTrigCount;
+        } //End Case: This PMT is the coincidence determining PMT
+    } //End Loop Over input PMT Data
+    
+    //Cross-check input: Nonzero Trigger Time
+    if ( !(iTrigTime > 0) ) {
+        cout<<"Timing::TimingRunAnalyzer::rejectEvtPMTsOOT() - Problem?\n";
+        cout<<"\tiTrigTime = " << iTrigTime << endl;
+        cout<<"\tThis is expected to be non-zero\n";
+        cout<<"\tHave you setup the analysis config file correctly?\n";
+    }
+    
+    //Cross-check input: No Trigger Time!
+    //The user will for sure check for a problem if all events are rejected
+    //In principle this should never happen since this method is called after rejectEvtPMTsOOT
+    if ( !(iTrigCount == 1) ) {
+        cout<<"Timing::TimingRunAnalyzer::rejectEvtPMTsOOT() - Problem!!!\n";
+        cout<<"\tiTrigCount = " << iTrigCount << endl;
+        cout<<"\tThis is expected to be non-zero\n";
+        cout<<"\tHave you setup the analysis config file correctly?\n";
+        cout<<"\tONLY ONE PMT must have IsTrigger set to true\n";
+        cout<<"\tI am Rejecting ALL EVENTS\n";
+        
+        return true;
+    }
+    
+    for (auto iterDet = map_iTDCData_Det.begin(); iterDet != map_iTDCData_Det.end(); ++iterDet) { //Loop Over input Det Data
+        if ( (*iterDet).second > 0 ) { vec_iTDC_Data.push_back(iterDet); }
+    } //End Loop Over input Det Data
+    
+    iMaxTime = *std::max_element(vec_iTDC_Data.begin(), vec_iTDC_Data.end() );
+    iMinTime = *std::min_element(vec_iTDC_Data.begin(), vec_iTDC_Data.end() );
+    
+    if ( abs(iMaxTime - iTrigCount) > aSetup.fCut_MaxDeltaT_DetTrig || abs(iMinTime - iTrigCount) > aSetup.fCut_MaxDeltaT_DetTrig ) { //Check to see if detector is in time with trigger
+        return true;
+    } //End Check to see if detector is in time with trigger
+    else{ //Event Passes
+        return false;
+    } //End Event Passes
 } //End Timing::TimingRunAnalyzer::rejectEvtDetsOOT
 
 //Used in event selection
