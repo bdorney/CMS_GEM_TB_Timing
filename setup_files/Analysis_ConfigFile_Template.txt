@@ -4,10 +4,10 @@
     Invert_Timing = 'false'; #In common stop TDC trigger is delayed, so t=0 is actually in the PAST
     #Match_Arrival_Time = 'true'; #Data from all detectors will be shifted so <t_i> = <t_j> for all i,j
     Match_Arrival_Time = 'false'; #Data from all detectors will be shifted so <t_i> = <t_j> for all i,j
-    Cut_MaxDeltaT_Det = '1200'; #In Nanoseconds, max diff in detector arrival times
+    Cut_MaxDeltaT_Det = '120'; #In Nanoseconds, max diff in detector arrival times
     Cut_MaxDeltaT_DetTrig = '60'; #In Nanoseconds, max diff in time between detector & trigger
-    Cut_MaxDeltaT_PMT = '40'; #In Nanoseconds, max diff in time between non-coincidence determining PMTs
-    Cut_MaxDeltaT_PMTTrig = '60'; #In Nanoseconds, max diff in time between coincidence determining PMT
+    Cut_MaxDeltaT_PMT = '100'; #In Nanoseconds, max diff in time between non-coincidence determining PMTs
+    Cut_MaxDeltaT_PMTTrig = '100'; #In Nanoseconds, max diff in time between coincidence determining PMT
     [BEGIN_OR_INFO]
         Histo_Name = 'timingHisto_OR';
         Histo_NumBins = '400';
@@ -106,7 +106,7 @@
     [BEGIN_PMT_INFO]
         Name = 'PMT_Trig';
         TDC_Chan = '15';
-        IsTrigger = 'false';
+        IsTrigger = 'true';
         Histo_Name = 'timing_PMT_Trig'; #TName of the TH1F created from this detector's data
         Histo_NumBins = '400';
         Histo_BinRange = '0,1200';

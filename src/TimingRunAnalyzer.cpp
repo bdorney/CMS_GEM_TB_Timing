@@ -577,7 +577,7 @@ TH1F Timing::TimingRunAnalyzer::getHistogram(HistoSetup &setupHisto, Run & run){
     
     ret_Histo.Sumw2();
     
-    ret_Histo.SetDirectory(gROOT);  //Not sure if this should go here or in setPerformanceData()
+    //ret_Histo.SetDirectory(gROOT);  //This should definitely go in setPerformanceData() and NOT here
     
     return ret_Histo;
 } //End getHistogram
@@ -970,7 +970,7 @@ void Timing::TimingRunAnalyzer::setPerformanceData(TDCAnalysisResults &inputTimi
     inputTimingResults.hTDC_Histo = std::make_shared<TH1F>(hInput);
     
     //Set the directory to be the global directory
-    //inputTimingResults.hTDC_Histo->SetDirectory(gROOT);
+    inputTimingResults.hTDC_Histo->SetDirectory(gROOT);
     
     return;
 } //End Timing::TimingRunAnalyzer::setPerformanceData() - Histogram Version
