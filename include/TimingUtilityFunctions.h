@@ -18,6 +18,7 @@
 #include "TimingUtilityOperators.h"
 
 //ROOT Includes
+#include "TColor.h"
 #include "TFile.h"
 
 /* 
@@ -112,6 +113,9 @@ namespace Timing {
     std::string getString(TConversion input);
     float stofSafe(std::string strInputField, std::string strInputValue);
     int stoiSafe(std::string strInputField, std::string strInputValue);
+    
+    //unsorted
+    int getCyclicColor(int iInput);
     
     //Code Begins for TEMPLATED functions
     //========================================================================================

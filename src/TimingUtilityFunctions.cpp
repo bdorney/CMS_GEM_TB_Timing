@@ -371,3 +371,22 @@ std::vector<std::string> Timing::getCommaSeparatedList(std::string strInput){
 
 //Unsorted
 //----------------------------------------------------------------------------------------
+
+int Timing::getCyclicColor(int iInput){
+    int ret_int;
+    
+    switch (iInput % 7) {
+        case 0:     ret_int = kBlack;     break;
+        case 1:     ret_int = kRed+1;     break;
+        case 2:     ret_int = kGreen+1;   break;
+        case 3:     ret_int = kBlue+1;    break;
+        case 4:     ret_int = kMagenta+1; break;
+        case 5:     ret_int = kYellow+2;  break;
+        case 6:     ret_int = kOrange+7;  break;
+        default:
+            break;
+    }
+    
+    return ret_int;
+} //End getCyclicColor()
+

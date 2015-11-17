@@ -20,9 +20,11 @@
 //#include <vector>
 
 //ROOT Includes
+#include "TCanvas.h"
 #include "TFile.h"
-//#include "TH1F.h"
-//#include "TH2F.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TLegend.h"
 #include "TROOT.h"
 #include "TTree.h"
 
@@ -72,12 +74,12 @@ int main( int argc_, char * argv_[]){
     std::string strName_tree;           //TTree found in strName_inputRootFile
     std::string strName_analysisFile;
     
-    std::string strCh, strChannels;
+    //std::string strCh, strChannels;
     
     TimingRunAnalyzer timingAnalyzer;
     
     std::vector<std::string> vec_strInputArgs;
-    std::vector<std::string> vec_strTDCChan;
+    //std::vector<std::string> vec_strTDCChan;
     
     //Transfer Input Arguments into vec_strInputArgs
     //------------------------------------------------------
@@ -91,9 +93,10 @@ int main( int argc_, char * argv_[]){
         std::cout<<"For help menu:\n";
         std::cout<<"\t./singleRunAnalyzer -h\n";
         std::cout<<"Offline Analysis of multi detector time response:\n";
-        std::cout<<"\t./singleRunAnalyzer <Input Root File> <Tree Name> <comma separated list of channel numbers; no spaces> <Analysis Config File> <verbose mode true/false>\n";
+        //std::cout<<"\t./singleRunAnalyzer <Input Root File> <Tree Name> <comma separated list of channel numbers; no spaces> <Analysis Config File> <verbose mode true/false>\n";
+        std::cout<<"\t./singleRunAnalyzer <Input Root File> <Tree Name> <Analysis Config File> <verbose mode true/false>\n";
         std::cout<<"\tExample:\n";
-        std::cout<<"\t\t./singleRunAnalyzer myRootFile.root myTreeName 5,6,3 myAnalysis.txt false\n;";
+        std::cout<<"\t\t./singleRunAnalyzer myRootFile.root myTreeName myAnalysis.txt false\n;";
         std::cout<<"\tExiting\n";
         
         return 1;
@@ -101,25 +104,27 @@ int main( int argc_, char * argv_[]){
     else if (vec_strInputArgs.size() == 2 && vec_strInputArgs[1].compare("-h") == 0) { //Case: Help Menu
         std::cout<<"singleRunAnalyzer v"<<fVersion<<endl;
         std::cout<<"Author: Brian L. Dorney\n";
+        std::cout<<"For help menu:\n";
+        std::cout<<"\t./singleRunAnalyzer -h\n";
         std::cout<<"Offline Analysis of multi detector time response:\n";
-        std::cout<<"\t./singleRunAnalyzer <Input Root File> <Tree Name> <comma separated list of channel numbers> <Analysis Config File> <verbose mode true/false>\n";
+        //std::cout<<"\t./singleRunAnalyzer <Input Root File> <Tree Name> <comma separated list of channel numbers; no spaces> <Analysis Config File> <verbose mode true/false>\n";
+        std::cout<<"\t./singleRunAnalyzer <Input Root File> <Tree Name> <Analysis Config File> <verbose mode true/false>\n";
         std::cout<<"\tExample:\n";
-        std::cout<<"\t\t./singleRunAnalyzer myRootFile.root myTreeName myAnalysis.txt 5,6,3 false\n";
+        std::cout<<"\t\t./singleRunAnalyzer myRootFile.root myTreeName myAnalysis.txt false\n;";
         std::cout<<"\tExiting\n";
         
         //Right now this is a duplicate of the above, maybe I add additional functionality later
         
         return 1;
     } //End Case: Help Menu
-    else if(vec_strInputArgs.size() == 6){ //Case: Analysis Mode
+    else if(vec_strInputArgs.size() == 5){ //Case: Analysis Mode
         bool bExitSuccess = false;
         
         strName_inputRootFile   = vec_strInputArgs[1];
         strName_tree            = vec_strInputArgs[2];
-        strChannels             = vec_strInputArgs[3];
-        strName_analysisFile    = vec_strInputArgs[4];
+        strName_analysisFile    = vec_strInputArgs[3];
         
-        bVerboseMode            = convert2bool(vec_strInputArgs[5], bExitSuccess);
+        bVerboseMode            = convert2bool(vec_strInputArgs[4], bExitSuccess);
         if (!bExitSuccess) { //Case: Input Not Understood
             cout<<"main() - vec_strInputArgs[2] expected to be boolean!!!\n";
             cout<<"main() - Parameter given:\n";
@@ -128,17 +133,6 @@ int main( int argc_, char * argv_[]){
             
             return -2;
         } //End Case: Input Not Understood
-        
-        //Parse Requested Channels
-        //------------------------------------------------------
-        
-        //Debugging
-        if (bVerboseMode) {
-            cout<<"main() - Channel list given:\n";
-            cout<<"\t"<<strChannels<<endl;
-        }
-        
-        vec_strTDCChan = getCommaSeparatedList(strChannels);
     } //End Case: Analysis Mode
     else{ //Case: Input Not Understood
         cout<<"main() - Input parameters not understood!!!\n";
@@ -169,49 +163,88 @@ int main( int argc_, char * argv_[]){
     run.strRunName      = strName_inputRootFile;
     run.strTreeName_Run = strName_tree;
     
-    //Setup the detector map
-    if ( vec_strTDCChan.size() == aSetup.map_DetSetup.size() ) {
-        //map<string, HistoSetup, map_cmp_str>::iterator iterAnaSetup = timingAnalyzer.analysisSetup.map_DetSetup.begin();
+    //Setup the det maps
+    for (auto iterDetSetup = aSetup.map_DetSetup.begin(); iterDetSetup != aSetup.map_DetSetup.end(); ++iterDetSetup) { //Loop Over Requested Detectors
+        cout<<"Detector  = " << (*iterDetSetup).first << ";\t" << "TDC Channel = " << (*iterDetSetup).second.iTDC_Chan << endl;
         
-        for (auto iterAnaSetup = aSetup.map_DetSetup.begin(); iterAnaSetup != aSetup.map_DetSetup.end(); ++iterAnaSetup) {
-            cout<<"Detector  = " << (*iterAnaSetup).first << ";\t" << "TDC Channel = " << vec_strTDCChan[std::distance(aSetup.map_DetSetup.begin(), iterAnaSetup)] << endl;
-            
-            run.map_det[(*iterAnaSetup).first].iDet_Pos = std::distance(aSetup.map_DetSetup.begin(), iterAnaSetup);
-            run.map_det[(*iterAnaSetup).first].iTDC_Chan = stofSafe( "TDC_Chan" , vec_strTDCChan[std::distance(aSetup.map_DetSetup.begin(), iterAnaSetup)] );
-        }
-    } //End Case configuration file & user input match
-
-    //timingAnalyzer.setRun(run);
+        run.map_det[(*iterDetSetup).first].iDet_Pos = std::distance(aSetup.map_DetSetup.begin(), iterDetSetup);
+        run.map_det[(*iterDetSetup).first].iTDC_Chan= (*iterDetSetup).second.iTDC_Chan;
+    } //End Loop Over Requested Detectors
+    
+    //Setup the PMT maps
+    for (auto iterPMTSetup = aSetup.map_PMTSetup.begin(); iterPMTSetup != aSetup.map_PMTSetup.end(); ++iterPMTSetup) { //Loop Over Requested PMTs
+        run.map_PMT[(*iterPMTSetup).first].bIsTrig  = (*iterPMTSetup).second.bIsTrig;
+        run.map_PMT[(*iterPMTSetup).first].iTDC_Chan= (*iterPMTSetup).second.iTDC_Chan;
+    } //End Loop Over Requested PMTs
     
     //Analyze!
     //------------------------------------------------------
-    cout<<"main() - No Fault 1\n";
+    //cout<<"main() - No Fault 1\n";
     
     timingAnalyzer.analyzeRun(run);
     
-    cout<<"main() - No Fault 2\n";
-    
-    //run = timingAnalyzer.getRun();
-    
-    cout<<"main() - No Fault 3\n";
+    //cout<<"main() - No Fault 2\n";
+    //cout<<"main() - No Fault 3\n";
     
     //Store
     //------------------------------------------------------
     TFile *file_Output = new TFile("singleRunAnalyzer_Output.root","RECREATE","",1);
     
+    int iColor = 0;
+    
+    //Timeline Canvas
+    TCanvas *cTimeView = new TCanvas("cTimeView","Event Timing",700,700);
+    cTimeView->cd();
+    cTimeView->cd()->SetLogy();
+    
+    TLegend *leg_EvtTime = new TLegend(0.2,0.2,0.6,0.4);
+    leg_EvtTime->SetLineColor(kWhite);
+    leg_EvtTime->SetFillColor(kWhite);
+    
+    //PMT's
+    for (auto iterPMT = run.map_PMT.begin(); iterPMT != run.map_PMT.end(); ++iterPMT) { //Loop Over PMT's
+        TDirectory *dir_thisPMT = file_Output->mkdir( ( (*iterPMT).first ).c_str() );
+        
+        dir_thisPMT->cd();
+        ((*iterPMT).second).timingResults.hTDC_Histo->Write();
+        
+        //Draw
+        ((*iterPMT).second).timingResults.hTDC_Histo->SetLineColor(getCyclicColor(iColor) );
+        leg_EvtTime->AddEntry( (&*((*iterPMT).second).timingResults.hTDC_Histo), (*iterPMT).first.c_str(), "LPE" );
+        if (iterPMT == run.map_PMT.begin() ) { //Case: First Element
+            ((*iterPMT).second).timingResults.hTDC_Histo->GetXaxis()->UnZoom();
+            ((*iterPMT).second).timingResults.hTDC_Histo->Draw();
+            
+        } //End Case: First Element
+        else { //Case: All Other Elements
+            ((*iterPMT).second).timingResults.hTDC_Histo->Draw("same");
+        } //End Case: All Other Elements
+        
+        //Increment iColor
+        iColor++;
+    } //End Loop Over PMT's
+    
+    //Detectors
     for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Over Detectors
         TDirectory *dir_thisDet = file_Output->mkdir( ( (*iterDet).first ).c_str() );
         
         dir_thisDet->cd();
         ((*iterDet).second).timingResults.func_TDC_Fit->Write();
         ((*iterDet).second).timingResults.hTDC_Histo->Write();
+        
+        //Draw()
+        ((*iterDet).second).timingResults.hTDC_Histo->SetLineColor(getCyclicColor(iColor) );
+        leg_EvtTime->AddEntry( (&*((*iterDet).second).timingResults.hTDC_Histo), (*iterDet).first.c_str(), "LPE" );
+        ((*iterDet).second).timingResults.hTDC_Histo->Draw("same");
     } //End Loop Over Detectors
     
+    //Detector OR
     TDirectory *dir_detOR = file_Output->mkdir( "Detector_OR" );
     dir_detOR->cd();
     run.timingResultsOR.func_TDC_Fit->Write();
     run.timingResultsOR.hTDC_Histo->Write();
     
+    //Detector AND
     TDirectory *dir_detAND = file_Output->mkdir( "Detector_AND" );
     dir_detAND->cd();
     run.hTDC_DeltaT->Write();
@@ -219,6 +252,11 @@ int main( int argc_, char * argv_[]){
     run.timingResultsAND.func_TDC_Fit->Write();
     run.timingResultsAND.hTDC_Histo->Write();
     
+    //Event Time Canvas
+    leg_EvtTime->Draw("same");
+    cTimeView->Write();
+    
+    //Close the File
     file_Output->Close();
     
     return 0;
