@@ -210,6 +210,9 @@ int main( int argc_, char * argv_[]){
         
         //Draw
         ((*iterPMT).second).timingResults.hTDC_Histo->SetLineColor(getCyclicColor(iColor) );
+        ((*iterPMT).second).timingResults.hTDC_Histo->SetFillColor(getCyclicColor(iColor) );
+        ((*iterPMT).second).timingResults.hTDC_Histo->SetFillStyle( 1001 );
+        
         leg_EvtTime->AddEntry( (&*((*iterPMT).second).timingResults.hTDC_Histo), (*iterPMT).first.c_str(), "LPE" );
         if (iterPMT == run.map_PMT.begin() ) { //Case: First Element
             ((*iterPMT).second).timingResults.hTDC_Histo->GetXaxis()->UnZoom();
@@ -236,6 +239,9 @@ int main( int argc_, char * argv_[]){
         ((*iterDet).second).timingResults.hTDC_Histo->SetLineColor(getCyclicColor(iColor) );
         leg_EvtTime->AddEntry( (&*((*iterDet).second).timingResults.hTDC_Histo), (*iterDet).first.c_str(), "LPE" );
         ((*iterDet).second).timingResults.hTDC_Histo->Draw("same");
+        
+        //Increment iColor
+        iColor++
     } //End Loop Over Detectors
     
     //Detector OR
@@ -253,6 +259,7 @@ int main( int argc_, char * argv_[]){
     run.timingResultsAND.hTDC_Histo->Write();
     
     //Event Time Canvas
+    file_Output->cd();
     leg_EvtTime->Draw("same");
     cTimeView->Write();
     
