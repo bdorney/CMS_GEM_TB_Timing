@@ -181,6 +181,7 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
         run.iEvtPassing[kEvt_OOT_PMT]++; //Events Passing have PMT's in time
         
         //Are Detector's in time? (NOTE: if only 1 nonzero det evt is accepted automatically)
+	if ( !(map_iTDCData_Det.size() > 0) ) continue;
         if (getDeltaTForChannel(map_iTDCData_Det) > aSetup.fCut_MaxDeltaT_Det ) continue;
         
         run.iEvtPassing[kEvt_OOT_Det]++; //Events Passing have Detectors in time
@@ -471,14 +472,16 @@ bool Timing::TimingRunAnalyzer::rejectEvtDetsOOT(AnalysisSetup &aSetup, std::map
         return true;
     }
     
-    for (auto iterDet = map_iTDCData_Det.begin(); iterDet != map_iTDCData_Det.end(); ++iterDet) { //Loop Over input Det Data
-        if ( (*iterDet).second > 0 ) { vec_iTDC_Data.push_back(iterDet); }
+    for (auto iterDet = mapInputDetData.begin(); iterDet != mapInputDetData.end(); ++iterDet) { //Loop Over input Det Data
+        if ( (*iterDet).second > 0 ) { vec_iTDC_Data.push_back( (*iterDet).second); }
     } //End Loop Over input Det Data
     
+    if( !(vec_iTDC_Data.size() > 0) ) return false;
+
     iMaxTime = *std::max_element(vec_iTDC_Data.begin(), vec_iTDC_Data.end() );
     iMinTime = *std::min_element(vec_iTDC_Data.begin(), vec_iTDC_Data.end() );
     
-    if ( abs(iMaxTime - iTrigCount) > aSetup.fCut_MaxDeltaT_DetTrig || abs(iMinTime - iTrigCount) > aSetup.fCut_MaxDeltaT_DetTrig ) { //Check to see if detector is in time with trigger
+    if ( abs(iMaxTime - iTrigTime) > aSetup.fCut_MaxDeltaT_DetTrig || abs(iMinTime - iTrigTime) > aSetup.fCut_MaxDeltaT_DetTrig ) { //Check to see if detector is in time with trigger
         return true;
     } //End Check to see if detector is in time with trigger
     else{ //Event Passes
