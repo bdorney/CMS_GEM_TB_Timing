@@ -6,7 +6,7 @@
 //
 //
 
-#include "treeAnalyzer.h"
+#include "treePlotter.h"
 
 treeAnalyzer::treeAnalyzer(){
     bVerbose_IO = false;

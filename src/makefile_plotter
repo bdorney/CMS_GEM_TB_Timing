@@ -17,7 +17,7 @@ INCLUDES = -I../include
 #LPATHS = -L $(ROOTSYS)/lib/
 
 # Define source files
-SOURCES = treeAnalyzer.cpp treeAnalyzerTDC.cpp analyzeTree.cpp
+SOURCES = treePlotter.cpp treePlotterTDC.cpp plotTree.cpp
 
 # Define object files
 #	We use Suffix Replacement
@@ -27,15 +27,15 @@ SOURCES = treeAnalyzer.cpp treeAnalyzerTDC.cpp analyzeTree.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 
 # Define the executable
-EXEC = analyzeTree
+EXEC = plotTree
 
 # Define default behavior
 #default: $(EXEC)
 
 # To create the analyzeTree executable we will need the following object files:
-# 	analyzeTree.o 
-#	treeAnalyzer.o 
-#	treeAnalyzerTDC.o
+# 	plotTree.o 
+#	treePlotter.o 
+#	treePlotterTDC.o
 
 .PHONY: depend clean
 
