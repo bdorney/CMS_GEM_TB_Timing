@@ -29,10 +29,20 @@
 using namespace ROOT; //This is application specific code...no one would overwrite these classes...ever...
 
 namespace Timing {
+    //Specifies the stages of cuts
+    enum kCutClasses{
+        kEvt_All = 0,   //All Events
+        kEvt_OOT_PMT,   //PMT's out of time
+        kEvt_OOT_Det,   //Detector's out of time
+        kEvt_OOT_Trig,  //Detector & Trigger out of time
+        n_cuts
+    };
+    
     //Common Data Types Goes Here
     struct HistoSetup{
-        bool bIsTrig;
+        bool bFit;              //Execute fit?
         bool bFit_AutoRanging;  //Fit range determined automatically?
+        bool bIsTrig;
         //bool bSubtractBkg;      //Background subtraction
         
         float fHisto_xLower;  //lower x range of histo
@@ -53,14 +63,13 @@ namespace Timing {
         std::vector<std::string> vec_strFit_ParamIGuess;
         
         HistoSetup(){
-            bFit_AutoRanging = false;
+            bFit = bFit_AutoRanging = bIsTrig = false;
             
             fHisto_xLower = 0;
             fHisto_xUpper = 1200;
             
             iTDC_Chan = 0;
             iHisto_nBins = 1200;
-            
             
             strFit_Formula = "[0]*[2]*sqrt(TMath::Pi()/2.)*(TMath::Erf( (12.5 + (x-[1])) / ([2] * sqrt(2.) ) ) - TMath::Erf( ((x-[1]) - 12.5) / ([2] * sqrt(2.) ) ) )";
             strFit_Name = "func_Timing";
@@ -87,8 +96,8 @@ namespace Timing {
         HistoSetup setupOR;
         HistoSetup setupAND;
         
-        std::map<std::string, HistoSetup> map_PMTSetup;
         std::map<std::string, HistoSetup> map_DetSetup;
+        std::map<std::string, HistoSetup> map_PMTSetup;
         
         AnalysisSetup(){
             //bCompute_AND = bCompute_OR = bMatchArrivalTime = false;

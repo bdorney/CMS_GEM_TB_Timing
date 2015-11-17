@@ -5,14 +5,15 @@
     #Match_Arrival_Time = 'true'; #Data from all detectors will be shifted so <t_i> = <t_j> for all i,j
     Match_Arrival_Time = 'false'; #Data from all detectors will be shifted so <t_i> = <t_j> for all i,j
     Cut_MaxDeltaT_Det = '1200'; #In Nanoseconds, max diff in detector arrival times
-    #Cut_MaxDeltaT_PMT = '40'; #In Nanoseconds, max diff in time between non-coincidence determining PMTs
-    #Cut_MaxDeltaT_Trig = '60'; In Nanoseconds, max diff in time between coincidence determining PMT
+    Cut_MaxDeltaT_PMT = '40'; #In Nanoseconds, max diff in time between non-coincidence determining PMTs
+    Cut_MaxDeltaT_Trig = '60'; In Nanoseconds, max diff in time between coincidence determining PMT
     [BEGIN_OR_INFO]
         Histo_Name = 'timingHisto_OR';
         Histo_NumBins = '400';
         Histo_BinRange = '0,1200';
         Histo_XTitle = 'min#left(t_{1}, t_{2}#right) #left(ns#right)';
         Histo_YTitle = 'Counts #left(N/ns#right)';
+        Perform_Fit = 'true';
         Fit_Autoranging = 'true';
         Fit_Formula = '[0]*exp( -0.5 * (x-[1])^2 / [2]^2 )';
         Fit_Name = 'func_Timing_OR';
@@ -26,6 +27,7 @@
         Histo_BinRange = '0,1200';
         Histo_XTitle = 'max#left(t_{1}, t_{2}#right) #left(ns#right)';
         Histo_YTitle = 'Counts #left(N/ns#right)';
+        Perform_Fit = 'true';
         Fit_Autoranging = 'true';
         Fit_Formula = '[0]*exp( -0.5 * (x-[1])^2 / [2]^2 )';
         Fit_Name = 'func_Timing_AND';
@@ -34,15 +36,15 @@
         Fit_Param_IGuess = 'AMPLITUDE, MEAN, SIGMA';
     [END_AND_INFO]
     [BEGIN_DETECTOR_INFO]
-        #The 'Detector_Name' field must appear as the first parameter
-        Detector_Name = 'GE11-VI-L-CERN-0001'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
-        #Detector_Name = 'Drift';
+        #The 'Name' field must appear as the first parameter
+        Name = 'GE11-VI-L-CERN-0001'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
+        TDC_Chan = '0';
         Histo_Name = 'timingHisto_GE11_1'; #TName of the TH1F created from this detector's data
-        #Histo_Name = 'timingHisto_Drift'; #TName of the TH1F created from this detector's data
         Histo_NumBins = '400';
         Histo_BinRange = '0,1200';
         Histo_XTitle = 'time #left(ns#right)';
         Histo_YTitle = 'Counts #left(N/ns#right)';
+        Perform_Fit = 'true';
         Fit_Autoranging = 'true'; #true -> The fit range used is {MEAN - 3 * RMS, MEAN + 3 *RMS} where MEAN & RMS are taken from the histogram created from the data set.
         Fit_Formula = '[0]*[2]*sqrt(TMath::Pi()/2.)*(TMath::Erf( (12.5 + (x-[1])) / ([2] * sqrt(2.) ) ) - TMath::Erf( ((x-[1]) - 12.5) / ([2] * sqrt(2.) ) ) )';
         Fit_Name = 'func_Timing_GE11_1';
@@ -51,15 +53,15 @@
         Fit_Param_IGuess = '1, MEAN, SIGMA'; #Accepted input is numeric, or {AMPLITUDE, MEAN, SIGMA}
     [END_DETECTOR_INFO]
     [BEGIN_DETECTOR_INFO]
-        #The 'Detector_Name' field must appear as the first parameter
-        Detector_Name = 'GE11-VI-L-CERN-0002'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
-        #Detector_Name = 'Readout';
+        #The 'Name' field must appear as the first parameter
+        Name = 'GE11-VI-L-CERN-0002'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
+        TDC_Chan = '8';
         Histo_Name = 'timingHisto_GE11_2'; #TName of the TH1F created from this detector's data
-        #Histo_Name = 'timingHisto_RO'; #TName of the TH1F created from this detector's data
         Histo_NumBins = '400';
         Histo_BinRange = '0,1200';
         Histo_XTitle = 'time #left(ns#right)';
         Histo_YTitle = 'Counts #left(N/ns#right)';
+        Perform_Fit = 'true';
         Fit_Autoranging = 'true'; #true -> The fit range used is {MEAN - 3 * RMS, MEAN + 3 *RMS} where MEAN & RMS are taken from the histogram created from the data set.
         Fit_Formula = '[0]*[2]*sqrt(TMath::Pi()/2.)*(TMath::Erf( (12.5 + (x-[1])) / ([2] * sqrt(2.) ) ) - TMath::Erf( ((x-[1]) - 12.5) / ([2] * sqrt(2.) ) ) )';
         Fit_Name = 'func_Timing_GE11_2';
@@ -67,7 +69,48 @@
         Fit_Param_Map = 'AMPLITUDE,MEAN,SIGMA'; #Accepted values are {AMPLITUDE, AREA, MEAN, MVP, NULL, SIGMA}
         Fit_Param_IGuess = '1,MEAN,SIGMA'; #Accepted input is numeric, or {AMPLITUDE, MEAN, SIGMA}
     [END_DETECTOR_INFO]
-#   [BEGIN_PMT_INFO]
-#        Detector_Name = 'PMT1';
-#   [END_PMT_INFO]
+    [BEGIN_PMT_INFO]
+        Name = 'PMT_1';
+        TDC_Chan = '12';
+        IsTrigger = 'false';
+        Histo_Name = 'timing_PMT_1'; #TName of the TH1F created from this detector's data
+        Histo_NumBins = '400';
+        Histo_BinRange = '0,1200';
+        Histo_XTitle = 'time #left(ns#right)';
+        Histo_YTitle = 'Counts #left(N/ns#right)';
+        Perform_Fit = 'false';
+    [END_PMT_INFO]
+    [BEGIN_PMT_INFO]
+        Name = 'PMT_2';
+        TDC_Chan = '13';
+        IsTrigger = 'false';
+        Histo_Name = 'timing_PMT_2'; #TName of the TH1F created from this detector's data
+        Histo_NumBins = '400';
+        Histo_BinRange = '0,1200';
+        Histo_XTitle = 'time #left(ns#right)';
+        Histo_YTitle = 'Counts #left(N/ns#right)';
+        Perform_Fit = 'false';
+    [END_PMT_INFO]
+    [BEGIN_PMT_INFO]
+        Name = 'PMT_3';
+        TDC_Chan = '14';
+        IsTrigger = 'false';
+        Histo_Name = 'timing_PMT_3'; #TName of the TH1F created from this detector's data
+        Histo_NumBins = '400';
+        Histo_BinRange = '0,1200';
+        Histo_XTitle = 'time #left(ns#right)';
+        Histo_YTitle = 'Counts #left(N/ns#right)';
+        Perform_Fit = 'false';
+    [END_PMT_INFO]
+    [BEGIN_PMT_INFO]
+        Name = 'PMT_Trig';
+        TDC_Chan = '15';
+        IsTrigger = 'false';
+        Histo_Name = 'timing_PMT_Trig'; #TName of the TH1F created from this detector's data
+        Histo_NumBins = '400';
+        Histo_BinRange = '0,1200';
+        Histo_XTitle = 'time #left(ns#right)';
+        Histo_YTitle = 'Counts #left(N/ns#right)';
+        Perform_Fit = 'false';
+    [END_PMT_INFO]
 [END_ANALYSIS_INFO]

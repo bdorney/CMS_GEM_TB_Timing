@@ -37,25 +37,19 @@ Timing::TimingRunAnalyzer::TimingRunAnalyzer(){
     strSecBegin_AND = "[BEGIN_AND_INFO]";
     strSecBegin_DET = "[BEGIN_DETECTOR_INFO]";
     strSecBegin_OR  = "[BEGIN_OR_INFO]";
+    strSecBegin_PMT = "[BEGIN_PMT_INFO]";
     
     strSecEnd_ANAL  = "[END_ANALYSIS_INFO]";
     strSecEnd_AND   = "[END_AND_INFO]";
     strSecEnd_DET   = "[END_DETECTOR_INFO]";
     strSecEnd_OR    = "[END_OR_INFO]";
+    strSecEnd_PMT    = "[END_PMT_INFO]";
 } //End Constructor Timing::TimingRunAnalyzer::TimingRunAnalyzer()
 
 //Analyze method, this is the central access point for the analysis
 //Inherited class can over ride this method but it MUST exist
 //The entire analysis needs to be executed through this method (but not necessarily in this method)
 void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
-    //Check to see if a run was set
-    //if (!bRunSet) {
-    //    cout<<"Timing::TimingRunAnalyzer::analyze() - Sorry, but you asked for analysis on a blank run!!!\n";
-    //    cout<<"\tSkipping!!! Please cross-check your usage of the TimingRunAnalyzer class\n";
-    //    
-    //    return;
-    //}
-    
     //Variable Declaration
     map<string,int> map_iTDCData;
     map<string,TF1> map_fTDCFits;
@@ -143,53 +137,6 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
         hTDC_Correlation.SetXTitle( vec_strMapDetKeyVal[0].c_str() );
         hTDC_Correlation.SetYTitle( vec_strMapDetKeyVal[1].c_str() );
     }
-    
-    //Working for sure:
-    /*
-     //Get Data event-by-event from individual channels and nonzero invert times if requested
-     for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet){ //Loop Over Detectors
-     vector<int> vec_iData;
-     
-     //Get data event-by-event
-     for (int i=0; i < tree_Run->GetEntries(); ++i) { //Loop Over Events
-     tree_Run->GetEntry(i);
-     
-     if (i % 1000 == 0) cout<<"Detector: "<<(*iterDet).first <<"; " <<i<<" Events Analyzed\n";
-     
-     //Correct for inverted times due to common_stop technique of TDC
-     //  NOTE: this does not mean 0 is the trigger if this correction is made
-     //        this moves the trigger time from t=0 to t=analysisSetup.fTDCWinSize
-     
-     //Debugging
-     //cout<<"(*iterDet).first = ";
-     //cout<<(*iterDet).first<<endl;
-     
-     //cout<<"map_iTDCData.size() = " << map_iTDCData.size() << endl;
-     
-     //for(auto iterDebug = map_iTDCData.begin(); iterDebug != map_iTDCData.end(); ++iterDebug){
-     //cout<<(*iterDebug).first<<"\t"<<(*iterDebug).second<<endl;
-     //}
-     
-     //cout<<"map_iTDCData.count("<<(*iterDet).first<<") = " << map_iTDCData.count((*iterDet).first) << endl;
-     
-     //cout<<"getInvertedTime(" << map_iTDCData[(*iterDet).first] << ") = ";
-     //cout<< getInvertedTime( map_iTDCData[(*iterDet).first] ) << endl;
-     
-     if (analysisSetup.bInvertTime){ //Case: Invert non-zer times
-     //run.map_det[vec_strMapDetKeyVal[i]].vec_iTDC_Data.push_back(myData);
-     vec_iData.push_back( getInvertedTime( map_iTDCData[(*iterDet).first] ) );
-     } //End Case: Invert non-zero times
-     else{ //Case: Use Raw Times
-     //((*iterDet).second).vec_iTDC_Data.push_back( map_iTDCData[(*iterDet).first] );
-     vec_iData.push_back( map_iTDCData[(*iterDet).first] );
-     } //End Case: Use Raw Times
-     } //End Loop Over Events
-     
-     ((*iterDet).second).vec_iTDC_Data = vec_iData;
-     
-     vec_iData.clear();
-     } //End Loop Over Detectors
-     */
     
     int iNEvt;
     int iNEvt_Fail;
@@ -497,13 +444,14 @@ TH1F Timing::TimingRunAnalyzer::getHistogram(HistoSetup &setupHisto, Run & run){
     TH1F ret_Histo(setupHisto.strHisto_Name.c_str(), "", setupHisto.iHisto_nBins, setupHisto.fHisto_xLower, setupHisto.fHisto_xUpper );
     
     //Append the run number to the histogram name
-    if( bRunSet ){
-        ret_Histo.SetName( ( setupHisto.strHisto_Name + "_R" + getString(run.iRun) ).c_str() );
-    }
-    else{
+    ret_Histo.SetName( ( setupHisto.strHisto_Name + "_R" + getString(run.iRun) ).c_str() );
+    //if( bRunSet ){
+        //ret_Histo.SetName( ( setupHisto.strHisto_Name + "_R" + getString(run.iRun) ).c_str() );
+    //}
+    //else{
         //In principle the run should always be set before this is called, but YOLO errors?
-        ret_Histo.SetName( ( setupHisto.strHisto_Name + "_R0" ).c_str() );
-    }
+        //ret_Histo.SetName( ( setupHisto.strHisto_Name + "_R0" ).c_str() );
+    //}
     
     ret_Histo.SetXTitle( setupHisto.strHisto_Title_X.c_str() );
     ret_Histo.SetYTitle( setupHisto.strHisto_Title_Y.c_str() );
@@ -517,13 +465,14 @@ TH1F Timing::TimingRunAnalyzer::getHistogram(HistoSetup &setupHisto, Run & run){
 void Timing::TimingRunAnalyzer::setAnalysisConfig(string &strInputFile){
     //Variable Declaration
     bool bExitSuccess = false;
-    bool bDetSetup = false;
+    bool bSetup = false;
     //bool bInfoHeaderEnd = false;
     
     pair<string,string> pair_strParam; //<Field, Value>
     
+    string strDetOrPMTHeading = "";
     string strLine = "";
-    string strThisDetName = ""; //name of current detector;
+    string strName = ""; //name of current detector;
     
     vector<string> vec_strList;
     
@@ -563,20 +512,22 @@ void Timing::TimingRunAnalyzer::setAnalysisConfig(string &strInputFile){
             //Setup the Histogram struct for analysis
             setHistoSetup(strInputFile, fStream, analysisSetup.setupAND );
         } //End Case: AND SECTION
-        else if ( 0 == strLine.compare(strSecBegin_DET) ){ //Case: DET SECTION
+        else if ( 0 == strLine.compare(strSecBegin_DET) || 0 == strLine.compare(strSecBegin_PMT) ){ //Case: DET or PMT SECTION
             //So if the user has done this section correctly the next noncommented line should the detector name
-            bDetSetup = false;  //reset at the start of each new detector section
+            bSetup = false;  //reset at the start of each new detector section
             
-            while ( getlineNoSpaces(fStream, strLine) ) { //Loop through file to find "Detector_Name"
+            strDetOrPMTHeading = strLine; //This should be set only once per execution
+            
+            while ( getlineNoSpaces(fStream, strLine) ) { //Loop through file to find "Name"
                 //Does the user want to comment out this line?
                 if ( 0 == strLine.compare(0,1,"#") ) continue;
                 
                 //Do we reach the end of the section? If so the user has configured the file incorrectly
-                if ( 0 == strLine.compare(strSecEnd_DET) ) { //Section End Reached Prematurely
-                    cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - I have reached the END of a Detector Heading\n";
-                    cout<<"\tBut Have NOT found the 'Detector_Name' field\n"<<endl;
-                    cout<<"\tYou have configured this heading incorrectly, the 'Detector_Name' field is expected to be the FIRST' line of a Detector Heading\n";
-                    cout<<"\tThis Detector has been skipped, please cross-check\n";
+                if ( 0 == strLine.compare(strSecEnd_DET) || 0 == strLine.compare(strSecEnd_PMT) ) { //Section End Reached Prematurely
+                    cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - I have reached the END of a Detector or PMT Heading\n";
+                    cout<<"\tBut Have NOT found the 'Name' field\n"<<endl;
+                    cout<<"\tYou have configured this heading incorrectly, the 'Name' field is expected to be the FIRST line after the Heading\n";
+                    cout<<"\tThis object has been skipped, please cross-check\n";
                     
                     //Exit the Loop to find "Detector_Name"
                     break;
@@ -587,26 +538,36 @@ void Timing::TimingRunAnalyzer::setAnalysisConfig(string &strInputFile){
                 if (bExitSuccess) { //Case: Parameter Fetched Successfully
                     transform(pair_strParam.first.begin(),pair_strParam.first.end(),pair_strParam.first.begin(),toupper);
                     
-                    if ( 0 == pair_strParam.first.compare("DETECTOR_NAME") ) { //Case: Detector Name found!
-                        //Store detector name locally
-                        strThisDetName = pair_strParam.second;
+                    if ( 0 == pair_strParam.first.compare("NAME") ) { //Case: Name found!
+                        //Store name locally
+                        strName = pair_strParam.second;
                         
                         //Setup the Histogram struct for analysis
-                        HistoSetup detSetup;
-                        analysisSetup.map_DetSetup[pair_strParam.second] = detSetup;
+                        HistoSetup hSetup;
+                        
+                        //Initialize the correct map with hSetup
+                        if (0 == strDetOrPMTHeading.compare(strSecBegin_DET) ) { //Case: Detector Declaration
+                            analysisSetup.map_DetSetup[pair_strParam.second] = hSetup;
+                        } //End Case: Detector Declaration
+                        else if (0 == strDetOrPMTHeading.compare(strSecEnd_PMT) ) { //Case: PMT Declaration
+                            analysisSetup.map_PMTSetup[pair_strParam.second] = hSetup;
+                        } //End Case: PMT Declaration
+                        else{ //Case: Undefined Behavior
+                            cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - Brian you made a mistake, this output should not be possible\n";
+                        } //End Case: Undefined Behavior
                         
                         //Set the correct exit flag
-                        bDetSetup = true;
+                        bSetup = true;
                         
                         //Exit the Loop to find "Detector_Name"
                         break;
                     } //End Case: Detector Name found!
                     else{ //Case: Detector Name not found!
-                        cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - I am parsing a Detector Heading\n";
-                        cout<<"\tHowever I expected the 'Detector_Name' field to be at the tope of the heading\n";
+                        cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - I am parsing a Detector or PMT Heading\n";
+                        cout<<"\tHowever I expected the 'Name' field to be the first line after the heading\n";
                         cout<<"\tThe current line I am parsing: " << strLine << endl;
                         cout<<"\tHas been skipped and may lead to undefined behavior" << endl;
-                    } //End Case: Detector Name not found!
+                    } //End Case: Name not found!
                 }//End Case: Parameter Fetched Successfully
                 else{ //Case: Parameter was NOT fetched Successfully
                     cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - Sorry I didn't parse parameter correctly\n";
@@ -623,12 +584,27 @@ void Timing::TimingRunAnalyzer::setAnalysisConfig(string &strInputFile){
                         
                     }*/
                 } //End Case: Parameter was NOT fetched Successfully
-            } //Loop through file to find "Detector_Name"
+            } //Loop through file to find "Name"
             
-            if (bDetSetup) {
-                setHistoSetup(strInputFile, fStream, analysisSetup.map_DetSetup[strThisDetName] );
-            }
-        } //End Case: DET SECTION
+            //Fetch the values for the map for the correct case
+            if (bSetup) { //Case: Setup Correct
+                //setHistoSetup(strInputFile, fStream, analysisSetup.map_DetSetup[strName] );
+                //Store hSetup for the correct usage case
+                if (0 == strDetOrPMTHeading.compare(strSecBegin_DET) ) { //Case: Detector Declaration
+                    setHistoSetup(strInputFile, fStream, analysisSetup.map_DetSetup[strName] );
+                } //End Case: Detector Declaration
+                else if (0 == strDetOrPMTHeading.compare(strSecEnd_PMT) ) { //Case: PMT Declaration
+                    setHistoSetup(strInputFile, fStream, analysisSetup.map_PMTSetup[strName] );
+                } //End Case: PMT Declaration
+                else{ //Case: Undefined Behavior
+                    cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - Brian you made a mistake, this output should not be possible\n";
+                } //End Case: Undefined Behavior
+            } //End Case: Setup Correct
+            
+            //Reset stored test (not sure I want to do this yet)
+            //strDetOrPMTHeading = "";
+            //strName = "";
+        } //End Case: DET or PMT SECTION
         else if ( 0 == strLine.compare(strSecBegin_OR) ){ //Case: OR SECTION
             //Set the flag to compute the OR of all detectors
             //analysisSetup.bCompute_OR = true;
@@ -647,6 +623,12 @@ void Timing::TimingRunAnalyzer::setAnalysisConfig(string &strInputFile){
                 
                 if( 0 == pair_strParam.first.compare("CUT_MAXDELTAT_DET") ){
                     analysisSetup.fCut_MaxDeltaT_Det = stofSafe(pair_strParam.first, pair_strParam.second);
+                }
+                else if( 0 == pair_strParam.first.compare("CUT_MAXDELTAT_PMT") ){
+                    analysisSetup.fCut_MaxDeltaT_PMT = stofSafe(pair_strParam.first, pair_strParam.second);
+                }
+                else if( 0 == pair_strParam.first.compare("CUT_MAXDELTAT_TRIG") ){
+                    analysisSetup.fCut_MaxDeltaT_Trig = stofSafe(pair_strParam.first, pair_strParam.second);
                 }
                 else if( 0 == pair_strParam.first.compare("INVERT_TIMING") ){
                     analysisSetup.bInvertTime = convert2bool(pair_strParam.second, bExitSuccess);
@@ -714,11 +696,30 @@ void Timing::TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::if
         
         //Parse pair
         if (bExitSuccess) { //Case: Parameter Fetched Successfully
-            if ( 0 == pair_strParam.first.compare("HISTO_NAME") ) {
-                setupHisto.strHisto_Name = pair_strParam.second;
+            if( 0 == pair_strParam.first.compare("FIT_AUTORANGING") ){
+                setupHisto.bFit_AutoRanging = Timing::convert2bool(pair_strParam.second, bExitSuccess);
+                
+                if (!bExitSuccess) {
+                    cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - Attempted to Assign 'Fit_Autoranging' value failed!!!\n";
+                    cout<<"\tYour (Field name, Field value) pair = (" << pair_strParam.first << "," << pair_strParam.second << ")\n";
+                    cout<<"\tField value should be from the set {t,true,1,f,false,0}\n";
+                    cout<<"\tUndefined behavior may occur!!!";
+                }
             }
-            else if( 0 == pair_strParam.first.compare("HISTO_NUMBINS") ){
-                setupHisto.iHisto_nBins = Timing::stoiSafe(pair_strParam.first, pair_strParam.second);
+            else if( 0 == pair_strParam.first.compare("FIT_FORMULA") ){
+                setupHisto.strFit_Formula = pair_strParam.second;
+            }
+            else if( 0 == pair_strParam.first.compare("FIT_NAME") ){
+                setupHisto.strFit_Name = pair_strParam.second;
+            }
+            else if( 0 == pair_strParam.first.compare("FIT_OPTION") ){
+                setupHisto.strFit_Option = pair_strParam.second;
+            }
+            else if( 0 == pair_strParam.first.compare("FIT_PARAM_IGUESS") ){
+                setupHisto.vec_strFit_ParamIGuess = getCommaSeparatedList(pair_strParam.second);
+            }
+            else if( 0 == pair_strParam.first.compare("FIT_PARAM_MAP") ){
+                setupHisto.vec_strFit_ParamMeaning = getCommaSeparatedList(pair_strParam.second);
             }
             else if( 0 == pair_strParam.first.compare("HISTO_BINRANGE") ){
                 //Get comma separated list
@@ -728,7 +729,7 @@ void Timing::TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::if
                 //for(int i=0; i<vec_strList.size(); ++i){
                 //	cout<<"vec_strList["<<i<<"] = " << vec_strList[i] << endl;
                 //}
-
+                
                 if (vec_strList.size() >= 2) { //Case: at least 2 numbers
                     //Fetch
                     setupHisto.fHisto_xLower = Timing::stofSafe(pair_strParam.first, vec_strList[0]);
@@ -762,36 +763,26 @@ void Timing::TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::if
                     cout<<"\t\tUpper Histo Value"<<setupHisto.fHisto_xUpper<<endl;
                 } //End Case: Not enough numbers
             } //End Case: Assign Histo Bin Range
+            else if( 0 == pair_strParam.first.compare("HISTO_NAME") ) {
+                setupHisto.strHisto_Name = pair_strParam.second;
+            }
+            else if( 0 == pair_strParam.first.compare("HISTO_NUMBINS") ){
+                setupHisto.iHisto_nBins = Timing::stoiSafe(pair_strParam.first, pair_strParam.second);
+            }
             else if( 0 == pair_strParam.first.compare("HISTO_XTITLE") ){
                 setupHisto.strHisto_Title_X = pair_strParam.second;
             }
             else if( 0 == pair_strParam.first.compare("HISTO_YTITLE") ){
                 setupHisto.strHisto_Title_Y = pair_strParam.second;
             }
-            else if( 0 == pair_strParam.first.compare("FIT_AUTORANGING") ){
-                setupHisto.bFit_AutoRanging = Timing::convert2bool(pair_strParam.second, bExitSuccess);
-                
-                if (!bExitSuccess) {
-                    cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - Attempted to Assign 'Fit_Autoranging' value failed!!!\n";
-                    cout<<"\tYour (Field name, Field value) pair = (" << pair_strParam.first << "," << pair_strParam.second << ")\n";
-                    cout<<"\tField value should be from the set {t,true,1,f,false,0}\n";
-                    cout<<"\tUndefined behavior may occur!!!";
-                }
+            else if( 0 == pair_strParam.first.compare("ISTRIGGER") ){
+                setupHisto.bIsTrig = convert2bool(pair_strParam.second, bExitSuccess);
             }
-            else if( 0 == pair_strParam.first.compare("FIT_FORMULA") ){
-                setupHisto.strFit_Formula = pair_strParam.second;
+            else if( 0 == pair_strParam.first.compare("PERFORM_FIT") ){
+                setupHisto.bFit = convert2bool(pair_strParam.second, bExitSuccess);
             }
-            else if( 0 == pair_strParam.first.compare("FIT_NAME") ){
-                setupHisto.strFit_Name = pair_strParam.second;
-            }
-            else if( 0 == pair_strParam.first.compare("FIT_OPTION") ){
-                setupHisto.strFit_Option = pair_strParam.second;
-            }
-            else if( 0 == pair_strParam.first.compare("FIT_PARAM_MAP") ){
-                setupHisto.vec_strFit_ParamMeaning = getCommaSeparatedList(pair_strParam.second);
-            }
-            else if( 0 == pair_strParam.first.compare("FIT_PARAM_IGUESS") ){
-                setupHisto.vec_strFit_ParamIGuess = getCommaSeparatedList(pair_strParam.second);
+            else if( 0 == pair_strParam.first.compare("TDC_CHAN") ) {
+                setupHisto.iTDC_Chan = stoiSafe(pair_strParam.first, pair_strParam.second);
             }
             else{ //Case: Parameter not recognized
                 cout<<"Timing::TimingRunAnalyzer::setHistoSetuo() - Unrecognized field!!!\n";

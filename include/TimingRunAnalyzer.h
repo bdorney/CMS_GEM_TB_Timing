@@ -125,13 +125,15 @@ namespace Timing {
         
         std::string strSecBegin_ANAL;   //Analysis section header beginning
         std::string strSecBegin_AND;    //Detector AND  "                   "
-        std::string strSecBegin_OR;     //Detector OR   "                   "
         std::string strSecBegin_DET;    //Detector "                        "
+        std::string strSecBegin_OR;     //Detector OR   "                   "
+        std::string strSecBegin_PMT;    //Detector PMT "                    "
         
         std::string strSecEnd_ANAL;   //As above but for the ending
         std::string strSecEnd_AND;
-        std::string strSecEnd_OR;
         std::string strSecEnd_DET;
+        std::string strSecEnd_OR;
+        std::string strSecEnd_PMT;
         
         //TRunParameters runLogger
         //Timing::Run run;            //The run!!!
