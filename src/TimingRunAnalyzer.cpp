@@ -181,7 +181,7 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
         run.iEvtPassing[kEvt_OOT_PMT]++; //Events Passing have PMT's in time
         
         //Are Detector's in time? (NOTE: if only 1 nonzero det evt is accepted automatically)
-        if ( !(map_iTDCData_Det.size() > 0) ) continue;
+	if ( !(getMinForChannelOR(map_iTDCData_Det) > 0) ) continue;	//veto all events where there are no nonzero detectors
         if (getDeltaTForChannel(map_iTDCData_Det) > aSetup.fCut_MaxDeltaT_Det ) continue;
         
         run.iEvtPassing[kEvt_OOT_Det]++; //Events Passing have Detectors in time
@@ -277,7 +277,7 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
             //Reset the value of the map_iTDCData
             map_iTDCData_Det[(*iterDet).first] = ((*iterDet).second).vec_iTDC_Data[i];
             
-            cout<< map_iTDCData_Det[(*iterDet).first] << ";\t";
+            //cout<< map_iTDCData_Det[(*iterDet).first] << ";\t";
 
             //Fill the Histogram
             //Keep the entries of the histogram = iNEvtSel
@@ -306,7 +306,7 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
             } //End Case: Fill a Negative Time
         } //End Loop Over PMT's
         
-        cout<<"min = " << getMinForChannelOR(map_iTDCData_Det) << ";\tmax = " << getMaxForChannelAND(map_iTDCData_Det) << endl;
+        //cout<<"min = " << getMinForChannelOR(map_iTDCData_Det) << ";\tmax = " << getMaxForChannelAND(map_iTDCData_Det) << endl;
 
         //Fill the OR histogram
         //Keep the entries of the histogram = iNEvtSel
