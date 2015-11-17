@@ -213,14 +213,14 @@ int main( int argc_, char * argv_[]){
         ((*iterPMT).second).timingResults.hTDC_Histo->SetFillColor(getCyclicColor(iColor) );
         ((*iterPMT).second).timingResults.hTDC_Histo->SetFillStyle( 1001 );
         
-        leg_EvtTime->AddEntry( (&*((*iterPMT).second).timingResults.hTDC_Histo), (*iterPMT).first.c_str(), "LPE" );
+        leg_EvtTime->AddEntry( (&*((*iterPMT).second).timingResults.hTDC_Histo), (*iterPMT).first.c_str(), "F" );
         if (iterPMT == run.map_PMT.begin() ) { //Case: First Element
             ((*iterPMT).second).timingResults.hTDC_Histo->GetXaxis()->UnZoom();
-            ((*iterPMT).second).timingResults.hTDC_Histo->Draw();
+            ((*iterPMT).second).timingResults.hTDC_Histo->Draw("hist");
             
         } //End Case: First Element
         else { //Case: All Other Elements
-            ((*iterPMT).second).timingResults.hTDC_Histo->Draw("same");
+            ((*iterPMT).second).timingResults.hTDC_Histo->Draw("samehist");
         } //End Case: All Other Elements
         
         //Increment iColor
@@ -241,7 +241,7 @@ int main( int argc_, char * argv_[]){
         ((*iterDet).second).timingResults.hTDC_Histo->Draw("same");
         
         //Increment iColor
-        iColor++
+        iColor++;
     } //End Loop Over Detectors
     
     //Detector OR
