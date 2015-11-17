@@ -34,8 +34,8 @@ namespace Timing {
         kEvt_All = 0,   //All Events
         kEvt_OOT_PMT,   //PMT's out of time
         kEvt_OOT_Det,   //Detector's out of time
-        kEvt_OOT_Trig,  //Detector & Trigger out of time
-        n_cuts
+        kEvt_OOT_DetTrig,  //Detector & Trigger out of time
+        n_cut_classes
     };
     
     //Common Data Types Goes Here
@@ -87,9 +87,10 @@ namespace Timing {
         bool bInvertTime;
         bool bMatchArrivalTime;
         
-        float fCut_MaxDeltaT_Det; //Max allowed deltaT between detectors
-        float fCut_MaxDeltaT_PMT; //Max allowed deltaT between PMT's (who do not determine trigger)
-        float fCut_MaxDeltaT_Trig; //Max allowed deltaT between trigger determining PMT & other PMT's
+        float fCut_MaxDeltaT_Det;       //Max allowed deltaT between detectors
+        float fCut_MaxDeltaT_DetTrig;    //Max allowed deltaT between detector and Trig
+        float fCut_MaxDeltaT_PMT;       //Max allowed deltaT between PMT's (who do not determine trigger)
+        float fCut_MaxDeltaT_PMTTrig;   //Max allowed deltaT between trigger determining PMT & other PMT's
         
         float fTDCWinSize;
         
@@ -104,7 +105,7 @@ namespace Timing {
             bMatchArrivalTime = false;
             bInvertTime = false;
             
-            fCut_MaxDeltaT_Det = fCut_MaxDeltaT_PMT = fCut_MaxDeltaT_Trig = fTDCWinSize = 1200;
+            fCut_MaxDeltaT_Det = fCut_MaxDeltaT_DetTrig = fCut_MaxDeltaT_PMT = fCut_MaxDeltaT_PMTTrig = fTDCWinSize = 1200;
         }
     }; //End AnalysisSetup
     
@@ -238,6 +239,8 @@ namespace Timing {
     };
     
     struct PMT{
+        bool bIsTrig;
+        
         float fHV;      //HV Setpoint
         
         float fZPos;    //Position along beamline
@@ -251,6 +254,8 @@ namespace Timing {
         std::vector<int> vec_iTDC_Data; //Event-by-Event Data
         
         PMT(){
+            bIsTrig = false;
+            
             fHV = fZPos = -1;
             
             iTDC_Chan = 0;
@@ -263,59 +268,59 @@ namespace Timing {
     struct Run{
         //Run info
         //=============================
-        bool bTakeHVFromRunParamTree;
+        bool bTakeHVFromRunParamTree;           //Take HV parameters from the run and not the filename
         
-        float fMaxDiffArrivalTime;  //Maximum difference in the mean of two distributions
+        //float fMaxDiffArrivalTime;              //Depreciated
+        float fSupermoduleHVSetpoint;           //Setpoint of Supermodule
+        float fTrig_Delay;                      //Trigger Delay in ns;
         
-        float fTrig_Delay;    //Trigger Delay in ns;
+        int iBeam_Type;                         //11->Electron, 13->Muon, 211->Pion
+        int iEvtPassing[n_cut_classes];         //Number of events passing each selection cut per run
+        int iRun;                               //Run Number
+        int iTrig_Mode;                         //0->Async, 1->Sync
         
-        float fSupermoduleHVSetpoint; //Setpoint of Supermodule
-        
-        int iRun;           //Run Number
-        
-        int iBeam_Type;     //11->Electron, 13->Muon, 211->Pion
-        
-        int iTrig_Mode;     //0->Async, 1->Sync
-        
-        std::string strRunName;
+        std::string strRunName;                 //Name of the ROOT file (e.g. the Run)
         std::string strTreeName_Run;            //Name of TTree that has the data
         std::string strTreeName_RunParam_DUT;   //Name of TTree that has the parameters of the DUT
         
         //Detectors
         //=============================
-        std::map<std::string, Detector> map_det;
+        std::map<std::string, Detector> map_det;//Map of detectors to be analyzed in this run
         
         //Photomultipliers
         //=============================
-        std::map<std::string, PMT> map_PMT;
+        std::map<std::string, PMT> map_PMT;     //Map of PMT's to be analyzed in this run
         
         //TDC Info
         //=============================
-        int iTDC_Chan_Trig;         //Channel of the Trigger in the TDC
+        //int iTDC_Chan_Trig;                     //Depreciated
         
-        TDCAnalysisResults timingResultsAND;
-        TDCAnalysisResults timingResultsOR;
+        TDCAnalysisResults timingResultsAND;    //TDC results for AND of detectors (2 detectors only)
+        TDCAnalysisResults timingResultsOR;     //TDC results for OR of detectors (2 detectors only)
         
-        std::shared_ptr<TH1F> hTDC_DeltaT;
-        std::shared_ptr<TH2F> hTDC_Correlation;
+        std::shared_ptr<TH1F> hTDC_DeltaT;      //Difference in Time of detectors (2 detectors only)
+        std::shared_ptr<TH2F> hTDC_Correlation; //Correlation of Times of detectors (2 detectors only)
         
         Run(){
             //Run info
             //=============================
             bTakeHVFromRunParamTree = false;
             
-            fTrig_Delay = fSupermoduleHVSetpoint = -1;    //Trigger Delay in ns;
-            
-            iRun = iTrig_Mode = -1;           //Run Number
+            fSupermoduleHVSetpoint = fTrig_Delay = -1;    //Trigger Delay in ns;
             
             iBeam_Type = 0;     //11->Electron, 13->Muon, 211->Pion
             
-            strTreeName_RunParam_DUT = "";
+            for(int i=0; i < n_cut_classes; ++i){iEvtPassing[i] = 0;}
+            
+            iRun = iTrig_Mode = -1;           //Run Number
+            
             strRunName = "";
+            strTreeName_Run = "";
+            strTreeName_RunParam_DUT = "";
             
             //TDC Info
             //=============================
-            iTDC_Chan_Trig = 0;         //Channel of the Trigger in the TDC
+            //iTDC_Chan_Trig = 0;         //Channel of the Trigger in the TDC
         }
     };
     

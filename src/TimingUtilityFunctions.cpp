@@ -84,9 +84,7 @@ int Timing::getDeltaTForChannel(std::map<std::string, int> inputMap){
 	//cout<<"Timing::getDeltaTForChannel() - max = " << max << "; min = " << min << endl;
 
     if (max > 0 && min > 0 ) {
-        //return max - min;
-	//return fabs(max - min);
-	return abs(max - min);
+        return abs(max - min);
     }
     else{
         return -1;
@@ -296,10 +294,6 @@ std::pair<std::string,std::string> Timing::getParsedLine(std::string strInputLin
     if (iPos_Equals == std::string::npos && strInputLine.find("[",0) == std::string::npos ) {
         printStringNotFoundMsg("TimingUtilityFunctions::getParsedLine","=",strInputLine,"See Next Error Msg for Filename" );
         
-        //std::cout<<"Character '=' Not Found in line:\n";
-        //std::cout<<strInputLine<<std::endl;
-        //std::cout<<"Exiting treeProducer::getParsedLine(), Cross-Check Selcetion Setup File\n";
-        
         bExitSuccess = false;
         
         return std::make_pair("","");
@@ -308,10 +302,6 @@ std::pair<std::string,std::string> Timing::getParsedLine(std::string strInputLin
     //Check to make sure iPos_End found in input string
     if (iPos_End == std::string::npos && strInputLine.find("[",0) == std::string::npos) {
         printStringNotFoundMsg("TimingUtilityFunctions::getParsedLine",";",strInputLine,"See Next Error Msg for Filename" );
-        
-        //std::cout<<"Character ';' Not Found in line:\n";
-        //std::cout<<strInputLine<<std::endl;
-        //std::cout<<"Exiting treeProducer::getParsedLine(), Cross-Check Selcetion Setup File\n";
         
         bExitSuccess = false;
         
@@ -322,10 +312,6 @@ std::pair<std::string,std::string> Timing::getParsedLine(std::string strInputLin
     if (iPos_Quote1 == std::string::npos && strInputLine.find("[",0) == std::string::npos) {
         printStringNotFoundMsg("TimingUtilityFunctions::getParsedLine","'",strInputLine,"See Next Error Msg for Filename" );
         
-        //std::cout<<"First Single-Quote (e.g. ' ) Not Found in line:\n";
-        //std::cout<<strInputLine<<std::endl;
-        //std::cout<<"Exiting treeProducer::getParsedLine(), Cross-Check Selcetion Setup File\n";
-        
         bExitSuccess = false;
         
         return std::make_pair("","");
@@ -334,10 +320,6 @@ std::pair<std::string,std::string> Timing::getParsedLine(std::string strInputLin
     //Check to make sure iPos_Quote2 found in input string
     if (iPos_Quote2 == std::string::npos && strInputLine.find("[",0) == std::string::npos) {
         printStringNotFoundMsg("TimingUtilityFunctions::getParsedLine","'",strInputLine,"See Next Error Msg for Filename" );
-        
-        //std::cout<<"Last Single-Quote (e.g. ' ) Not Found in line:\n";
-        //std::cout<<strInputLine<std::<endl;
-        //std::cout<<"Exiting treeProducer::getParsedLine(), Cross-Check Selcetion Setup File\n";
         
         bExitSuccess = false;
         
@@ -350,9 +332,6 @@ std::pair<std::string,std::string> Timing::getParsedLine(std::string strInputLin
     
     //Set the Exit Flag
     bExitSuccess = true;
-    
-    //cout<<"getParsedLine() - strFieldName = " << strFieldName << endl;
-    //cout<<"getParsedLine() - strFieldValue = " << strFieldValue << endl;
     
     //Return the Pair
     return std::make_pair(strFieldName,strFieldValue);
@@ -379,16 +358,12 @@ std::vector<std::string> Timing::getCommaSeparatedList(std::string strInput){
     if( !(strInput.find(' ') == std::string::npos) ) strInput.erase(remove(strInput.begin(), strInput.end(), ' '), strInput.end() );
     if( !(strInput.find('\t')== std::string::npos) ) strInput.erase(remove(strInput.begin(), strInput.end(), '\t'), strInput.end() ); 
 
+    //Give the input string to the string stream
     sstream<<strInput;
 
     //Get Entries
     while ( std::getline(sstream, strEntry, ',') ){ //Loop through the string
         vec_retStrings.push_back(strEntry);
-        
-	//Debugging
-        //std::cout<<strEntry<<"|";
-
-        //if (sstream.peek() == ',' || sstream.peek() == ' ' || sstream.peek() == '\t') sstream.ignore();
     } //End loop through the string
     
     return vec_retStrings;

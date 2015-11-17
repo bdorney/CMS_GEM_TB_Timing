@@ -51,7 +51,11 @@ Timing::TimingRunAnalyzer::TimingRunAnalyzer(){
 //The entire analysis needs to be executed through this method (but not necessarily in this method)
 void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     //Variable Declaration
-    map<string,int> map_iTDCData;
+    int iNEvtSel = 0;
+    
+    map<string,int> map_iTDCData_Det;
+    map<string,int> map_iTDCData_PMT;
+    
     map<string,TF1> map_fTDCFits;
     map<string,TH1F> map_fTDCHistos;
     
@@ -61,10 +65,10 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     TFile *file_ROOT_Run = NULL;
     
     //Setup the OR, AND, deltaT, & correlation histograms
-    TH1F hTDC_AND = getHistogram( analysisSetup.setupAND, run );
-    TH1F hTDC_DeltaT( ("hTDC_DeltaT_R" + getString(run.iRun) ).c_str(),"DeltaT:t_{Det1} - t_{Det2} #left( ns #right): A.U.",2 * analysisSetup.fTDCWinSize, -1. * analysisSetup.fTDCWinSize, analysisSetup.fTDCWinSize );
-    TH2F hTDC_Correlation( ("hTDC_Corr_R" + getString(run.iRun) ).c_str(),"Correlation",analysisSetup.fTDCWinSize, 0., analysisSetup.fTDCWinSize,analysisSetup.fTDCWinSize, 0., analysisSetup.fTDCWinSize );
-    TH1F hTDC_OR = getHistogram( analysisSetup.setupOR, run );
+    TH1F hTDC_AND = getHistogram( aSetup.setupAND, run );
+    TH1F hTDC_DeltaT( ("hTDC_DeltaT_R" + getString(run.iRun) ).c_str(),"DeltaT:t_{Det1} - t_{Det2} #left( ns #right): A.U.",2 * aSetup.fTDCWinSize, -1. * aSetup.fTDCWinSize, aSetup.fTDCWinSize );
+    TH2F hTDC_Correlation( ("hTDC_Corr_R" + getString(run.iRun) ).c_str(),"Correlation",aSetup.fTDCWinSize, 0., aSetup.fTDCWinSize,aSetup.fTDCWinSize, 0., aSetup.fTDCWinSize );
+    TH1F hTDC_OR = getHistogram( aSetup.setupOR, run );
     
     TTree *tree_Run = nullptr;
 
@@ -102,24 +106,20 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
         return;
     } //End Case: failed to load TTree
     
-    //Get Data for each detector
+    //Initialize Tree Branch Address for each Detector
     //------------------------------------------------------
     //HACK Explanation
-    //Initialize map_iTDCData for each detector
+    //Initialize map_iTDCData_Det for each object
     //Then we will set the TBranch address for each detector (e.g. TDC Channel)
     //Then we will get the data in the most hacked way imaginable; YEAH ROOT
     
-    //Initialize map_iTDCData for each detector
-    for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Through Detectors
-        //Create this detector in the map
-        map_iTDCData[(*iterDet).first];
-        
-        //Create the vector of data for this detector
-        vector<int> vec_iData;
-        ((*iterDet).second).vec_iTDC_Data = vec_iData;
+    //Initialize map_iTDCData_Det for each detector
+    for (auto iterDet = aSetup.map_DetSetup.begin(); iterDet != aSetup.map_DetSetup.end(); ++iterDet ){ //Loop Through Detectors
+        //Create this detector in the maps
+        map_iTDCData_Det[(*iterDet).first];
         
         //Form histogram for this detector
-        map_fTDCHistos[(*iterDet).first] = getHistogram( analysisSetup.map_DetSetup[(*iterDet).first], run );
+        map_fTDCHistos[(*iterDet).first] = getHistogram( aSetup.map_DetSetup[(*iterDet).first], run );
         
         //Store the key values
         vec_strMapDetKeyVal.push_back((*iterDet).first);
@@ -127,9 +127,9 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     
     //Set TBranch Address for each detector (e.g. TDC Channel)
     //  NOTE: Yes it needs to be done in TWO separate loops; yes ROOT is stupid
-    for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Through Detectors
+    for (auto iterDet = aSetup.map_DetSetup.begin(); iterDet != aSetup.map_DetSetup.end(); ++iterDet ){ //Loop Through Detectors
         //Set branch address
-        tree_Run->SetBranchAddress( ("TDC_Ch" + getString( ((*iterDet).second).iTDC_Chan ) ).c_str(), &(map_iTDCData[(*iterDet).first]) );
+        tree_Run->SetBranchAddress( ("TDC_Ch" + getString( ((*iterDet).second).iTDC_Chan ) ).c_str(), &(map_iTDCData_Det[(*iterDet).first]) );
     } //End Loop Through Detectors
     
     //Set Axis titles on Correlation histogram
@@ -138,60 +138,111 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
         hTDC_Correlation.SetYTitle( vec_strMapDetKeyVal[1].c_str() );
     }
     
-    int iNEvt;
-    int iNEvt_Fail;
-    int iNEvt_Pass;
+    //Initialize Tree Branch Address each PMT
+    //------------------------------------------------------
+    //HACK Explanation
+    //Initialize map_iTDCData_PMT for each object
+    //Then we will set the TBranch address for each PMT (e.g. TDC Channel)
+    //Then we will get the data in the most hacked way imaginable; YEAH ROOT
     
-    iNEvt = iNEvt_Fail = iNEvt_Pass = 0;
+    //Initialize map_iTDCData_PMT
+    for (auto iterPMT = aSetup.map_PMTSetup.begin(); iterPMT != aSetup.map_PMTSetup.end(); ++iterPMT) { //Loop through PMT's
+        //Create this detector in the map
+        map_iTDCData_PMT[(*iterPMT).first];
+        
+        //Form histogram for this PMT
+        map_fTDCHistos[(*iterPMT).first] = getHistogram( aSetup.map_PMTSetup[(*iterPMT).first], run );
+    } //End Loop through PMT's
+    
+    //Set TBranch Address for each PMT (e.g. TDC Channel)
+    //  NOTE: Yes it needs to be done in TWO separate loops; yes ROOT is stupid
+    for (auto iterPMT = aSetup.map_PMTSetup.begin(); iterPMT != aSetup.map_PMTSetup.end(); ++iterPMT ){ //Loop Through PMT's
+        //Set branch address
+        tree_Run->SetBranchAddress( ("TDC_Ch" + getString( ((*iterPMT).second).iTDC_Chan ) ).c_str(), &(map_iTDCData_PMT[(*iterPMT).first]) );
+    } //End Loop Through PMT's
     
     //Get data event-by-event
+    //------------------------------------------------------
+    //NOTE: Above we are working only with the maps in aSetup (type struct AnalysisSetup)
+    //After the Event selection we are going to switch with working with the maps in the input run
+    //the user should have configured the run to have the Det's/PMT's they are interested in already initialized
     for (int i=0; i < tree_Run->GetEntries(); ++i) { //Loop Over Events
         tree_Run->GetEntry(i);
         
-        //if (i % 1000 == 0) cout<<"Detector: "<<(*iterDet).first <<"; " <<i<<" Events Analyzed\n";
         if (i % 1000 == 0) cout<<i<<" Events Analyzed\n";
         
-        //cout<<"TimingRunAnalyzer::analyzeRun() - getDeltaTForChannel(map_iTDCData) = " << getDeltaTForChannel(map_iTDCData) << "; MaxDeltaT Allowed = " << analysisSetup.fCut_MaxDeltaT_Det << endl;
-
-        //for(auto iterData = map_iTDCData.begin(); iterData != map_iTDCData.end(); ++iterData){
-            //cout<<"map_iTDCData["<<(*iterData).first<<"] = " << (*iterData).second << endl;
-        //}
-
-        iNEvt++;
+        //BEGIN EVENT SELECTION
+        //==================================================
+        run.iEvtPassing[kEvt_All]++; //All Events
         
-        //Selection Cuts
-        if (getDeltaTForChannel(map_iTDCData) > analysisSetup.fCut_MaxDeltaT_Det ){
-            iNEvt_Fail++;
-            continue;
-        }
+        //Are PMT's in time?
+        if (rejectEvtPMTsOOT(aSetup, map_iTDCData_PMT) ) continue;
         
-        iNEvt_Pass++;
+        run.iEvtPassing[kEvt_OOT_PMT]++; //Events Passing have PMT's in time
         
-        //Get Data event-by-event from individual channels and nonzero invert times if requested
-        for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet){ //Loop Over Detectors
-            
+        //Are Detector's in time? (NOTE: if only 1 nonzero det evt is accepted automatically)
+        if (getDeltaTForChannel(map_iTDCData_Det) > aSetup.fCut_MaxDeltaT_Det ) continue;
+        
+        run.iEvtPassing[kEvt_OOT_Det]++; //Events Passing have Detectors in time
+        
+        //Are Detector's in time with the trigger?
+        if (rejectEvtDetsOOT(aSetup, map_iTDCData_PMT, map_iTDCData_Det) ) continue;
+        
+        run.iEvtPassing[kEvt_OOT_DetTrig]++;
+        
+        //END EVENT SELECTION
+        //==================================================
+        
+        //Store Detector Data
+        for (auto iterDet = aSetup.map_DetSetup.begin(); iterDet != aSetup.map_DetSetup.end(); ++iterDet){ //Loop Over Detectors
             //Correct for inverted times due to common_stop technique of TDC
             //  NOTE: this does not mean 0 is the trigger if this correction is made
-            //        this moves the trigger time from t=0 to t=analysisSetup.fTDCWinSize
-            if (analysisSetup.bInvertTime){ //Case: Invert non-zer times
-                ((*iterDet).second).vec_iTDC_Data.push_back( getInvertedTime( map_iTDCData[(*iterDet).first] ) );
+            //        this moves the trigger time from t=0 to t=aSetup.fTDCWinSize
+            if (aSetup.bInvertTime){ //Case: Invert non-zer times
+                run.map_det[(*iterDet).first].vec_iTDC_Data.push_back( getInvertedTime( map_iTDCData_Det[(*iterDet).first] ) );
             } //End Case: Invert non-zero times
             else{ //Case: Use Raw Times
-                ((*iterDet).second).vec_iTDC_Data.push_back( map_iTDCData[(*iterDet).first] );
+                run.map_det[(*iterDet).first].vec_iTDC_Data.push_back( map_iTDCData_Det[(*iterDet).first] );
             } //End Case: Use Raw Times
         } //End Loop Over Detectors
+        
+        //Store PMT Data
+        for (auto iterPMT = aSetup.map_PMTSetup.begin(); iterPMT != aSetup.map_PMTSetup.end(); ++iterPMT) { //Loop Over PMTs
+            //Correct for inverted times due to common_stop technique of TDC
+            //  NOTE: this does not mean 0 is the trigger if this correction is made
+            //        this moves the trigger time from t=0 to t=aSetup.fTDCWinSize
+            if (aSetup.bInvertTime){ //Case: Invert non-zer times
+                run.map_PMT[(*iterPMT).first].vec_iTDC_Data.push_back( getInvertedTime( map_iTDCData_PMT[(*iterPMT).first] ) );
+            } //End Case: Invert non-zero times
+            else{ //Case: Use Raw Times
+                run.map_PMT[(*iterPMT).first].vec_iTDC_Data.push_back( map_iTDCData_PMT[(*iterPMT).first] );
+            } //End Case: Use Raw Times
+        } //End Loop Over PMTs
     } //End Loop Over Events
+    
+    //Print Event Selection Summary to User
+    //------------------------------------------------------
+    iNEvtSel = run.iEvtPassing[kEvt_OOT_DetTrig];   //Be mindful if the enum kCutClasses changes or if the above selection changes
     
     cout<<"======================================================\n";
     cout<<"====================Selection Summary=================\n";
     cout<<"======================================================\n";
-    cout<<"N_Evt\tN_Evt_Fail\tN_Evt_Pass\n";
-    cout<<iNEvt<<"\t"<<iNEvt_Fail<<"\t"<<iNEvt_Pass<<endl;
+    for (int iCutCase=kEvt_All; iCutCase < n_cut_classes; ++iCutCase) { //Loop Over Cut Classes
+        switch (iCutCase) { //Switch on loop index (iCutCase)
+            case kEvt_OOT_PMT:      cout<<"\tEvt - PMT OOT\t" << run.iEvtPassing[iCutCase] << endl;   break;
+            case kEvt_OOT_Det:      cout<<"\tEvt - Det OOT\t" << run.iEvtPassing[iCutCase] << endl;   break;
+            case kEvt_OOT_DetTrig:  cout<<"\tEvt - Det, Trig OOT\t" << run.iEvtPassing[iCutCase] << endl;   break;
+            default:                cout<<"\tEvt - All\t" << run.iEvtPassing[iCutCase] << endl;   break;
+        } //End Switch on loop index (iCutCase)
+    } //End Loop Over Cut Classes
+    cout<<"======================================================\n";
+    cout<<"======================================================\n";
     cout<<"======================================================\n";
     
     //Correct for offset in mean arrival time?
+    //------------------------------------------------------
     //Consider only the case were number of detectors is greater than 2 (obviously)
-    if (analysisSetup.bMatchArrivalTime && run.map_det.size() > 1) { //Case: Correct for Offsets in Arrival Time
+    if (aSetup.bMatchArrivalTime && run.map_det.size() > 1) { //Case: Correct for Offsets in Arrival Time
         map<string, Timing::Detector, Timing::map_cmp_str>::iterator detMapBegin = run.map_det.begin();
         
         float fOffset = 0.;
@@ -214,65 +265,88 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     
     //Fill Histograms
     //------------------------------------------------------
-    //Use the tree again to get the number of events without a hassle
-    //  NOTE we are not looping through the tree data; but the vector data in the run.map_det[some_det].vec_iTDC_Data
-    for (int i=0; i < tree_Run->GetEntries(); ++i) { //Loop through Events
-        //Fill individual histograms
-        //Here we are going to loop over the detectors in run.map_det
-        //And we will access by index "i" the elements of run.map_det[some_det].vec_iTDC_Data
-        //This works since by design run.map_det[some_det].vec_iTDC_Data.size() == tree_Run->GetEntries()
-        //For each i we are going to fill the histograms, and reset the value of map_iTDCData
+    for (int i=0; i < iNEvtSel; ++i) { //Loop through Events
+        //Going to loop over objects in run.map_det & run.map_PMT
+        //Access by index "i" elements of run.map_X[some_X].vec_iTDC_Data where X = {det,PMT}
+        //By design run.map_X[some_X].vec_iTDC_Data.size() == iNEvtSel
+        //For each i fill histograms, and reset value of map_iTDCData_Det & map_iTDCData_PMT
         
+        //Fill Detector Histograms
         for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Over Detectors
             //Reset the value of the map_iTDCData
-            map_iTDCData[(*iterDet).first] = ((*iterDet).second).vec_iTDC_Data[i];
+            map_iTDCData_Det[(*iterDet).first] = ((*iterDet).second).vec_iTDC_Data[i];
             
-            cout<< map_iTDCData[(*iterDet).first] << ";\t";
+            cout<< map_iTDCData_Det[(*iterDet).first] << ";\t";
 
             //Fill the Histogram
-            map_fTDCHistos[((*iterDet).first)].Fill( ((*iterDet).second).vec_iTDC_Data[i] );
-            //if ( ((*iterDet).second).vec_iTDC_Data[i] > 0 ) {
-                //map_fTDCHistos[((*iterDet).first)].Fill( ((*iterDet).second).vec_iTDC_Data[i] );
-            //} //End Fill Histogram
+            //Keep the entries of the histogram = iNEvtSel
+            if ( ((*iterDet).second).vec_iTDC_Data[i] > 0 ) { //Case: Fill the Real Time
+                map_fTDCHistos[((*iterDet).first)].Fill( ((*iterDet).second).vec_iTDC_Data[i] );
+            } //End Case: Fill the Real Time
+            else{ //Case: Fill a Negative Time
+                map_fTDCHistos[((*iterDet).first)].Fill( -1 );
+            } //End Case: Fill a Negative Time
         } //End Loop Over Detectors
         
-        cout<<"min = " << getMinForChannelOR(map_iTDCData) << ";\tmax = " << getMaxForChannelAND(map_iTDCData) << endl;
+        //Fill PMT Histograms
+        for (auto iterPMT = run.map_PMT.begin(); iterPMT != run.map_PMT.end(); ++iterPMT) { //Loop Over PMT's
+            //Reset the value of the map_iTDCData_PMT
+            map_iTDCData_PMT[(*iterPMT).first] = ((*iterPMT).second).vec_iTDC_Data[i];
+            
+            //cout<< map_iTDCData_PMT[(*iterDet).first] << ";\t";
+            
+            //Fill the Histogram
+            //Keep the entries of the histogram = iNEvtSel
+            if ( ((*iterPMT).second).vec_iTDC_Data[i] > 0 ) { //Case: Fill the Real Time
+                map_fTDCHistos[((*iterPMT).first)].Fill( ((*iterPMT).second).vec_iTDC_Data[i] );
+            } //End Case: Fill the Real Time
+            else{ //Case: Fill a Negative Time
+                map_fTDCHistos[((*iterPMT).first)].Fill( -1 );
+            } //End Case: Fill a Negative Time
+        } //End Loop Over PMT's
+        
+        cout<<"min = " << getMinForChannelOR(map_iTDCData_Det) << ";\tmax = " << getMaxForChannelAND(map_iTDCData_Det) << endl;
 
         //Fill the OR histogram
-        hTDC_OR.Fill( getMinForChannelOR(map_iTDCData) );
-        //if (getMinForChannelOR(map_iTDCData) > 0){ //Case: Any Detector fired this event
-            //hTDC_OR.Fill( getMinForChannelOR(map_iTDCData) );
-        //} //End Case: Any Detector fired this event
+        //Keep the entries of the histogram = iNEvtSel
+        if (getMinForChannelOR(map_iTDCData_Det) > 0){ //Case: Any Detector fired this event
+            hTDC_OR.Fill( getMinForChannelOR(map_iTDCData_Det) );
+        } //End Case: Any Detector fired this event
+        else{ //Case: Fill a negative time
+            hTDC_OR.Fill( -1 );
+        } //End Case: Fill a negative time
         
         //Fill the AND, DeltaT, and Correlation histograms
-        hTDC_AND.Fill( getMaxForChannelAND(map_iTDCData) );
-        
-        if (map_iTDCData.size() == 2) { //Case: Two Detectors
-            if (getMaxForChannelAND(map_iTDCData) > 0) {
-                hTDC_DeltaT.Fill( map_iTDCData[vec_strMapDetKeyVal[0]] - map_iTDCData[vec_strMapDetKeyVal[1]] );
-            }
-            
-            hTDC_Correlation.Fill(map_iTDCData[vec_strMapDetKeyVal[0]], map_iTDCData[vec_strMapDetKeyVal[1]]);
-        } //End Case: Two Detectors
-        /*if (getMaxForChannelAND(map_iTDCData) > 0){
-            hTDC_AND.Fill( getMaxForChannelAND(map_iTDCData) );
+        //Keep the entries of the histogram = iNEvtSel
+        if (getMaxForChannelAND(map_iTDCData_Det) > 0){
+            hTDC_AND.Fill( getMaxForChannelAND(map_iTDCData_Det) );
             
             //Right now only providing support for the 2 detector case
             //someone wants 3 they can write their own analyzer...
             //Need to use this hack so that deltaT and correlation are always the same
-            if (map_iTDCData.size() == 2) { //Case: Two Detectors
-                hTDC_DeltaT.Fill( map_iTDCData[vec_strMapDetKeyVal[0]] - map_iTDCData[vec_strMapDetKeyVal[1]] );
-                hTDC_Correlation.Fill(map_iTDCData[vec_strMapDetKeyVal[0]], map_iTDCData[vec_strMapDetKeyVal[1]]);
+            if (map_iTDCData_Det.size() == 2) { //Case: Two Detectors
+                hTDC_DeltaT.Fill( map_iTDCData_Det[vec_strMapDetKeyVal[0]] - map_iTDCData_Det[vec_strMapDetKeyVal[1]] );
+                hTDC_Correlation.Fill( map_iTDCData_Det[vec_strMapDetKeyVal[0]], map_iTDCData_Det[vec_strMapDetKeyVal[1]] );
             } //End Case: Two Detectors
-        }*/ //End Case: Both Detectors fired this event
+        } //End Case: Both Detectors fired this event
+        else{ //Case: Fill a negative time
+            hTDC_AND.Fill( -1 );
+            hTDC_Correlation.Fill( -1, -1 );
+            hTDC_DeltaT.Fill( -10000 ); //Can't use -1 here, it might actually be -1!!!!
+        } //End Case: Fill a negative time
     } //End Loop through Events
     
     //Record Detector Data
     //------------------------------------------------------
-    //Event loop finished set performance data for single detectors
+    //set performance data for det's
     for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Over Detectors
         setPerformanceData( ((*iterDet).second).timingResults, map_fTDCHistos[(*iterDet).first] );
     } //End Loop Over Detectors
+    
+    //set performance data for PMT's
+    for (auto iterPMT = run.map_PMT.begin(); iterPMT != run.map_PMT.end(); ++iterPMT) { //Loop Over PMT's
+        setPerformanceData( ((*iterPMT).second).timingResults, map_fTDCHistos[(*iterPMT).first] );
+    } //End Loop Over PMT's
     
     //Store the AND and the OR of the detectors
     setPerformanceData( run.timingResultsAND, hTDC_AND );
@@ -285,63 +359,43 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
         //Initialize map_fTDCFits for each detector and then fit
         for (auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet) { //Loop Through Detectors
             //Initialize
-            map_fTDCFits[(*iterDet).first] = getFunction( analysisSetup.map_DetSetup[(*iterDet).first], map_fTDCHistos[(*iterDet).first], run );
+            map_fTDCFits[(*iterDet).first] = getFunction( aSetup.map_DetSetup[(*iterDet).first], map_fTDCHistos[(*iterDet).first], run );
             
             //Fit histogram
-            fitHistogram( analysisSetup.map_DetSetup[(*iterDet).first], map_fTDCHistos[(*iterDet).first], map_fTDCFits[(*iterDet).first] );
+            fitHistogram( aSetup.map_DetSetup[(*iterDet).first], map_fTDCHistos[(*iterDet).first], map_fTDCFits[(*iterDet).first] );
             
             //Store the performance data
-            setPerformanceData( ((*iterDet).second).timingResults, map_fTDCFits[(*iterDet).first], analysisSetup.map_DetSetup[(*iterDet).first] );
+            setPerformanceData( ((*iterDet).second).timingResults, map_fTDCFits[(*iterDet).first], aSetup.map_DetSetup[(*iterDet).first] );
         } //End Loop Through Detectors
         
         //Initialize AND & OR fits
-        func_TDC_Fit_AND= getFunction( analysisSetup.setupAND, hTDC_AND, run );
-        func_TDC_Fit_OR = getFunction( analysisSetup.setupOR, hTDC_OR, run );
+        func_TDC_Fit_AND= getFunction( aSetup.setupAND, hTDC_AND, run );
+        func_TDC_Fit_OR = getFunction( aSetup.setupOR, hTDC_OR, run );
         
         //Fit AND & OR
-        fitHistogram(analysisSetup.setupAND, hTDC_AND, func_TDC_Fit_AND);
-        fitHistogram(analysisSetup.setupOR, hTDC_OR, func_TDC_Fit_OR);
+        fitHistogram(aSetup.setupAND, hTDC_AND, func_TDC_Fit_AND);
+        fitHistogram(aSetup.setupOR, hTDC_OR, func_TDC_Fit_OR);
         
         //Store the performance data for the AND & OR
-        setPerformanceData( run.timingResultsAND, func_TDC_Fit_AND, analysisSetup.setupAND );
-        setPerformanceData( run.timingResultsOR, func_TDC_Fit_OR, analysisSetup.setupOR );
+        setPerformanceData( run.timingResultsAND, func_TDC_Fit_AND, aSetup.setupAND );
+        setPerformanceData( run.timingResultsOR, func_TDC_Fit_OR, aSetup.setupOR );
     } //End Case: Async Trigger Mode
     
     //Store Objects/Parameters into the Run
     //We are done with the analysis now, store everything into the run
     //  NOTE: We do not work with the TObjects stored in the run above because passing the pointers "TH1F *" and "TF1 *" around has lead to problems in the past
     //------------------------------------------------------
-	//Debugging
-    cout<<"run.hTDC_Correlation = ";
-	cout<< run.hTDC_Correlation << endl;
-
-	cout<<"run.hTDC_DeltaT = ";
-	cout<<run.hTDC_DeltaT<<endl;
 	
 	run.hTDC_Correlation = std::make_shared<TH2F>(hTDC_Correlation);
 	run.hTDC_DeltaT	= std::make_shared<TH1F>(hTDC_DeltaT);
 
-	cout<<"hTDC_Correlation = ";
-	cout<<&hTDC_Correlation<<endl;
-	cout<<"run.hTDC_Correlation = ";
-	cout<< run.hTDC_Correlation << endl;
-
-	cout<<"hTDC_DeltaT = ";
-	cout<<&hTDC_DeltaT<<endl;
-	cout<<"run.hTDC_DeltaT = ";
-	cout<<run.hTDC_DeltaT<<endl;
-
 	run.hTDC_DeltaT->SetDirectory(gROOT);
 	run.hTDC_Correlation->SetDirectory(gROOT);
     
-    //Moved to setPerformanceData
-	//for(auto iterDet = run.map_det.begin(); iterDet != run.map_det.end(); ++iterDet){
-		//(*iterDet).second.timingResults.hTDC_Histo->SetDirectory(gROOT);
-	//}
-
     //Clear stl containers? (Not doing this seems to cause some pointer to be freed)
     //------------------------------------------------------
-    map_iTDCData.clear();
+    map_iTDCData_Det.clear();
+    map_iTDCData_PMT.clear();
     map_fTDCFits.clear();
     map_fTDCHistos.clear();
 
@@ -354,9 +408,6 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     printROOTFileStatus(file_ROOT_Run);
     cout<<"Timing::TimingRunAnalyzer::analyzeRun() - file_ROOT_Run = " << file_ROOT_Run << endl;
 
-    //cout<<"Timig::TimingRunAnalyzer::analyzeRun() - Trying to delete tree pointer\n";
-    //delete tree_Run;
-    
     cout<<"Timing::TimingRunAnalyzer::analyzeRun() - Trying to close file\n";
     file_ROOT_Run->Close();
     cout<<"Timing::TimingRunAnalyzer::analyzeRun() - successfully closed file\n";    
@@ -376,6 +427,74 @@ void Timing::TimingRunAnalyzer::fitHistogram(HistoSetup &setupHisto, TH1F & hInp
     
     return;
 } //End Timing::TimingRunAnalyzer::fitHistogram
+
+//Used in event selection
+//Returns false (true) if Det's are in (out of) time with trigger based on specified user input
+bool Timing::TimingRunAnalyzer::rejectEvtDetsOOT(AnalysisSetup &aSetup, std::map<std::string,int> mapInputPMTData, std::map<std::string,int> mapInputDetData){
+
+    //Dummy function for now
+    
+    return false;
+} //End Timing::TimingRunAnalyzer::rejectEvtDetsOOT
+
+//Used in event selection
+//Returns false (true) if PMT's are in (out of) time based on specified user input
+bool Timing::TimingRunAnalyzer::rejectEvtPMTsOOT(AnalysisSetup &aSetup, map<string,int> mapInputPMTData){
+    //Variable Declaration
+    int iMaxTime = 0;   //Maximum PMT time
+    int iMinTime = 0;   //Minimum PMT time
+    
+    int iTrigTime = 0;  //Time of the trigger
+    int iTrigCount = 0; //Number of "triggers" (track to make sure the user didn't make a mistake)
+    
+    vector<int> vec_iTDC_Data;
+    
+    for (auto iterPMT = mapInputPMTData.begin(); iterPMT != mapInputPMTData.end(); ++iterPMT) { //Loop Over input PMT Data
+        
+        if ( aSetup.map_PMTSetup[(*iterPMT).first].bIsTrig ) { //Case: This PMT is the coincidence determining PMT
+            iTrigTime = (*iterPMT).second;
+            ++iTrigCount;
+        } //End Case: This PMT is the coincidence determining PMT
+        else{ //Case: All other PMT's
+            vec_iTDC_Data.push_back( (*iterPMT).second );
+        } //End Case: All other PMT's
+    } //End Loop Over input PMT Data
+    
+    iMaxTime = *std::max_element(vec_iTDC_Data.begin(), vec_iTDC_Data.end() );
+    iMinTime = *std::min_element(vec_iTDC_Data.begin(), vec_iTDC_Data.end() );
+    
+    //Cross-check input: Nonzero Trigger Time
+    if ( !(iTrigTime > 0) ) {
+        cout<<"Timing::TimingRunAnalyzer::rejectEvtPMTsOOT() - Problem?\n";
+        cout<<"\tiTrigTime = " << iTrigTime << endl;
+        cout<<"\tThis is expected to be non-zero\n";
+        cout<<"\tHave you setup the analysis config file correctly?\n";
+    }
+    
+    //Cross-check input: No Trigger Time!
+    //The user will for sure check for a problem if all events are rejected
+    if ( !(iTrigCount == 1) ) {
+        cout<<"Timing::TimingRunAnalyzer::rejectEvtPMTsOOT() - Problem!!!\n";
+        cout<<"\tiTrigCount = " << iTrigCount << endl;
+        cout<<"\tThis is expected to be non-zero\n";
+        cout<<"\tHave you setup the analysis config file correctly?\n";
+        cout<<"\tONLY ONE PMT must have IsTrigger set to true\n";
+        cout<<"\tI am Rejecting ALL EVENTS\n";
+        
+        return true;
+    }
+    
+    //Perform the selection
+    if ( (iMaxTime - iMinTime ) > aSetup.fCut_MaxDeltaT_PMT ){ //Check: non-coincidence determining PMT's out of time?
+        return true;
+    } //End Check: Check: non-coincidence determining PMT's out of time?
+    else if( abs(iMaxTime - iTrigTime) > aSetup.fCut_MaxDeltaT_PMTTrig || abs(iMinTime - iTrigTime ) > aSetup.fCut_MaxDeltaT_PMTTrig ){ //Check: Coincidence determining PMT out of time?
+        return true;
+    } //End Check: Coincidence determining PMT out of time?
+    else{ //Event Passes
+        return false;
+    } //End Event Passes
+} //End Timing::TimingRunAnalyzer::rejectEvtPMTsOOT
 
 //Returns a TF1 (function) whose parameters are set by setupHisto
 //Good candidate for TimingUtitlityFunctions.h?
@@ -458,6 +577,8 @@ TH1F Timing::TimingRunAnalyzer::getHistogram(HistoSetup &setupHisto, Run & run){
     
     ret_Histo.Sumw2();
     
+    ret_Histo.SetDirectory(gROOT);  //Not sure if this should go here or in setPerformanceData()
+    
     return ret_Histo;
 } //End getHistogram
 
@@ -507,10 +628,10 @@ void Timing::TimingRunAnalyzer::setAnalysisConfig(string &strInputFile){
         }
         else if ( 0 == strLine.compare(strSecBegin_AND) ) { //Case: AND SECTION
             //Set the flag to compute the AND of all detectors
-            //analysisSetup.bCompute_AND = true;
+            //aSetup.bCompute_AND = true;
             
             //Setup the Histogram struct for analysis
-            setHistoSetup(strInputFile, fStream, analysisSetup.setupAND );
+            setHistoSetup(strInputFile, fStream, aSetup.setupAND );
         } //End Case: AND SECTION
         else if ( 0 == strLine.compare(strSecBegin_DET) || 0 == strLine.compare(strSecBegin_PMT) ){ //Case: DET or PMT SECTION
             //So if the user has done this section correctly the next noncommented line should the detector name
@@ -518,7 +639,7 @@ void Timing::TimingRunAnalyzer::setAnalysisConfig(string &strInputFile){
             
             strDetOrPMTHeading = strLine; //This should be set only once per execution
             
-		cout<<"TimingRunAnalyzer::setAnalysisConfig() - strDetOrPMTHeading = " << strDetOrPMTHeading << endl;
+            cout<<"TimingRunAnalyzer::setAnalysisConfig() - strDetOrPMTHeading = " << strDetOrPMTHeading << endl;
 
             while ( getlineNoSpaces(fStream, strLine) ) { //Loop through file to find "Name"
                 //Does the user want to comment out this line?
@@ -549,10 +670,10 @@ void Timing::TimingRunAnalyzer::setAnalysisConfig(string &strInputFile){
                         
                         //Initialize the correct map with hSetup
                         if (0 == strDetOrPMTHeading.compare(strSecBegin_DET) ) { //Case: Detector Declaration
-                            analysisSetup.map_DetSetup[pair_strParam.second] = hSetup;
+                            aSetup.map_DetSetup[pair_strParam.second] = hSetup;
                         } //End Case: Detector Declaration
                         else if (0 == strDetOrPMTHeading.compare(strSecBegin_PMT) ) { //Case: PMT Declaration
-                            analysisSetup.map_PMTSetup[pair_strParam.second] = hSetup;
+                            aSetup.map_PMTSetup[pair_strParam.second] = hSetup;
                         } //End Case: PMT Declaration
                         else{ //Case: Undefined Behavior
                             cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - Brian you made a mistake, this output should not be possible\n";
@@ -590,13 +711,13 @@ void Timing::TimingRunAnalyzer::setAnalysisConfig(string &strInputFile){
             
             //Fetch the values for the map for the correct case
             if (bSetup) { //Case: Setup Correct
-                //setHistoSetup(strInputFile, fStream, analysisSetup.map_DetSetup[strName] );
+                //setHistoSetup(strInputFile, fStream, aSetup.map_DetSetup[strName] );
                 //Store hSetup for the correct usage case
                 if (0 == strDetOrPMTHeading.compare(strSecBegin_DET) ) { //Case: Detector Declaration
-                    setHistoSetup(strInputFile, fStream, analysisSetup.map_DetSetup[strName] );
+                    setHistoSetup(strInputFile, fStream, aSetup.map_DetSetup[strName] );
                 } //End Case: Detector Declaration
                 else if (0 == strDetOrPMTHeading.compare(strSecBegin_PMT) ) { //Case: PMT Declaration
-                    setHistoSetup(strInputFile, fStream, analysisSetup.map_PMTSetup[strName] );
+                    setHistoSetup(strInputFile, fStream, aSetup.map_PMTSetup[strName] );
                 } //End Case: PMT Declaration
                 else{ //Case: Undefined Behavior
                     cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - Brian you made a mistake, this output should not be possible\n";
@@ -609,10 +730,10 @@ void Timing::TimingRunAnalyzer::setAnalysisConfig(string &strInputFile){
         } //End Case: DET or PMT SECTION
         else if ( 0 == strLine.compare(strSecBegin_OR) ){ //Case: OR SECTION
             //Set the flag to compute the OR of all detectors
-            //analysisSetup.bCompute_OR = true;
+            //aSetup.bCompute_OR = true;
             
             //Setup the Histogram struct for analysis
-            setHistoSetup(strInputFile, fStream, analysisSetup.setupOR );
+            setHistoSetup(strInputFile, fStream, aSetup.setupOR );
         } //End Case: OR SECTION
         else if ( 0 == strLine.compare(strSecEnd_ANAL) ){ //Case: END OF FILE
             break;
@@ -624,22 +745,25 @@ void Timing::TimingRunAnalyzer::setAnalysisConfig(string &strInputFile){
                 transform(pair_strParam.first.begin(),pair_strParam.first.end(),pair_strParam.first.begin(),toupper);
                 
                 if( 0 == pair_strParam.first.compare("CUT_MAXDELTAT_DET") ){
-                    analysisSetup.fCut_MaxDeltaT_Det = stofSafe(pair_strParam.first, pair_strParam.second);
+                    aSetup.fCut_MaxDeltaT_Det = stofSafe(pair_strParam.first, pair_strParam.second);
+                }
+                else if( 0 == pair_strParam.first.compare("CUT_MAXDELTAT_DETTRIG") ){
+                    aSetup.fCut_MaxDeltaT_DetTrig = stofSafe(pair_strParam.first, pair_strParam.second);
                 }
                 else if( 0 == pair_strParam.first.compare("CUT_MAXDELTAT_PMT") ){
-                    analysisSetup.fCut_MaxDeltaT_PMT = stofSafe(pair_strParam.first, pair_strParam.second);
+                    aSetup.fCut_MaxDeltaT_PMT = stofSafe(pair_strParam.first, pair_strParam.second);
                 }
-                else if( 0 == pair_strParam.first.compare("CUT_MAXDELTAT_TRIG") ){
-                    analysisSetup.fCut_MaxDeltaT_Trig = stofSafe(pair_strParam.first, pair_strParam.second);
+                else if( 0 == pair_strParam.first.compare("CUT_MAXDELTAT_PMTTRIG") ){
+                    aSetup.fCut_MaxDeltaT_PMTTrig = stofSafe(pair_strParam.first, pair_strParam.second);
                 }
                 else if( 0 == pair_strParam.first.compare("INVERT_TIMING") ){
-                    analysisSetup.bInvertTime = convert2bool(pair_strParam.second, bExitSuccess);
+                    aSetup.bInvertTime = convert2bool(pair_strParam.second, bExitSuccess);
                 }
                 else if( 0 == pair_strParam.first.compare("MATCH_ARRIVAL_TIME") ){
-                    analysisSetup.bMatchArrivalTime = convert2bool(pair_strParam.second, bExitSuccess);
+                    aSetup.bMatchArrivalTime = convert2bool(pair_strParam.second, bExitSuccess);
                 }
                 else if ( 0 == pair_strParam.first.compare("TDC_WINDOW_SIZE") ) {
-                    analysisSetup.fTDCWinSize = stofSafe(pair_strParam.first, pair_strParam.second);
+                    aSetup.fTDCWinSize = stofSafe(pair_strParam.first, pair_strParam.second);
                 }
                 else{ //Case: Parameter not recognized
                     cout<<"Timing::TimingRunAnalyzer::setAnalysisConfig() - Unrecognized field!!!\n";
@@ -846,7 +970,7 @@ void Timing::TimingRunAnalyzer::setPerformanceData(TDCAnalysisResults &inputTimi
     inputTimingResults.hTDC_Histo = std::make_shared<TH1F>(hInput);
     
     //Set the directory to be the global directory
-    inputTimingResults.hTDC_Histo->SetDirectory(gROOT);
+    //inputTimingResults.hTDC_Histo->SetDirectory(gROOT);
     
     return;
 } //End Timing::TimingRunAnalyzer::setPerformanceData() - Histogram Version

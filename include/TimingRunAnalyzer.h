@@ -38,7 +38,7 @@
 #include "TimingUtilityFunctions.h"
 #include "TimingUtilityOperators.h"
 #include "TimingUtilityTypes.h"
-#include "TRunParameters.h"
+//#include "TRunParameters.h"   //Unused atm
 
 //ROOT Includes
 #include "TF1.h"
@@ -65,7 +65,7 @@ namespace Timing {
         TimingRunAnalyzer();
         
         //Data members
-        AnalysisSetup analysisSetup;
+        AnalysisSetup aSetup;
         
         //Actions - Methods that DO Something
         //------------------------------------------------------------------------------------------------------------------------------------------
@@ -84,7 +84,7 @@ namespace Timing {
         
         //Getters - Methods that Get (i.e. Return) Something
         //------------------------------------------------------------------------------------------------------------------------------------------
-        virtual Timing::AnalysisSetup getAnalysisSetup(){return analysisSetup;};
+        virtual Timing::AnalysisSetup getAnalysisSetup(){return aSetup;};
         
         //virtual Timing::Run getRun(){return run;};
         
@@ -121,6 +121,8 @@ namespace Timing {
         
         float fTDCResolution;       //TDC Resolution in nanoseconds
         
+        //int iNEvtSel;               //Number of Selected events in the run
+        
         std::fstream fStream_Log;   //Logging File (not yet implemented)
         
         std::string strSecBegin_ANAL;   //Analysis section header beginning
@@ -144,13 +146,19 @@ namespace Timing {
         //Good Candidate for TimingUtilityFunctions?
         virtual void fitHistogram(HistoSetup &setupHisto, TH1F & hInput, TF1 &funcInput);
         
-        //Invert the timing data
+        //Used in event selection
+        //Returns false (true) if Det's are in (out of) time with trigger based on specified user input
+        virtual bool rejectEvtDetsOOT(AnalysisSetup &aSetup, std::map<std::string,int> mapInputPMTData, std::map<std::string,int> mapInputDetData);
+
+        //Used in event selection
+        //Returns false (true) if PMT's are in (out of) time based on specified user input
+        virtual bool rejectEvtPMTsOOT(AnalysisSetup &aSetup, std::map<std::string,int> mapInputPMTData);
         
         //Getters - Methods that Get (i.e. Return) Something
         //------------------------------------------------------------------------------------------------------------------------------------------
         //Inverts a time recorded by the TDC by the TDC Window (e.g. due to common_stop technique)
         virtual int getInvertedTime(int iInput){
-            return (iInput > 0) ? (analysisSetup.fTDCWinSize - iInput) : iInput;
+            return (iInput > 0) ? (aSetup.fTDCWinSize - iInput) : iInput;
         };
 
         //TF1 getFunction(HistoSetup &setupHisto, TH1F & hInput);
