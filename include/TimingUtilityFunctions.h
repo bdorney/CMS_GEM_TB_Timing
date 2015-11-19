@@ -43,6 +43,7 @@
  *
  * //string manipulation
  * getCommaSeparatedList -> returns a std::vector<std::string> of a comma separated list, ignoring whitespaces
+ * getCharSeparatedList -> returns a std::vector<std::string> of a character separated list, ignoring whitespaces
  * getParsedLine -> returns a std::pair<std::string,std::string> of a "Field,Value" under the format "Field = 'Value';" note the 4 important characters used for parsing {=,',',;}
  * getString -> converts an input type to a string
  * stofSafe -> converts a string to a float; checks for non-numeric characters; offers user chance to correct;
@@ -107,7 +108,8 @@ namespace Timing {
     void printStringNotFoundMsg(std::string strCallingMethod, std::string strPatternNotFound, std::string strLine, std::string strFilename);
     
     //string manipulation
-    std::vector<std::string> getCommaSeparatedList(std::string strInput);
+    std::vector<std::string> getCharSeparatedList(std::string strInput, char cDelimiter);
+    //std::vector<std::string> getCommaSeparatedList(std::string strInput);
     std::pair<std::string,std::string> getParsedLine(std::string strInputLine, bool &bExitSuccess);
     template<class TConversion>
     std::string getString(TConversion input);

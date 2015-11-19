@@ -113,7 +113,8 @@ namespace Timing {
         //Set data File
         virtual void setFilesData(std::string inputFileName){fileName_Data = inputFileName; return;};
         
-        virtual void setFitOption(std::string inputOption){fitOption = inputOption; return;};
+        //Depreciated, now performed in the TimingRunAnalyzer class
+        //virtual void setFitOption(std::string inputOption){fitOption = inputOption; return;};
         
         //virtual void setNumericDeconvoModel(std::string inputFormula, std::vector<float> inputParameters);
         
@@ -154,7 +155,7 @@ namespace Timing {
         bool verbose_PkCalc;        //Outputs Peak Integral Iterative Calculations During getPeakIntegral()
         bool verbose_PrintRuns;     //Outputs a Table of all stored run information at the end of analysis
         
-        std::string fitOption;
+        //std::string fitOption;
         
         std::string fileName_Data;   //List of Root Files
         std::string fileName_LUT;    //Look Up File
@@ -164,6 +165,7 @@ namespace Timing {
         std::string secName_DET;
         std::string secName_END;
         std::string secName_MAN;
+        //std::string secName_PMT;
         
         Timing::TimingRunAnalyzer *analyzer;  //Generic Analyzer class set by the user; a default one is provided but the user can make an inherited class whose methods are over written
         
@@ -200,7 +202,8 @@ namespace Timing {
         
         //Setters - Methods that Set Something
         //------------------------------------------------------------------------------------------------------------------------------------------
-        virtual void setHistogram(std::string inputFileName, TH1F &inputHisto, int chanNum, bool &bExitFlag);
+        //Depreciated, now handled by TimingRunAnalyzer
+        //virtual void setHistogram(std::string inputFileName, TH1F &inputHisto, int chanNum, bool &bExitFlag);
         
         virtual void setMappedParam(std::string &parsedInput, LUTType &lutItem, Timing::TRunParameters &runLogger);
         virtual void setMappedParam(std::list<std::string> &parsedFileNames, std::vector<LUTType> &lookUpTable, Timing::TRunParameters &runLogger);

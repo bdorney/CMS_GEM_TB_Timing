@@ -163,6 +163,8 @@ namespace Timing {
         int iDet_Eta;       //iEta value of readout sector
         int iDet_Phi;       //iPhi value of readout sector
         
+        float fZPos;    //Position along beamline
+        
         //std::string strDet_Name; //Detector Name
         
         //std::string getTreeText(){
@@ -241,7 +243,7 @@ namespace Timing {
     struct PMT{
         bool bIsTrig;
         
-        float fHV;      //HV Setpoint
+        float fPMT_HV;      //HV Setpoint
         
         float fZPos;    //Position along beamline
         
@@ -256,7 +258,7 @@ namespace Timing {
         PMT(){
             bIsTrig = false;
             
-            fHV = fZPos = -1;
+            fPMT_HV = fZPos = -1;
             
             iTDC_Chan = 0;
         }
@@ -272,7 +274,7 @@ namespace Timing {
         
         //float fMaxDiffArrivalTime;              //Depreciated
         float fSupermoduleHVSetpoint;           //Setpoint of Supermodule
-        float fTrig_Delay;                      //Trigger Delay in ns;
+        float fTrig_Delay;                      //Trigger Delay in ns (Only used in Sync mode);
         
         int iBeam_Type;                         //11->Electron, 13->Muon, 211->Pion
         int iEvtPassing[n_cut_classes];         //Number of events passing each selection cut per run

@@ -35,12 +35,13 @@ treeProducerTDC::treeProducerTDC(){
     
     //iRebinFactor    = 0;
     
-    fitOption       = "";
+    //fitOption       = "";
     
     secName_AUTO    = "[AUTO]";
     secName_DET     = "[DET]";
     secName_END     = "[END]";
     secName_MAN     = "[MAN]";
+    //secName_PMT     = "[PMT]";
     
     //Set Default Numeric Deconvolution Model
     //func_NumericDeconvoModel = new TF1("func_NumericDeconvoModel","sqrt( ( ( x-[0] )/ [1] )^2 - [2] )",0.,50.);
@@ -117,23 +118,14 @@ void treeProducerTDC::readRuns(string inputTreeName, string outputDataFile){
         //Output action to user, but only if line is not commented out!!!
         cout<<"treeProducerTDC::readRuns() - Retreiving Line: " << fileName_ROOT << endl;
 
-	//Debugging
-	cout<<"treeProducerTDC::readRuns() - run.hTDC_DeltaT (Expect Null) = " << run.hTDC_DeltaT << endl;        
-
         //Create an instance of the Run Parameters and then get specific run info
         TRunParameters runLog;
         runLog.setRunName(fileName_ROOT);
         
-	//Debugging
-	cout<<"treeProducerTDC::readRuns() - run.hTDC_DeltaT (Expect Null, but it isn't) = " << run.hTDC_DeltaT << endl;
-
         setRun(fileName_ROOT, fileName_LUT, runLog);
         
         run = runLog.getRun();
         
-    	//Debugging
-    	cout<<"treeProducerTDC::readRuns() - run.hTDC_DeltaT (Expect Non-Null)= " << run.hTDC_DeltaT << endl;
-
         writeTree(run,outputTDCTree);
         
         if (b1stRun) {b1stRun = false;}
@@ -331,7 +323,7 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
 
 	inputRun.hTDC_DeltaT->Draw();
         //treeInput.Branch("hTDC_DeltaT",&inputRun.hTDC_DeltaT);
-        treeInput.Branch("hTDC_DeltaT","TH1F",inputRun.hTDC_DeltaT);
+        treeInput.Branch("hTDC_DeltaT","TH1F",&inputRun.hTDC_DeltaT);
         treeInput.Branch("hTDC_Correlation",&inputRun.hTDC_Correlation);
     } //End Case: First Run
     
@@ -1004,7 +996,7 @@ void treeProducerTDC::setParsedLUTLine(string &inputLine, vector<string> &vec_st
 } //End treeProducerTDC::setParsedLUTLine()
 
 //Sets the timing histogram:
-void treeProducerTDC::setHistogram(string inputFileName, TH1F &inputHisto, int chanNum, bool &bExitFlag){
+/*void treeProducerTDC::setHistogram(string inputFileName, TH1F &inputHisto, int chanNum, bool &bExitFlag){
     //Open the Data File
     //------------------------------------------------------
     if (verbose_IO) { //Case: User Requested Verbose Error Messages - I/O
@@ -1036,7 +1028,7 @@ void treeProducerTDC::setHistogram(string inputFileName, TH1F &inputHisto, int c
     
     //Exit
     return;
-} //End treeProducerTDC::setHistogram()
+}*/ //End treeProducerTDC::setHistogram()
 
 //As below, but for a single parameter entry.
 void treeProducerTDC::setMappedParam(string &parsedInput, treeProducerTDC::LUTType &lutItem, TRunParameters &runLogger){
@@ -1285,29 +1277,56 @@ void treeProducerTDC::setRun(string inputROOTFileName, string inputLUTFileName, 
     //Map the Parameters
     setMappedParam(parsedFileNames, lookUpTable, runLogger);
     
-    //Debugging
-    cout<<"treeProducerTDC::setRun() - (runLogger).getRun().hTDC_DeltaT (Expect Null)= " << (runLogger).getRun().hTDC_DeltaT << endl;
-
     //Perform the Analysis
     runLogger.setRunName(inputROOTFileName);
     
-    //Debugging
-    cout<<"treeProducerTDC::setRun() - (runLogger).getRun().hTDC_DeltaT (Expect Null)= " << (runLogger).getRun().hTDC_DeltaT << endl;
-
     Timing::Run run = runLogger.getRun();
 
     cout<<"Timing:treeProducerTDC::setRun() - run.strTreeName_Run = " << run.strTreeName_Run << endl;
 
     if (analyzer != nullptr) { //Case: ANALYZE
-        analyzer->setRun(runLogger);
-        analyzer->analyzeRun();
-
-	//Debugging
-    cout<<"treeProducerTDC::setRun() - (runLogger).getRun().hTDC_DeltaT (Expect Null)= " << (runLogger).getRun().hTDC_DeltaT << endl;
+        AnalysisSetup aSetup = analyzer->getAnalysisSetup();
         
-        runLogger.setRun( analyzer->getRun() );
+        //Setup the detector maps
+        for (auto iterDetSetup = aSetup.map_DetSetup.begin(); iterDetSetup != aSetup.map_DetSetup.end(); ++iterDetSetup){ //Loop over analysis setup map - detectors
+            //Check to see if the detector exists in the run
+            //At this point if the user has correctly configured their files it should already work
+            if ( run.map_det.count( (*iterDetSetup).first ) > 0 ) { //Case: Detector Found!
+                run.map_det[(*iterDetSetup).first].iTDC_Chan = (*iterDetSetup).second.iTDC_Chan;
+            } //End Case: Detector Found!
+            else{ //Case: Detector NOT Found! User Has not correctly configured their setup files
+                cout<<"Timing::treeProducerTDC::setRun() - Error, detector " << (*iterDetSetup).first << " not found in run\n";
+                cout<<"\tPlease cross-check both your Tree and Analysis Setup files\n";
+                cout<<"\tThe detectors you declare in each file must have the SAME name\n";
+                cout<<"Skipping!!!\n";
+                
+                continue;
+            } //End Case: Detector NOT Found! User has not correctly configured their setup files
+        } //End Loop over analysis setup map - detectors
+        
+        //Setup the PMT maps
+        for (auto iterPMTSetup = aSetup.map_PMTSetup.begin(); iterPMTSetup != aSetup.map_PMTSetup.end(); ++iterPMTSetup) { //Loop over analysis setup map - PMTs
+            //Check to see if the PMT exists in the run
+            //At this point if the user has correctly configured their files it should already work
+            if ( run.map_PMT.count( (*iterPMTSetup).first ) > 0 ) { //Case: PMT Found!
+                run.map_PMT[(*iterPMTSetup).first].iTDC_Chan = (*iterPMTSetup).second.iTDC_Chan;
+                run.map_PMT[(*iterPMTSetup).first].bIsTrig = (*iterPMTSetup).second.bIsTrig;
+            } //End Case: PMT Found!
+            else{ //Case: PMT NOT Found! User has not correctly configured their setup files
+                cout<<"Timing::treeProducerTDC::setRun() - Error, PMT " << (*iterPMTSetup).first << " not found in run\n";
+                cout<<"\tPlease cross-check both your Tree and Analysis Setup files\n";
+                cout<<"\tThe PMTs you declare in each file must have the SAME name\n";
+                cout<<"Skipping!!!\n";
+                
+                continue;
+            } //End Case: PMT NOT Found! User has not correctly configured their setup files
+        } //End Loop over analysis setup map - PMTs
+        
+        //Analyze the Run
+        analyzer->analyzeRun(run);
 
-	    cout<<"treeProducerTDC::setRun() - (runLogger).getRun().hTDC_DeltaT (Expect Non-Null)= " << (runLogger).getRun().hTDC_DeltaT << endl;
+        //Set the Run
+        runLogger.setRun( run );
     } //End Case: ANALYZE
     else{ //Case: analyzer is a nullpointer
         cout<<"treeProducerTDC::setRun() - Error!!!\n";
@@ -1315,10 +1334,9 @@ void treeProducerTDC::setRun(string inputROOTFileName, string inputLUTFileName, 
         cout<<"\tPlease cross check script this instance of treeProducerTDC is called from!!!\n";
     } //End Case: analyzer is a nullpointer
 
-    
     //Set the gain
     //runLogger.getDetGainIndepVarIsCurrent() ? runLogger.calcGain( runLogger.getDetCurrent() ) : runLogger.calcGain( runLogger.getDetDriftV() );
-        cout<<"treeProducerTDC::setRun() - (runLogger).getRun().hTDC_DeltaT (Expect Null)= " << (runLogger).getRun().hTDC_DeltaT << endl;
+    
     //Set the Histogram
     //setHistogram(inputROOTFileName, timingHisto, runLogger.getTDCChanNumber(), bExitFlag );
     

@@ -286,7 +286,7 @@ void TRunParameters::setParameter(std::string strDetOrRunName, int iInput, int i
     switch (iMthdIdx) {
             //Run Methods                                           //Expected Input Data Type
         case 1: setRunNumber(strDetOrRunName, iInput); break;                      //int
-        case 5: setTDCChanTrig(strDetOrRunName, iInput); break;                    //int
+        //case 5: setTDCChanTrig(strDetOrRunName, iInput); break;                    //int
             
             //Detector Methods
         case 101: setDetPos(strDetOrRunName, iInput); break;                       //int
@@ -305,7 +305,7 @@ void TRunParameters::setParameter(std::string strDetOrRunName, int iInput, int i
         case 212: setVFATThresh(strDetOrRunName, iInput); break;                   //int
             
             //TDC Methods
-        case 301: setTDCChanDet(strDetOrRunName, iInput); break;                   //int
+        //case 301: setTDCChanDet(strDetOrRunName, iInput); break;                   //int
             
             //methodIdx Not Recognized
         default:
@@ -349,6 +349,9 @@ void TRunParameters::setParameter(std::string strDetOrRunName, float fInput, int
             
         //TDC Methods
             
+        //PMT Methods
+        case 401: setPMTHV(strDetOrRunName, fInput); break;                      //float
+            
             //methodIdx Not Recognized
         default:
             std::cout<<"=================================================\n";
@@ -365,7 +368,7 @@ void TRunParameters::setParameter(std::string strDetOrRunName, float fInput, int
 //Set string type parameters
 void TRunParameters::setParameter(std::string strDetOrRunName, std::string strInput, int iMthdIdx){
     switch (iMthdIdx) {
-            //Run Methods                               //Expected Input Data Type
+        //Run Methods                               //Expected Input Data Type
         case 2: setBeam(strDetOrRunName, strInput); break;                 //string
         case 3: setTrigMode(strDetOrRunName, strInput); break;             //string
         case 6: setTDCFitParamNameOR(strDetOrRunName, strInput); break;            //string
@@ -373,7 +376,7 @@ void TRunParameters::setParameter(std::string strDetOrRunName, std::string strIn
         case 9: setTreeNameRun(strDetOrRunName, strInput); break;                //string
         case 10:setTreeNameRunParamDUT(strDetOrRunName, strInput); break;        //string
             
-            //Detector Methods
+        //Detector Methods
         case 121: setDetMultiChanHVCase(strDetOrRunName, strInput); break;     //string
         case 122: setDetDriftV(strDetOrRunName, strInput); break;
         case 123: setDetGEM1TopV(strDetOrRunName, strInput); break;   //string
@@ -384,10 +387,13 @@ void TRunParameters::setParameter(std::string strDetOrRunName, std::string strIn
         case 128: setDetGEM3BotV(strDetOrRunName, strInput); break;   //string
         case 129: setDetCurrent(strDetOrRunName, strInput); break;      //string
             
-            //VFAT Methods
+        //VFAT Methods
             
-            //TDC Methods
+        //TDC Methods
         case 302: setTDCFitParamName(strDetOrRunName, strInput); break;            //string
+            
+        //PMT Methods
+        case 402: setPMTHV(strDetOrRunName, strInput); break;         //string
             
             //methodIdx Not Recognized
         default:

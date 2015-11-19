@@ -74,6 +74,7 @@
  case 127: setDetGEM3TopV(std::string strDet_Name, std::string strBranchName); break;   //string
  case 128: setDetGEM3BotV(std::string strDet_Name, std::string strBranchName); break;   //string
  case 129: setDetCurrent(std::string strDet_Name, std::string strBranchName); break;    //string
+ case 130: setDetZPosition(std::string strDet_Name, float fInput); break;               //float
  
  //VFAT Methods
  case 202: setVFATPos(std::string strDet_Name, int iInput); break;                      //int
@@ -106,6 +107,10 @@
  case 315: setTDCEffAND(float fInput)
  case 316: setTDCHistoDeltaT(TH1F *hInput)
  case 317: setTDCHistoCorr(TH2F *hInput2D)
+ 
+ //PMT Methods
+ case 401: setPMTHV(std::string strPMT_Name, float fInput); break;                       //float
+ case 402: setPMTHV(std::string strPMT_Name, std::string strBranchName); break;         //string
  
  */
 
@@ -155,7 +160,7 @@ namespace Timing {
         
         //TDC Methods - These are methods 301 to 400
         //=============================
-        virtual int getTDCChanNumberTrig(){ return run.iTDC_Chan_Trig;};
+        virtual int getTDCChanNumberTrig(std::string strPMT_Name){ return run.map_det[strPMT_Name].iTDC_Chan;};
         virtual int getTDCChanNumberDet(std::string strDet_Name){ return run.map_det[strDet_Name].iTDC_Chan; };
         
         virtual int getTDCHistoPks(std::string strDet_Name){ return run.map_det[strDet_Name].timingResults.iTDC_Histo_nPks; };
@@ -189,7 +194,7 @@ namespace Timing {
         virtual void setTrigDelay(std::string strRunName, float fInput){run.fTrig_Delay = fInput; return; };
         
         //Set channel of the trigger
-        virtual void setTDCChanTrig(std::string strRunName, int iInput){ run.iTDC_Chan_Trig = iInput; return; };
+        virtual void setTDCChanTrig(std::string strPMT_Name, int iInput){ run.map_PMT[strPMT_Name].iTDC_Chan = iInput; return; }; //Depreciated
         
         //Set names of parameters - OR
         //virtual void setTDCFitParamNameOR(std::string strRunName, std::vector<std::string> vec_strParamName){
@@ -353,6 +358,7 @@ namespace Timing {
         //TDC Methods - These are methods 301 to 400
         //=============================
         //Set channel of the detectors
+        //This is depreciated; now this is done via the TimingRunAnalyzer class
         virtual void setTDCChanDet(std::string strDet_Name, int iInput){ run.map_det[strDet_Name].iTDC_Chan = iInput; return; };
         
         //Set names of parameters
@@ -431,6 +437,17 @@ namespace Timing {
         //=============================
         virtual void setTDCHistoDeltaT(TH1F *hInput){run.hTDC_DeltaT = std::make_shared<TH1F>(*hInput); return;};
         virtual void setTDCHistoCorr(TH2F *hInput2D){run.hTDC_Correlation = std::make_shared<TH2F>(*hInput2D); return;};
+        
+        //New Methods are added below pre-existing ones to preserve backwards compatibile numbering
+        
+        //PMT Methods - These are methods 401 to 500
+        //=============================
+        //Sets the HV of the PMT either from a numeric input or a TBranch
+        virtual void setPMTHV(std::string strPMT_Name, float fInput){run.map_PMT[strPMT_Name].fPMT_HV = fInput; return;};
+        virtual void setPMTHV(std::string strPMT_Name, std::string strBranchName){
+            setDetParameterFromTree(strPMT_Name, strBranchName, run.map_PMT[strPMT_Name].fPMT_HV);
+            return;
+        };
         
         //New Methods are added below pre-existing ones to preserve backwards compatibile numbering
         

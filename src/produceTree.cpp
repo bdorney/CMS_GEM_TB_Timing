@@ -11,7 +11,6 @@
 #include <fstream>
 #include <iostream>
 //#include <ifstream>
-#include <mcheck.h> //for mcheck_check_all()
 //#include <ofstream>
 #include <stdio.h>
 #include <string>
@@ -347,9 +346,6 @@ int main( int argc_, char * argv_[]){
     myProducer.setIgnoredParameter("Optimal");
     myProducer.setIgnoredParameter("values");*/
 
-    //Memory check?
-    mcheck_check_all();
-    
     //Setup the Analyzer
     TimingRunAnalyzer *myAnalyzer = new TimingRunAnalyzer();
     myAnalyzer->setAnalysisConfig(vec_strInputArgs[2]);
@@ -357,20 +353,23 @@ int main( int argc_, char * argv_[]){
     
     //Setup the producer
     //------------------------------------------------------
-    myProducer.setFitOption(pInfo.strFitOption);
+    //myProducer.setFitOption(pInfo.strFitOption);
     //myProducer.setHistoRebinFactor(2);
     myProducer.setVerboseModeIO(pInfo.bVerboseMode_IO);
     myProducer.setVerboseModePFN(pInfo.bVerboseMode_PFN);
     myProducer.setVerboseModeLUT(pInfo.bVerboseMode_LUT);
     myProducer.setVerboseModePrintRuns(pInfo.bVerboseMode_PrintRuns);
-    myProducer.doNotConvertToUpper("fHV_Det2_DividerCurrent");
-    myProducer.doNotConvertToUpper("fHV_Det1_Drift");
-    myProducer.doNotConvertToUpper("fHV_Det1_G1Top");
-    myProducer.doNotConvertToUpper("fHV_Det1_G1Bot");
-    myProducer.doNotConvertToUpper("fHV_Det1_G2Top");
-    myProducer.doNotConvertToUpper("fHV_Det1_G2Bot");
-    myProducer.doNotConvertToUpper("fHV_Det1_G3Top");
-    myProducer.doNotConvertToUpper("fHV_Det1_G3Bot");
+    myProducer.doNotConvertToUpper("ParamDUT.fHV_Det2_DividerCurrent");
+    myProducer.doNotConvertToUpper("ParamDUT.fHV_Det1_Drift");
+    myProducer.doNotConvertToUpper("ParamDUT.fHV_Det1_G1Top");
+    myProducer.doNotConvertToUpper("ParamDUT.fHV_Det1_G1Bot");
+    myProducer.doNotConvertToUpper("ParamDUT.fHV_Det1_G2Top");
+    myProducer.doNotConvertToUpper("ParamDUT.fHV_Det1_G2Bot");
+    myProducer.doNotConvertToUpper("ParamDUT.fHV_Det1_G3Top");
+    myProducer.doNotConvertToUpper("ParamDUT.fHV_Det1_G3Bot");
+    myProducer.doNotConvertToUpper("ParamPMT.fPMT1_HV");
+    myProducer.doNotConvertToUpper("ParamPMT.fPMT2_HV");
+    myProducer.doNotConvertToUpper("ParamPMT.fPMT3_HV");
     myProducer.setFilesData(pInfo.strPFN_RunList_PFP);
     myProducer.setAnalyzer(myAnalyzer);
     //myProducer.writeTree(pInfo.strOutput_Tree, pInfo.strOutput_ROOTFile);

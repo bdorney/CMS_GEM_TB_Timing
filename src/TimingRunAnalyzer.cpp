@@ -894,14 +894,17 @@ void Timing::TimingRunAnalyzer::setHistoSetup(std::string &strInputFile, std::if
                 setupHisto.strFit_Option = pair_strParam.second;
             }
             else if( 0 == pair_strParam.first.compare("FIT_PARAM_IGUESS") ){
-                setupHisto.vec_strFit_ParamIGuess = getCommaSeparatedList(pair_strParam.second);
+                //setupHisto.vec_strFit_ParamIGuess = getCommaSeparatedList(pair_strParam.second);
+                setupHisto.vec_strFit_ParamIGuess = getCharSeparatedList(pair_strParam.second,',');
             }
             else if( 0 == pair_strParam.first.compare("FIT_PARAM_MAP") ){
-                setupHisto.vec_strFit_ParamMeaning = getCommaSeparatedList(pair_strParam.second);
+                //setupHisto.vec_strFit_ParamMeaning = getCommaSeparatedList(pair_strParam.second);
+                setupHisto.vec_strFit_ParamMeaning = getCharSeparatedList(pair_strParam.second,',');
             }
             else if( 0 == pair_strParam.first.compare("HISTO_BINRANGE") ){
                 //Get comma separated list
-                vec_strList = Timing::getCommaSeparatedList(pair_strParam.second);
+                //vec_strList = Timing::getCommaSeparatedList(pair_strParam.second);
+                vec_strList = Timing::getCharSeparatedList(pair_strParam.second,',');
                 
                 //Debugging
                 //for(int i=0; i<vec_strList.size(); ++i){
@@ -1031,6 +1034,8 @@ void Timing::TimingRunAnalyzer::setPerformanceData(TDCAnalysisResults &inputTimi
  //  ->timingResults struct containing detector & fit data
  //  ->funcInput fit of detector histogram
 void Timing::TimingRunAnalyzer::setPerformanceData(TDCAnalysisResults &inputTimingResults, TF1 &funcInput, HistoSetup &setupHisto){
+    //Set the meaning of the function parameters
+    inputTimingResults.vec_strParamName = setupHisto.vec_strFit_ParamMeaning;
     
     //Set the normalized Chi2 value
     inputTimingResults.fTDC_Fit_Chi2= funcInput.GetChisquare();
