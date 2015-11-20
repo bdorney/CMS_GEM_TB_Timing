@@ -20,8 +20,15 @@
 
 //My Includes
 #include "treeProducerTDC.h"
+#include "TimingUtilityFunctions.h"
+#include "TimingRunAnalyzer.h"
 
 using std::cout;
+using std::endl;
+using std::ifstream;
+using std::string;
+
+using namespace Timing;
 
 struct ProdInfo{
     bool bVerboseMode_IO;
@@ -40,131 +47,6 @@ struct ProdInfo{
     
     std::vector<std::string> vec_strIgnoredIdent;
 };
-
-std::istream & getlineNoSpaces(std::istream & stream, string & str){
-    //get the line
-    getline(stream, str);
-    
-    if (str.find("'",0) == std::string::npos ) { //Case: Header
-        str.erase(remove(str.begin(),str.end(), ' ' ), str.end() ); //spaces
-        str.erase(remove(str.begin(),str.end(), '\t' ), str.end() );//tabs
-    } //End Case: Header
-    else{ //Case: line input
-        int iFirstQuote = str.find("'",0);
-        int iLastQuote = str.rfind("'");
-        
-        //Spaces
-        str.erase(remove(str.begin(),str.begin()+iFirstQuote, ' ' ), str.begin()+iFirstQuote ); //Until first single-quote
-        str.erase(remove(str.begin()+iLastQuote,str.end(), ' ' ), str.end() ); //Until last single-quote
-        
-        //tabs
-        str.erase(remove(str.begin(),str.begin()+iFirstQuote, '\t' ), str.begin()+iFirstQuote ); //Until first single-quote
-        str.erase(remove(str.begin()+iLastQuote,str.end(), '\t' ), str.end() ); //Until last single-quote
-    } //End Case: line input
-    
-    return stream;
-} //End getlineNoSpaces()
-
-std::pair<string,string> getParsedLine(string strInputLine, bool &bExitSuccess){
-    //Variable Declaration
-    int iPos_Equals = strInputLine.find("=",0);
-    int iPos_End    = strInputLine.find(";",0);
-    int iPos_Quote1 = strInputLine.find("'",0); //Position of first single-quote
-    int iPos_Quote2 = strInputLine.rfind("'");  //Position of last single-quite
-    
-    string strFieldName;
-    string strFieldValue;
-    
-    //Check to make sure iPos_Equals found in input string
-    if (iPos_Equals == std::string::npos && strInputLine.find("[",0) == std::string::npos ) {
-        cout<<"Character '=' Not Found in line:\n";
-        cout<<strInputLine<<endl;
-        cout<<"Exiting treeProducer::getParsedLine(), Cross-Check Selcetion Setup File\n";
-        
-        bExitSuccess = false;
-        
-        return std::make_pair("","");
-    }
-    
-    //Check to make sure iPos_End found in input string
-    if (iPos_End == std::string::npos && strInputLine.find("[",0) == std::string::npos) {
-        cout<<"Character ';' Not Found in line:\n";
-        cout<<strInputLine<<endl;
-        cout<<"Exiting treeProducer::getParsedLine(), Cross-Check Selcetion Setup File\n";
-        
-        bExitSuccess = false;
-        
-        return std::make_pair("","");
-    }
-    
-    //Check to make sure iPos_Quote1 found in input string
-    if (iPos_Quote1 == std::string::npos && strInputLine.find("[",0) == std::string::npos) {
-        cout<<"First Single-Quote (e.g. ' ) Not Found in line:\n";
-        cout<<strInputLine<<endl;
-        cout<<"Exiting treeProducer::getParsedLine(), Cross-Check Selcetion Setup File\n";
-        
-        bExitSuccess = false;
-        
-        return std::make_pair("","");
-    }
-    
-    //Check to make sure iPos_Quote2 found in input string
-    if (iPos_Quote2 == std::string::npos && strInputLine.find("[",0) == std::string::npos) {
-        cout<<"Last Single-Quote (e.g. ' ) Not Found in line:\n";
-        cout<<strInputLine<<endl;
-        cout<<"Exiting treeProducer::getParsedLine(), Cross-Check Selcetion Setup File\n";
-        
-        bExitSuccess = false;
-        
-        return std::make_pair("","");
-    }
-    
-    //Get the Strings
-    strFieldName    = strInputLine.substr(0,iPos_Equals);
-    strFieldValue   = strInputLine.substr(iPos_Quote1+1, iPos_Quote2 - iPos_Quote1 - 1);
-    
-    //Set the Exit Flag
-    bExitSuccess = true;
-    
-    //cout<<"getParsedLine() - strFieldName = " << strFieldName << endl;
-    //cout<<"getParsedLine() - strFieldValue = " << strFieldValue << endl;
-
-    //Return the Pair
-    return std::make_pair(strFieldName,strFieldValue);
-} //End getParsedLine()
-
-bool convert2bool(string str, bool &bExitSuccess){
-    //convert to upper case
-    transform(str.begin(), str.end(), str.begin(), toupper);
-    
-    //Empty String?
-    if ( str.empty() ) {
-        bExitSuccess = false;
-        return false;
-    }
-    
-    //Input recognized?
-    if ( !(str.compare("T")==0 || str.compare("TRUE")==0 || str.compare("1")==0
-           || str.compare("F")==0 || str.compare("FALSE")==0 || str.compare("0")==0) ) {
-        bExitSuccess = false;
-        return false;
-    }
-    
-    bExitSuccess = true;
-    
-    return (str.compare("T")==0 || str.compare("TRUE")==0 || str.compare("1")==0);
-} //End convert2bool()
-
-//Prints All Bit Flags for an input ifstream
-void printStreamStatus(ifstream &inputStream){
-    std::cout << "Input File Stream Bit Status:\n";
-    std::cout << " good()=" << inputStream.good() << endl;
-    std::cout << " eof()=" << inputStream.eof() << endl;
-    std::cout << " fail()=" << inputStream.fail() << endl;
-    std::cout << " bad()=" << inputStream.bad() << endl;
-    
-    return;
-} //End treeProducerTDC::printStreamStatus()
 
 //Gets Production Info from input config file
 void getProdInfo(ifstream &file_Input, ProdInfo &pInfo, bool bVerboseMode){
@@ -205,7 +87,7 @@ void getProdInfo(ifstream &file_Input, ProdInfo &pInfo, bool bVerboseMode){
                         //cout<<  "\t Ambient T = " << pInfo.strTemp << endl;
                     } //End Case: User Requested Verbose Input/Output
                     
-		    bInfoHeaderEnd = true;
+                    bInfoHeaderEnd = true;
                     break;
                 } //End Case: End of Info Header
                 
@@ -226,18 +108,18 @@ void getProdInfo(ifstream &file_Input, ProdInfo &pInfo, bool bVerboseMode){
                         cout<<"getProInfo() - Unrecognized field!!!\n";
                         cout<<("getProInfo() - " + pair_Param.first + " = " + pair_Param.second ).c_str() << endl;
                         //cout<<"getProInfo() - Please cross-check input file:" << strInputFileName << endl;
-			cout<<"getProInfo() - Please cross-check config file\n";
+                        cout<<"getProInfo() - Please cross-check config file\n";
                     } //End Case: Input Not Recognized
                 } //End Case: Parameter Fetched Successfully
             } //End Loop Through Info Header
         } //End Case: Info Header Found!
 
-	if (bInfoHeaderEnd) break;
+        if (bInfoHeaderEnd) break;
     } //End Loop Over Input File
     if ( file_Input.bad() && bVerboseMode) {
         //perror( ("getProInfo(): error while reading file: " + strInputFileName).c_str() );
         perror( "getProInfo(): error while reading config file" );
-        printStreamStatus(file_Input);
+        Timing::printStreamStatus(file_Input);
     }
     
     //DO NOT CLOSE WILL BE USED ELSEWHERE
@@ -277,9 +159,9 @@ int main( int argc_, char * argv_[]){
         std::cout<<"For help menu:\n";
         std::cout<<"\t./produceTree -h\n";
         std::cout<<"For CMS GEM test beam production:\n";
-        std::cout<<"\t./produceTree <Input_Config_File> <Verbose Mode true/false>\n";
+        std::cout<<"\t./produceTree <Prod_Config_File> <Analysis_Config_File> <Verbose Mode true/false>\n";
 
-	return 1;
+        return 1;
     } //End Case: Usage
     else if (vec_strInputArgs.size() == 2 && vec_strInputArgs[1].compare("-h") == 0) { //Case: Help Menu
         std::cout<<"produceTree v"<<fVersion<<endl;
@@ -313,10 +195,11 @@ int main( int argc_, char * argv_[]){
         
         return 1;
     } //End Case: Help Menu
-    else if(vec_strInputArgs.size() == 3){ //Case: Production Mode!
+    else if(vec_strInputArgs.size() == 4){ //Case: Production Mode!
         bool bExitSuccess = false;
         
         //Set input config file
+        //The below is never actually running...
         if (bVerboseMode) { //Case: User Requested Verbose Error Messages - I/O
             cout<< "main(): trying to open and read: " << vec_strInputArgs[1] << endl;
         } //End Case: User Requested Verbose Error Messages - I/O
@@ -326,7 +209,7 @@ int main( int argc_, char * argv_[]){
         //Check to see if run list file opened successfully
         if (!file_Config.is_open()) {
             perror( ("main(): error while opening file: " + vec_strInputArgs[1]).c_str() );
-            printStreamStatus(file_Config);
+            Timing::printStreamStatus(file_Config);
             
             cout<<"Exitting!!!\n";
             
@@ -334,11 +217,11 @@ int main( int argc_, char * argv_[]){
         } //End Case: Input Not Understood
         
         //Set the verbose mode
-        bVerboseMode = convert2bool(vec_strInputArgs[2], bExitSuccess);
+        bVerboseMode = convert2bool(vec_strInputArgs[3], bExitSuccess);
         if (!bExitSuccess) { //Case: Input Not Understood
-            cout<<"main() - vec_strInputArgs[2] expected to be boolean!!!\n";
+            cout<<"main() - vec_strInputArgs[3] expected to be boolean!!!\n";
             cout<<"main() - Parameter given:\n";
-            cout<<"\t"<<vec_strInputArgs[2]<<endl;
+            cout<<"\t"<<vec_strInputArgs[3]<<endl;
             cout<<"Exitting!!!\n";
             
             return -2;
@@ -371,7 +254,7 @@ int main( int argc_, char * argv_[]){
     //Check to see if run list file opened successfully
     if (!file_RunList.is_open() && bVerboseMode) {
         perror( ("main(): error while opening file: " + pInfo.strPFN_RunList).c_str() );
-        printStreamStatus(file_RunList);
+        Timing::printStreamStatus(file_RunList);
     }
     
     //Create a new run list file for which we will insert the PFP into
@@ -396,7 +279,7 @@ int main( int argc_, char * argv_[]){
     } //End Loop through file_RunList
     if ( file_RunList.bad() && bVerboseMode) {
         perror( ("main(): error while reading file: " + pInfo.strPFN_RunList).c_str() );
-        printStreamStatus(file_RunList);
+        Timing::printStreamStatus(file_RunList);
     }
     
     file_RunList.close();
@@ -405,7 +288,7 @@ int main( int argc_, char * argv_[]){
     //------------------------------------------------------
     //Loop through config file, check for faults immediately afterward
     cout<<"Ignored parameter stream status"<<endl;
-    printStreamStatus(file_Config);
+    Timing::printStreamStatus(file_Config);
     while (getlineNoSpaces(file_Config, strLine) ) { //Loop Over file_Config
         //Skip Commented Lines
         if (strLine.compare(0,1,"#") == 0) continue;
@@ -441,7 +324,7 @@ int main( int argc_, char * argv_[]){
     } //End Loop Over file_Config
     if ( file_Config.bad() && bVerboseMode) {
         perror( ("main(): error while reading file: " + vec_strInputArgs[1]).c_str() );
-        printStreamStatus(file_Config);
+        Timing::printStreamStatus(file_Config);
     }
     
     file_Config.close();
@@ -463,16 +346,34 @@ int main( int argc_, char * argv_[]){
     myProducer.setIgnoredParameter("Optimal");
     myProducer.setIgnoredParameter("values");*/
 
-    //Setup the remaining producer parameters
+    //Setup the Analyzer
+    TimingRunAnalyzer *myAnalyzer = new TimingRunAnalyzer();
+    myAnalyzer->setAnalysisConfig(vec_strInputArgs[2]);
+    myAnalyzer->setTDCResolution(0.3);  //300 picoseconds for 1200ns acquisition window
+    
+    //Setup the producer
     //------------------------------------------------------
-    myProducer.setFitOption(pInfo.strFitOption);
+    //myProducer.setFitOption(pInfo.strFitOption);
     //myProducer.setHistoRebinFactor(2);
     myProducer.setVerboseModeIO(pInfo.bVerboseMode_IO);
     myProducer.setVerboseModePFN(pInfo.bVerboseMode_PFN);
     myProducer.setVerboseModeLUT(pInfo.bVerboseMode_LUT);
     myProducer.setVerboseModePrintRuns(pInfo.bVerboseMode_PrintRuns);
+    myProducer.doNotConvertToUpper("ParamDUT.fHV_Det2_DividerCurrent");
+    myProducer.doNotConvertToUpper("ParamDUT.fHV_Det1_Drift");
+    myProducer.doNotConvertToUpper("ParamDUT.fHV_Det1_G1Top");
+    myProducer.doNotConvertToUpper("ParamDUT.fHV_Det1_G1Bot");
+    myProducer.doNotConvertToUpper("ParamDUT.fHV_Det1_G2Top");
+    myProducer.doNotConvertToUpper("ParamDUT.fHV_Det1_G2Bot");
+    myProducer.doNotConvertToUpper("ParamDUT.fHV_Det1_G3Top");
+    myProducer.doNotConvertToUpper("ParamDUT.fHV_Det1_G3Bot");
+    myProducer.doNotConvertToUpper("ParamPMT.fPMT1_HV");
+    myProducer.doNotConvertToUpper("ParamPMT.fPMT2_HV");
+    myProducer.doNotConvertToUpper("ParamPMT.fPMT3_HV");
     myProducer.setFilesData(pInfo.strPFN_RunList_PFP);
-    myProducer.writeTree(pInfo.strOutput_Tree, pInfo.strOutput_ROOTFile);
+    myProducer.setAnalyzer(myAnalyzer);
+    //myProducer.writeTree(pInfo.strOutput_Tree, pInfo.strOutput_ROOTFile);
+    myProducer.readRuns(pInfo.strOutput_Tree, pInfo.strOutput_ROOTFile);
     
     return 0;
 } //End main()

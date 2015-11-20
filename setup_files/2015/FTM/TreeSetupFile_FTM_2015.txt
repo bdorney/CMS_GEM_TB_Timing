@@ -1,0 +1,101 @@
+#Instructions:
+#Any text on a line after a "#" will be ignored (i.e. commented out)
+#For manually entered parameters the user types, with no spaces and omitting quotations, "Tree_Name(Data Type)=Value:Method Idx;" 
+#For automatically entered parameters the user types, with no spaces and omitting quotations, "Tree_Name(Data Type)=Comma_Separated_List_of_Search_Identifiers:Method Idx;"
+#Values for Method Idx can be found in "TRunParameters.h"
+#Please note the ";" that ends each parameter entry
+#
+#For an automatically searchable parameter that is a substring of another parameter (e.g. VFAT_ISHAPER is a subset of VFAT_ISHAPERFEED) the longer string should appear first
+#Failure to follow this ordering will cause unexpected behavior and may lead to crashes as the program may try a string to int/float conversion on non-numeric characters. 
+#This ordering scheme should also be applied to the {Comma_Separated_List_of_Search_Identifiers} set, e.g. "Muons" should appear before "Muon"
+#
+#Place detector information under the [DET] heading; these values do NOT change run-by-run
+#For automatic parameter search place under the [AUTO] header; these values may change run-by-run
+#For manual parameter entry place under the [MAN] header; these values may change run-by-run
+#Supported data types are {bool, int, float, string}
+#Search of this file ends at [END]
+#Do NOT comment out section headers
+#It is not recommended to add blank lines in between sections or after parameter input
+#
+#If you observe a crash, and the stack trace includes "std::stoi," "std::stof," or "treeProducerTDC::setMappedParam( ... )" it is possible one of your search identifiers 
+#below is matching to non-numeric elements of the parsed file name (PFN).  e.g. for a VFAT_THRESH identifier "T" this will match with a PFN element "Lat" since "Lat" will 
+#be converted to upper case "LAT".  In this case please consider adding the offending parameter ("Lat") to the ignored parameter listing 
+#via the treeProducerTDC::setIgnoredParameter() method.  Additional errors could be an improper "DET_POS" value, e.g. the 3rd position is value 2 not 3.
+#
+#
+# the [DET] section MUST have a parameter, omitting quotes, of the form "DET_POS(int)=X:101;" where X is some integer and follows array index convention (i.e. 1st entry X = 0) 
+# 
+#
+# the [MAN] section MUST have a parameter, omitting quotes, of the form "TDC_CH_NUMBER(int)=Y:301;" where Y is some integer (follows above index convention)
+#
+#
+#
+# Enter the information below in between the < > symbols (remove these symbols as well).
+#
+#
+#---------------------------------------------------------------
+[DET]
+#Intrinsic to the Run
+DET_TTREE_NAME_DATA(string|RUN)=CMS_GEM_RAW_DATA:9;
+DET_TTREE_NAME_RUNPARAM(string|RUN)=CMS_GEM_RUN_PARAM:10;
+#First Detector
+DET_POS(int|Drift)=0:101;
+DET_HV_CASE(string|Drift)=Multi:121;
+#TDC_CH_NUMBER(int|Drift)=9:301;
+#Second Detector
+DET_POS(int|Readout)=1:101;
+DET_HV_CASE(string|Readout)=Multi:121;
+#TDC_CH_NUMBER(int|Readout)=8:301;
+#---------------------------------------------------------------
+[AUTO]
+#Intrinsic to the Run
+RUN_NUMBER(int|RUN)=TDCRun:1;
+BEAM_PARTICLE(string|RUN)=Muon:2;
+#First Detector
+#Second Detector
+#---------------------------------------------------------------
+[MAN]
+#Intrinsic to the Run
+TRIG_MODE(string|RUN)=Async:3;
+#First Detector
+DET_VDRIFT(string|Drift)=ParamDUT.fHV_Det1_Drift:122;
+DET_VGEM1_TOP(string|Drift)=ParamDUT.fHV_Det1_G1Top:123;
+DET_VGEM1_BOT(string|Drift)=ParamDUT.fHV_Det1_G1Bot:124;
+DET_VGEM2_TOP(string|Drift)=ParamDUT.fHV_Det1_G2Top:125;
+#DET_VGEM2_BOT(string|Drift)=fHV_Det1_G2Bot:126;
+DET_VGEM2_BOT(float|Drift)=0:118;
+DET_GASFRAC_AR(float|Drift)=70:107;
+DET_GASFRAC_CO2(float|Drift)=30:108;
+DET_GASFRAC_CF4(float|Drift)=0:109;
+#Note Gain is calculated as: exp(DET_GAIN_CONST + DET_GAIN_SLOPE * fDepVar )
+#DET_GAIN_CONST(float|Drift)=<Manual Entry Value>:110;
+#DET_GAIN_CONST_ERR(float|Drift)=<Manual Entry Value>:111;
+#DET_GAIN_SLOPE(float|Drift)= <Manual Entry Value>:112;
+#DET_GAIN_SLOPE_ERR(float|Drift)= <Manual Entry Value>:113;
+#DET_GAIN_INDEPVAR_CURRENT(bool|Drift)=<Manual Entry Value>:114;
+#Second Detector
+DET_VDRIFT(string|Readout)=ParamDUT.fHV_Det1_Drift:122;
+DET_VGEM1_TOP(string|Readout)=ParamDUT.fHV_Det1_G1Top:123;
+DET_VGEM1_BOT(string|Readout)=ParamDUT.fHV_Det1_G1Bot:124;
+DET_VGEM2_TOP(string|Readout)=ParamDUT.fHV_Det1_G2Top:125;
+#DET_VGEM2_BOT(string|Readout)=fHV_Det1_G2Bot:126;
+DET_VGEM2_BOT(float|Readout)=0:118;
+DET_GASFRAC_AR(float|Readout)=70:107;
+DET_GASFRAC_CO2(float|Readout)=30:108;
+DET_GASFRAC_CF4(float|Readout)=0:109;
+#Note Gain is calculated as: exp(DET_GAIN_CONST + DET_GAIN_SLOPE * fDepVar )
+#DET_GAIN_CONST(float|Readout)=<Manual Entry Value>:110;
+#DET_GAIN_CONST_ERR(float|Readout)=<Manual Entry Value>:111;
+#DET_GAIN_SLOPE(float|Readout)= <Manual Entry Value>:112;
+#DET_GAIN_SLOPE_ERR(float|Readout)= <Manual Entry Value>:113;
+#DET_GAIN_INDEPVAR_CURRENT(bool|Readout)=<Manual Entry Value>:114;
+#First PMT
+PMT_HV(string|PMT_1)=ParamPMT.fPMT1_HV:402;
+#Second PMT
+PMT_HV(string|PMT_2)=ParamPMT.fPMT2_HV:402;
+#Third PMT
+PMT_HV(string|PMT_3)=ParamPMT.fPMT3_HV:402;
+#Fourth PMT
+PMT_HV(string|PMT_Finger)=ParamPMT.fPMTDUT_HV:402;
+#---------------------------------------------------------------
+[END]

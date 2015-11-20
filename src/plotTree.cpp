@@ -11,8 +11,8 @@
 #include <stdio.h>
 
 //My includes
-#include "treeAnalyzer.h"
-#include "treeAnalyzerTDC.h"
+#include "treePlotter.h"
+#include "treePlotterTDC.h"
 
 int main( int argc_, char * argv_[] ){
     treeAnalyzerTDC myTDCAnalyzer;

@@ -7,117 +7,21 @@
 //
 
 #include "TRunParameters.h"
+#include "TimingUtilityFunctions.h"
+
+using namespace Timing;
+
+using std::cout;
+using std::endl;
 
 //Constructor
 TRunParameters::TRunParameters(){
-    /*run.iRun = -1;           //Run Number
-    
-    run.iBeam_Type = 0;     //Initialized to 0; 11->Electron, 13->Muon, 211->Pion
-    
-    run.iTrig_Mode = -1;     //0->Async, 1->Sync
-    
-    run.fTrig_Delay = -1;
-    
-    //Detector Info
-    run.iDet_Pos = -1;       //Position of Detector of Interest in Listing
-    run.iDet_Eta = -1;       //iEta value of readout sector
-    run.iDet_Phi = -1;       //iPhi value of readout sector
-    
-    run.fDet_Imon = -1;    //Current through the Divider
-    run.fDet_VDrift = -1;  //Potential on the Drift
-    
-    run.fDet_GasFrac_Ar = -1;  //Argon Fraction in Gas
-    run.fDet_GasFrac_CO2 = -1; //CO2 "                 "
-    run.fDet_GasFrac_CF4 = -1; //CF4 "                 "
-    
-    run.strDet_Name = ""; //Detector Name
-    
-    //VFAT Info
-    run.iTURBO_ID = -1;      //TURBO ID, 0->Master, 1->Slave 1, 2->Slave 2, etc...
-    run.iVFAT_Pos = -1;      //VFAT Position on TURBO
-    
-    run.strVFAT_ID = ""; //VFAT ID, hex code
-    
-    run.iVFAT_IPreAmpIn = -1;
-    run.iVFAT_IPreAmpFeed = -1;
-    run.iVFAT_IPreAmpOut = -1;
-    
-    run.iVFAT_IShaper = -1;
-    run.iVFAT_IShaperFeed = -1;
-    
-    run.iVFAT_IComp = -1;        //Current to Comparator
-    
-    run.iVFAT_MSPL = -1;         //Monostable Pulse Length
-    
-    run.iVFAT_Latency = -1;      //VFAT Latency
-    
-    run.fVFAT_Thresh = -1;     //VFAT Threshold in fC
-    
-    //TDC Info
-    run.iTDC_CH_Number = -1;
-    
-    run.fTDC_Histo_Mean = -1;
-    run.fTDC_Histo_RMS = -1;
-    run.fTDC_Histo_nPks = -1;
-    
-    run.fTDC_Histo_PkInt_1stMax = -1;
-    run.fTDC_Histo_PkInt_2ndMax = -1;
-    run.fTDC_Histo_PkInt_3rdMax = -1;
-    
-    run.fTDC_Histo_PkPos_1stMax = -1;
-    run.fTDC_Histo_PkPos_2ndMax = -1;
-    run.fTDC_Histo_PkPos_3rdMax = -1;
-    
-    run.fTDC_Fit_Amp = -1;
-    run.fTDC_Fit_Mean = -1;
-    run.fTDC_Fit_Sigma = -1;
-    run.fTDC_Fit_Chi2 = -1;
-    run.fTDC_Fit_NDF = -1;
-    
-    
-    run.fTDC_Fit_Convo_Amp = -1;
-    run.fTDC_Fit_Convo_Mean = -1;
-    run.fTDC_Fit_Convo_Sigma = -1;
-    run.fTDC_Fit_Convo_Chi2 = -1;
-    run.fTDC_Fit_Convo_NDF = -1;
-    
-    run.fTDC_NumDeconvo_TimeResp = -1;
-    
-    run.func_Gaus = nullptr;
-    run.func_Convo = nullptr;
-    
-    run.hTDC_Histo = nullptr;*/
+
 } //End Constructor
-
-//Determing the gain of the detector; assumes the following parameters ahve already been set:
-//  fDet_Gain_Const;     //Gain Curve - Amplitude
-//  fDet_Gain_Const_Err; //Gain Curve - Amplitude, Error
-//  fDet_Gain_Slope;     //Gain Curve - Exponential Slope
-//  fDet_Gain_Slope_Err; //Gain Curve - Exponential Slope, Error
-//The input fDepVar is the physical quantity which parameterizes the gain (e.g. VDrift, Imon, etc...)
-void TRunParameters::calcGain(float fDepVar){
-    //run.fDet_Gain       = run.fDet_Gain_Const * exp( run.fDet_Gain_Slope * fDepVar );
-    //run.fDet_Gain_Err   = exp(run.fDet_Gain_Slope * fDepVar) * sqrt( pow(run.fDet_Gain_Const_Err, 2) + pow(run.fDet_Gain_Slope_Err * run.fDet_Gain_Const * fDepVar, 2) );
-    
-    run.fDet_Gain       = exp(run.fDet_Gain_Const + run.fDet_Gain_Slope * fDepVar );
-    run.fDet_Gain_Err   = sqrt( exp(2. * run.fDet_Gain_Const + run.fDet_Gain_Slope * fDepVar) * ( pow(run.fDet_Gain_Const_Err, 2) + pow(fDepVar * run.fDet_Gain_Slope_Err, 2) ) );
-    
-    return;
-} //End Case: TRunParameters::calcGain()
-
-//As Above, but sets the input gain variables.
-void TRunParameters::calcGain(float fDepVar, float &fGain, float &fGain_Err){
-    calcGain(fDepVar);
-    
-    fGain       = getDetGain();
-    fGain_Err   = getDetGainErr();
-    
-    return;
-} //End Case: TRunParameters::calcGain()
 
 //Set Run; use 1st character of input to convert to ASCII Key Code then assign proper PDG ID
 //NOTE: This method fails if Proton and Pion are ever used in the same run
-void TRunParameters::setBeam(std::string input){
+void TRunParameters::setBeam(std::string strRun_Name, std::string input){
     //char firstChar = (input.substr(0,1)).c_str();
     char firstChar;
     
@@ -156,7 +60,7 @@ void TRunParameters::setBeam(std::string input){
 } //End TRunParameters::setBeam()
 
 //Set Trig Mode; use 1st character of input to convert to ASCII Key Code then assign 1 or 0 based on input
-void TRunParameters::setTrigMode(std::string input){
+void TRunParameters::setTrigMode(std::string strRun_Name, std::string input){
     //char firstChar = (input.substr(0,1)).c_str();
     
     if ( (input.substr(0,1)).compare("A") == 0 ) {
@@ -175,13 +79,207 @@ void TRunParameters::setTrigMode(std::string input){
     return;
 } //End TRunParameters::setTrigMode()
 
+//Set the Detector Current
+void TRunParameters::setDetCurrent(std::string strDet_Name, float fInput){
+    //Set Detector 1
+    if (run.map_det[strDet_Name].bDet_Gain_IndepVar_Imon) {
+        run.map_det[strDet_Name].fDet_Imon = fInput;
+        run.map_det[strDet_Name].fDet_VDrift = fInput * 1e-6 * (1.125e6 + 563e3 + 438e3 + 550e3 + 875e3 + 525e3 + 625e3);
+    }
+    else{
+        run.map_det[strDet_Name].fDet_Imon = fInput;
+    }
+    
+    return;
+};
+
+//Set the detector gain
+//Determing the gain of the detector; assumes the following parameters ahve already been set:
+//  fDet_Gain_Const;     //Gain Curve - Amplitude
+//  fDet_Gain_Const_Err; //Gain Curve - Amplitude, Error
+//  fDet_Gain_Slope;     //Gain Curve - Exponential Slope
+//  fDet_Gain_Slope_Err; //Gain Curve - Exponential Slope, Error
+//The input fDepVar is the physical quantity which parameterizes the gain (e.g. VDrift, Imon, etc...)
+void TRunParameters::setDetGain(std::string strDet_Name, float fDepVar){
+    //Detector 1
+    run.map_det[strDet_Name].fDet_Gain  = exp(run.map_det[strDet_Name].fDet_Gain_Const + run.map_det[strDet_Name].fDet_Gain_Slope * fDepVar );
+    run.map_det[strDet_Name].fDet_Gain_Err   = sqrt( exp(2. * run.map_det[strDet_Name].fDet_Gain_Const + run.map_det[strDet_Name].fDet_Gain_Slope * fDepVar) * ( pow(run.map_det[strDet_Name].fDet_Gain_Const_Err, 2) + pow(fDepVar * run.map_det[strDet_Name].fDet_Gain_Slope_Err, 2) ) );
+    
+    return;
+} //End Case: TRunParameters::calcGain()
+
+//Determine if a detector should use the multichannel HV perscription or the divider perscription
+//      Multichannel HV: strMultiChan = {t, true, 1, Multi}     (case insensitive)
+//      Ceramic Divider: strMultiChan = {f, false, 0, Divider}  (case insensitive)
+void TRunParameters::setDetMultiChanHVCase(std::string strDet_Name, std::string strMultiChan){
+    //Variable Declaration
+    bool bExitSuccess = false;
+    bool bMultiChanHV = Timing::convert2bool(strMultiChan, bExitSuccess);
+    
+    //Accept sets {t, true, T, TRUE, 1} or {f, false, F, FALSE, 0}
+    if (bExitSuccess) { //Case: identified by logical
+        run.map_det[strDet_Name].bDet_HV_MultiChan = bMultiChanHV;
+        return;
+    } //End Case: identified by logical
+    else{ //Case: identified by keyword {Divider, Multi}
+        //Transform to upper case
+        std::transform(strMultiChan.begin(), strMultiChan.end(), strMultiChan.begin(), toupper);
+        
+        if (0 == strMultiChan.compare("MULTI") ) { //Case: Multi Channel HV
+            run.map_det[strDet_Name].bDet_HV_MultiChan = true;
+        } //End Case: Multi Channel HV
+        else if ( 0 == strMultiChan.compare("DIVIDER") ){ //Case: Ceramic Divider
+            run.map_det[strDet_Name].bDet_HV_MultiChan = false;
+        } //End Case: Ceramic Divider
+        else{ //Case: Input Not Understood
+            std::cout<<"TRunParameters::setDetMultiChanHVCase() - Input Not Recognized\n";
+            std::cout<<"\tReceived strMultiChan = " << strMultiChan << endl;
+            std::cout<<"\tExpect the set {t, true, 1, f, false, 0, Multi, Divider}\n";
+            std::cout<<"\tSetting run.map_det["<<strDet_Name<<"].bDet_HV_MultiChan to false\n";
+            std::cout<<"\tPlease cross-check input Tree Setup File\n";
+            
+            run.map_det[strDet_Name].bDet_HV_MultiChan = false;
+        } //End Case: Input Not Understood
+    } //End Case: identified by keyword {Divider, Multi}
+    
+    return;
+} //End TRunParameters::setDetMultiChanHVCase
+
+//Set a given parameter from a TTree
+void TRunParameters::setDetParameterFromTree(std::string strDet_Name, std::string strBranchName, float &fInput){
+    //Cross check on input parameters
+    if (run.strRunName.length() == 0 || run.strTreeName_RunParam_DUT.length() == 0) {
+        std::cout<<"TRunParameters::setDetParameterFromTree() - Input Parameters Not Set!!!\n";
+        std::cout<<"\t Run Name = " << run.strRunName << std::endl;
+        std::cout<<"\t TTree Name = " << run.strTreeName_RunParam_DUT << std::endl;
+        std::cout<<"\t Please cross-check input Tree Setup File\n";
+        std::cout<<"\t Parameters may not have been set!\n";
+        
+        return;
+    }
+    
+    //Variable Declaration
+    //float fParam = -1;   //Hack for ROOT, e.g. can't have float &fInput then pass &fInput below (evaluates to &&fInput which is nonsense?)
+    Float_t fParam;    
+
+    TFile *file_ROOT_Run = new TFile(run.strRunName.c_str(),"READ","",1);
+    
+    TTree *tree_ParamDUT = (TTree*) file_ROOT_Run->Get( run.strTreeName_RunParam_DUT.c_str() );
+    
+    TBranch *branch = tree_ParamDUT->Branch(strBranchName.c_str(), &fParam);
+
+	cout<<"strTreeName_RunParam_DUT = " << run.strTreeName_RunParam_DUT << endl;
+	cout<<"branch = " << branch << endl;
+
+    //if (tree_ParamDUT->FindBranch(strBranchName.c_str() ) == nullptr) {
+    if (branch = nullptr){
+        std::cout<<"TRunParameters::setDetParameterFromTree() - Input Branch Does Not Exist!!!\n";
+        std::cout<<"\t Branch Name = " << strBranchName.c_str() << std::endl;
+        std::cout<<"\t Please cross-check input Tree Setup File\n";
+        std::cout<<"\t Parameters may not have been set!\n";
+        
+        file_ROOT_Run->Close();
+        
+        //delete tree_ParamDUT; //Causes seg fault
+        
+        return;
+    }
+    
+    //tree_ParamDUT->SetBranchAddress(strBranchName.c_str(), &fParam);
+    
+	cout<<"Before: fParam = " << fParam << endl;
+
+    //Get fParam
+    if (tree_ParamDUT->GetEntries() > 0) {
+        tree_ParamDUT->GetEntry(0);
+    }
+	
+	//Get fParam
+	//if (branch->GetEntries() > 0) {
+		//branch->GetEntry(0);
+	//}    
+
+	cout<<"After: fParam = " << fParam << endl;
+
+    //Now set fInput as fParam, fInput passed by reference so original is now also set!!!
+    fInput = fParam;
+    
+    file_ROOT_Run->Close();
+    
+    //delete tree_ParamDUT;
+    //delete file_ROOT_Run;
+    
+    return;
+} //End setDetParameterFromTree
+
+void TRunParameters::setTDCFit(std::string strDet_Name, TF1 *func_Input, std::vector<std::string> vec_strParamName){
+    //run.map_det[strDet_Name].vec_fTDC_Fit_Param.clear();
+    //run.map_det[strDet_Name].vec_fTDC_Fit_ParamErr.clear();
+    
+    run.map_det[strDet_Name].timingResults.map_fTDC_Fit_Param.clear();
+    run.map_det[strDet_Name].timingResults.map_fTDC_Fit_ParamErr.clear();
+    //run.map_det[strDet_Name].vec_strParamName.clear();
+    
+    run.map_det[strDet_Name].timingResults.func_TDC_Fit = std::make_shared<TF1>(*func_Input);
+    
+    //for (int i=0; i < func_Input->GetNpar(); ++i) {
+    //run.map_det[strDet_Name].vec_fTDC_Fit_Param.push_back( func_Input->GetParameter(i) );
+    //run.map_det[strDet_Name].vec_fTDC_Fit_ParamErr.push_back( func_Input->GetParError(i) );
+    //}
+    
+    for (int i = 0; i < vec_strParamName.size(); ++i) {
+        run.map_det[strDet_Name].timingResults.map_fTDC_Fit_Param[vec_strParamName[i]] = func_Input->GetParameter(i);
+        run.map_det[strDet_Name].timingResults.map_fTDC_Fit_ParamErr[vec_strParamName[i]] = func_Input->GetParError(i);
+    }
+    
+    run.map_det[strDet_Name].timingResults.fTDC_Fit_Chi2  = func_Input->GetChisquare();
+    run.map_det[strDet_Name].timingResults.fTDC_Fit_NDF   = func_Input->GetNDF();
+    
+    return;
+};
+
+void TRunParameters::setTDCFitOR(TF1 *func_Input, std::vector<std::string> vec_strParamName){
+    run.timingResultsOR.map_fTDC_Fit_Param.clear();
+    run.timingResultsOR.map_fTDC_Fit_ParamErr.clear();
+    
+    run.timingResultsOR.func_TDC_Fit = std::make_shared<TF1>(*func_Input);
+    
+    for (int i = 0; i < vec_strParamName.size(); ++i) {
+        run.timingResultsOR.map_fTDC_Fit_Param[vec_strParamName[i]] = func_Input->GetParameter(i);
+        run.timingResultsOR.map_fTDC_Fit_ParamErr[vec_strParamName[i]] = func_Input->GetParError(i);
+    }
+    
+    run.timingResultsOR.fTDC_Fit_Chi2  = func_Input->GetChisquare();
+    run.timingResultsOR.fTDC_Fit_NDF   = func_Input->GetNDF();
+    
+    return;
+};
+
+
+void TRunParameters::setTDCFitAND(TF1 *func_Input, std::vector<std::string> vec_strParamName){
+    run.timingResultsAND.map_fTDC_Fit_Param.clear();
+    run.timingResultsAND.map_fTDC_Fit_ParamErr.clear();
+    
+    run.timingResultsAND.func_TDC_Fit = std::make_shared<TF1>(*func_Input);
+    
+    for (int i = 0; i < vec_strParamName.size(); ++i) {
+        run.timingResultsAND.map_fTDC_Fit_Param[vec_strParamName[i]] = func_Input->GetParameter(i);
+        run.timingResultsAND.map_fTDC_Fit_ParamErr[vec_strParamName[i]] = func_Input->GetParError(i);
+    }
+    
+    run.timingResultsAND.fTDC_Fit_Chi2  = func_Input->GetChisquare();
+    run.timingResultsAND.fTDC_Fit_NDF   = func_Input->GetNDF();
+    
+    return;
+};
+
 //Set boolean type parameters
-void TRunParameters::setParameter(bool input, int methodIdx){
-    switch (methodIdx) {
+void TRunParameters::setParameter(std::string strDetOrRunName, bool bInput, int iMthdIdx){
+    switch (iMthdIdx) {
             //Run Methods                               //Expected Input Data Type
             
             //Detector Methods
-        case 114: setDetGainIndepVarIsCurrent(input); break;   //boolean
+        case 114: setDetGainIndepVarIsCurrent(strDetOrRunName, bInput); break;   //boolean
             
             //VFAT Methods
             
@@ -190,7 +288,7 @@ void TRunParameters::setParameter(bool input, int methodIdx){
             //methodIdx Not Recognized
         default:
             std::cout<<"=================================================\n";
-            std::cout<<"TRunParameters::setParameter() - methodIdx = " << methodIdx << " for STRING data type NOT recognized\n";
+            std::cout<<"TRunParameters::setParameter() - methodIdx = " << iMthdIdx << " for STRING data type NOT recognized\n";
             std::cout<<"TRunParameters::setParameter() - Performing No Action\n";
             std::cout<<"TRunParameters::setParameter() - Please Check Input Again\n";
             std::cout<<"=================================================\n";
@@ -201,36 +299,35 @@ void TRunParameters::setParameter(bool input, int methodIdx){
 } //End TRunParameters::setParameter()
 
 //Set int type parameters
-void TRunParameters::setParameter(int input, int methodIdx){
-    switch (methodIdx) {
-            //Run Methods                               //Expected Input Data Type
-        case 1: setRunNumber(input); break;         //int
+void TRunParameters::setParameter(std::string strDetOrRunName, int iInput, int iMthdIdx){
+    switch (iMthdIdx) {
+            //Run Methods                                           //Expected Input Data Type
+        case 1: setRunNumber(strDetOrRunName, iInput); break;                      //int
+        //case 5: setTDCChanTrig(strDetOrRunName, iInput); break;                    //int
             
             //Detector Methods
-        case 101: setDetPos(input); break;          //int
-        case 102: setDetEta(input); break;          //int
-        case 103: setDetPhi(input); break;          //int
+        case 101: setDetPos(strDetOrRunName, iInput); break;                       //int
+        case 102: setDetEta(strDetOrRunName, iInput); break;                       //int
+        case 103: setDetPhi(strDetOrRunName, iInput); break;                       //int
             
             //VFAT Methods
-        case 201: setTURBOID(input); break;         //int
-        case 202: setVFATPos(input); break;         //int
-        case 204: setVFATIPreAmpIn(input); break;   //int
-        case 205: setVFATIPreAmpFeed(input); break; //int
-        case 206: setVFATIPreAmpOut(input); break;  //int
-        case 207: setVFATIShaper(input); break;     //int
-        case 208: setVFATIShaperFeed(input); break; //int
-        case 209: setVFATIComp(input); break;       //int
-        case 210: setVFATMSPL(input); break;        //int
-        case 211: setVFATLatency(input); break;     //int
-        case 212: setVFATThresh(input); break;      //int
+        case 202: setVFATPos(strDetOrRunName, iInput); break;                      //int
+        case 204: setVFATIPreAmpIn(strDetOrRunName, iInput); break;                //int
+        case 205: setVFATIPreAmpFeed(strDetOrRunName, iInput); break;              //int
+        case 206: setVFATIPreAmpOut(strDetOrRunName, iInput); break;               //int
+        case 207: setVFATIShaper(strDetOrRunName, iInput); break;                  //int
+        case 208: setVFATIShaperFeed(strDetOrRunName, iInput); break;              //int
+        case 209: setVFATIComp(strDetOrRunName, iInput); break;                    //int
+        case 210: setVFATMSPL(strDetOrRunName, iInput); break;                     //int
+        case 212: setVFATThresh(strDetOrRunName, iInput); break;                   //int
             
             //TDC Methods
-        case 301: setTDCChanNumber(input); break;   //int
+        //case 301: setTDCChanDet(strDetOrRunName, iInput); break;                   //int
             
             //methodIdx Not Recognized
         default:
             std::cout<<"=================================================\n";
-            std::cout<<"TRunParameters::setParameter() - methodIdx = " << methodIdx << " for INT data type NOT recognized\n";
+            std::cout<<"TRunParameters::setParameter() - methodIdx = " << iMthdIdx << " for INT data type NOT recognized\n";
             std::cout<<"TRunParameters::setParameter() - Performing No Action\n";
             std::cout<<"TRunParameters::setParameter() - Please Check Input Again\n";
             std::cout<<"=================================================\n";
@@ -241,63 +338,41 @@ void TRunParameters::setParameter(int input, int methodIdx){
 } //End TRunParameters::setParameter()
 
 //Set float type parameters
-void TRunParameters::setParameter(float input, int methodIdx){
-    switch (methodIdx) {
+void TRunParameters::setParameter(std::string strDetOrRunName, float fInput, int iMthdIdx){
+    switch (iMthdIdx) {
         //Run Methods                               //Expected Input Data Type
-        case 4: setTrigDelay(input); break;         //float
-            
+        case 4: setTrigDelay(strDetOrRunName, fInput); break;                    //float
+        case 8: setSupermoduleHVSetPoint(strDetOrRunName, fInput); break;        //float
+    
         //Detector Methods
-        case 104: setDetCurrent(input); break;      //float
-        case 105: setDetDriftV(input); break;       //float
-        case 107: setDetGasFracAr(input); break;  //float
-        case 108: setDetGasFracCO2(input); break; //float
-        case 109: setDetGasFracCF4(input);          break; //float
-        case 110: setDetGainConst(input); break;              //float
-        case 111: setDetGainConstErr(input); break;           //float
-        case 112: setDetGainSlope(input); break;              //float
-        case 113: setDetGainSlopeErr(input); break;           //float
-        
-        case 115: setDetGEM1TopV(input); break;    //float
-        case 116: setDetGEM1BotV(input); break;    //float
-        case 117: setDetGEM2TopV(input); break;    //float
-        case 118: setDetGEM2BotV(input); break;    //float
-        case 119: setDetGEM3TopV(input); break;    //float
-        case 120: setDetGEM3BotV(input); break;    //float
+        case 104: setDetCurrent(strDetOrRunName, fInput); break;                 //float
+        case 105: setDetDriftV(strDetOrRunName, fInput); break;                  //float
+        case 107: setDetGasFracAr(strDetOrRunName, fInput); break;               //float
+        case 108: setDetGasFracCO2(strDetOrRunName, fInput); break;              //float
+        case 109: setDetGasFracCF4(strDetOrRunName, fInput); break;              //float
+        case 110: setDetGainConst(strDetOrRunName, fInput); break;               //float
+        case 111: setDetGainConstErr(strDetOrRunName, fInput); break;            //float
+        case 112: setDetGainSlope(strDetOrRunName, fInput); break;               //float
+        case 113: setDetGainSlopeErr(strDetOrRunName, fInput); break;            //float
+            
+        case 115: setDetGEM1TopV(strDetOrRunName, fInput); break;                //float
+        case 116: setDetGEM1BotV(strDetOrRunName, fInput); break;                //float
+        case 117: setDetGEM2TopV(strDetOrRunName, fInput); break;                //float
+        case 118: setDetGEM2BotV(strDetOrRunName, fInput); break;                //float
+        case 119: setDetGEM3TopV(strDetOrRunName, fInput); break;                //float
+        case 120: setDetGEM3BotV(strDetOrRunName, fInput); break;                //float
             
         //VFAT Methods
             
         //TDC Methods
-        case 303: setTDCHistoMean(input); break;           //float
-        case 304: setTDCHistoRMS(input); break;            //float
-        case 305: setTDCHistoPks(input); break;            //float
-        case 307: setTDCFitAmp(input); break;              //float
-        case 308: setTDCFitAmpErr(input); break;           //float
-        case 309: setTDCFitMean(input); break;             //float
-        case 310: setTDCFitMeanErr(input); break;          //float
-        case 311: setTDCFitSigma(input); break;            //float
-        case 312: setTDCFitSigmaErr(input); break;         //float
-        case 313: setTDCFitChi2(input); break;             //float
-        case 314: setTDCFitNDF(input); break;              //float
-        case 316: setTDCFitConvoAmp(input); break;         //float
-        case 317: setTDCFitConvoAmpErr(input); break;      //float
-        case 318: setTDCFitConvoMean(input); break;        //float
-        case 319: setTDCFitConvoMeanErr(input); break;     //float
-        case 320: setTDCFitConvoSigma(input); break;       //float
-        case 321: setTDCFitConvoSigmaErr(input); break;    //float
-        case 322: setTDCFitConvoChi2(input); break;        //float
-        case 323: setTDCFitConvoNDF(input); break;         //float
-        case 324: setTDCNumDeconvoTimeResp(input); break;  //float
-        case 325: setTDCHistoPksInt_1stMax(input); break;  //float
-        case 326: setTDCHistoPksInt_2ndMax(input); break;  //float
-        case 327: setTDCHistoPksInt_3rdMax(input); break;  //float
-        case 328: setTDCHistoPksPos_1stMax(input); break;  //float
-        case 329: setTDCHistoPksPos_2ndMax(input); break;  //float
-        case 330: setTDCHistoPksPos_3rdMax(input); break;  //float
+            
+        //PMT Methods
+        case 401: setPMTHV(strDetOrRunName, fInput); break;                      //float
             
             //methodIdx Not Recognized
         default:
             std::cout<<"=================================================\n";
-            std::cout<<"TRunParameters::setParameter() - methodIdx = " << methodIdx << " for FLOAT data type NOT recognized\n";
+            std::cout<<"TRunParameters::setParameter() - methodIdx = " << iMthdIdx << " for FLOAT data type NOT recognized\n";
             std::cout<<"TRunParameters::setParameter() - Performing No Action\n";
             std::cout<<"TRunParameters::setParameter() - Please Check Input Again\n";
             std::cout<<"=================================================\n";
@@ -308,24 +383,39 @@ void TRunParameters::setParameter(float input, int methodIdx){
 } //End TRunParameters::setParameter()
 
 //Set string type parameters
-void TRunParameters::setParameter(std::string input, int methodIdx){
-    switch (methodIdx) {
-            //Run Methods                               //Expected Input Data Type
-        case 2: setBeam(input); break;              //string
-        case 3: setTrigMode(input); break;          //string
+void TRunParameters::setParameter(std::string strDetOrRunName, std::string strInput, int iMthdIdx){
+    switch (iMthdIdx) {
+        //Run Methods                               //Expected Input Data Type
+        case 2: setBeam(strDetOrRunName, strInput); break;                 //string
+        case 3: setTrigMode(strDetOrRunName, strInput); break;             //string
+        case 6: setTDCFitParamNameOR(strDetOrRunName, strInput); break;            //string
+        case 7: setTDCFitParamNameAND(strDetOrRunName, strInput); break;           //string
+        case 9: setTreeNameRun(strDetOrRunName, strInput); break;                //string
+        case 10:setTreeNameRunParamDUT(strDetOrRunName, strInput); break;        //string
             
-            //Detector Methods
-        case 106: setDetName(input); break;         //string
+        //Detector Methods
+        case 121: setDetMultiChanHVCase(strDetOrRunName, strInput); break;     //string
+        case 122: setDetDriftV(strDetOrRunName, strInput); break;
+        case 123: setDetGEM1TopV(strDetOrRunName, strInput); break;   //string
+        case 124: setDetGEM1BotV(strDetOrRunName, strInput); break;   //string
+        case 125: setDetGEM2TopV(strDetOrRunName, strInput); break;   //string
+        case 126: setDetGEM2BotV(strDetOrRunName, strInput); break;   //string
+        case 127: setDetGEM3TopV(strDetOrRunName, strInput); break;   //string
+        case 128: setDetGEM3BotV(strDetOrRunName, strInput); break;   //string
+        case 129: setDetCurrent(strDetOrRunName, strInput); break;      //string
             
-            //VFAT Methods
-        case 203: setVFATID(input); break;          //string
+        //VFAT Methods
             
-            //TDC Methods
+        //TDC Methods
+        case 302: setTDCFitParamName(strDetOrRunName, strInput); break;            //string
+            
+        //PMT Methods
+        case 402: setPMTHV(strDetOrRunName, strInput); break;         //string
             
             //methodIdx Not Recognized
         default:
             std::cout<<"=================================================\n";
-            std::cout<<"TRunParameters::setParameter() - methodIdx = " << methodIdx << " for STRING data type NOT recognized\n";
+            std::cout<<"TRunParameters::setParameter() - methodIdx = " << iMthdIdx << " for STRING data type NOT recognized\n";
             std::cout<<"TRunParameters::setParameter() - Performing No Action\n";
             std::cout<<"TRunParameters::setParameter() - Please Check Input Again\n";
             std::cout<<"=================================================\n";

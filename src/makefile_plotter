@@ -7,21 +7,17 @@ ROOTCONFIG = $(ROOTSYS)/bin/root-config
 
 # Define any compile-time flags
 #CFLAGS = -c `root-config --cflags --glibs --libs` -std=c++11	#the -c option causes this to compile but not link, problem!!!
-#CFLAGS = `$(ROOTCONFIG) --cflags --glibs --libs` -std=c++11
-CFLAGS = -g3 -O0 `$(ROOTCONFIG) --cflags --glibs --libs` -std=c++11
+CFLAGS = `$(ROOTCONFIG) --cflags --glibs --libs` -std=c++11
 
 # Define any directories containing header files other than "/usr/include"
-INCLUDES = -I../include -I$(ROOTSYS)/include
+#INCLUDES = -I../include -I$(ROOTSYS)/include
+INCLUDES = -I../include
 
 # Define any library paths in addition to "/usr/lib"
-LPATHS = -L $(ROOTSYS)/lib/
-
-# Define any libraries to link into executable
-LIBS = -lSpectrum
+#LPATHS = -L $(ROOTSYS)/lib/
 
 # Define source files
-#SOURCES = TRunParameters.cpp treeProducerTDC.cpp produceTree.cpp
-SOURCES = TRunParameters.cpp treeProducerTDC.cpp produceTree.cpp TimingRunAnalyzer.cpp TimingUtilityFunctions.cpp
+SOURCES = treePlotter.cpp treePlotterTDC.cpp plotTree.cpp
 
 # Define object files
 #	We use Suffix Replacement
@@ -31,15 +27,15 @@ SOURCES = TRunParameters.cpp treeProducerTDC.cpp produceTree.cpp TimingRunAnalyz
 OBJECTS = $(SOURCES:.cpp=.o)
 
 # Define the executable
-EXEC = produceTree
+EXEC = plotTree
 
 # Define default behavior
 #default: $(EXEC)
 
 # To create the analyzeTree executable we will need the following object files:
-# 	produceTree.o 
-#	treeProducerTDC.o 
-#	TRunParameters.o
+# 	plotTree.o 
+#	treePlotter.o 
+#	treePlotterTDC.o
 
 .PHONY: depend clean
 
@@ -48,7 +44,7 @@ all:	$(EXEC)
 	@echo	ROOTSYS = $(ROOTSYS)
 
 $(EXEC): $(OBJECTS)
-	$(CC) $(CFLAGS) $(INCLUDES) -o $(EXEC) $(OBJECTS) $(LPATHS) $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDES) -o $(EXEC) $(OBJECTS)
 
 # Here we use Suffix Replacement to building our object files
 # we use automatic variables $<: the name of the prerequisite of 
@@ -56,7 +52,7 @@ $(EXEC): $(OBJECTS)
 # (you should review the gnu make manual, sec. on auto. variables)
 
 .cpp.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@  $(LPATHS) $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
 	$(RM) *.o *~ $(EXEC)

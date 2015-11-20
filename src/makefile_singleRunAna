@@ -7,17 +7,22 @@ ROOTCONFIG = $(ROOTSYS)/bin/root-config
 
 # Define any compile-time flags
 #CFLAGS = -c `root-config --cflags --glibs --libs` -std=c++11	#the -c option causes this to compile but not link, problem!!!
-CFLAGS = `$(ROOTCONFIG) --cflags --glibs --libs` -std=c++11
+#CFLAGS = `$(ROOTCONFIG) --cflags --glibs --libs` -std=c++11
+CFLAGS = -g3 -O0 `$(ROOTCONFIG) --cflags --glibs --libs` -std=c++11
 
 # Define any directories containing header files other than "/usr/include"
-#INCLUDES = -I../include -I$(ROOTSYS)/include
-INCLUDES = -I../include
+INCLUDES = -I../include -I$(ROOTSYS)/include
 
 # Define any library paths in addition to "/usr/lib"
 #LPATHS = -L $(ROOTSYS)/lib/
 
+# Define any libraries to link into executable
+#LIBS = -lSpectrum
+
 # Define source files
-SOURCES = treeAnalyzer.cpp treeAnalyzerTDC.cpp analyzeTree.cpp
+#SOURCES = TRunParameters.cpp treeProducerTDC.cpp produceTree.cpp TimingRunAnalyzer.cpp TimingUtilityFunctions.cpp
+#SOURCES = singleRunAnalyzer.cpp TimingRunAnalyzer.cpp TimingUtilityFunctions.cpp TRunParameters.cpp
+SOURCES = singleRunAnalyzer.cpp TimingRunAnalyzer.cpp TimingUtilityFunctions.cpp
 
 # Define object files
 #	We use Suffix Replacement
@@ -27,15 +32,16 @@ SOURCES = treeAnalyzer.cpp treeAnalyzerTDC.cpp analyzeTree.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 
 # Define the executable
-EXEC = analyzeTree
+EXEC = singleRunAnalyzer
 
 # Define default behavior
 #default: $(EXEC)
 
 # To create the analyzeTree executable we will need the following object files:
-# 	analyzeTree.o 
-#	treeAnalyzer.o 
-#	treeAnalyzerTDC.o
+# 	singleRunAnalyzer.o 
+#	TimingRunAnalyzer.o 
+#	TimingUtilityFunctions.o
+#	TRunParameters.o
 
 .PHONY: depend clean
 
@@ -44,6 +50,7 @@ all:	$(EXEC)
 	@echo	ROOTSYS = $(ROOTSYS)
 
 $(EXEC): $(OBJECTS)
+#	$(CC) $(CFLAGS) $(INCLUDES) -o $(EXEC) $(OBJECTS) $(LPATHS) $(LIBS)
 	$(CC) $(CFLAGS) $(INCLUDES) -o $(EXEC) $(OBJECTS)
 
 # Here we use Suffix Replacement to building our object files
@@ -52,6 +59,7 @@ $(EXEC): $(OBJECTS)
 # (you should review the gnu make manual, sec. on auto. variables)
 
 .cpp.o:
+#	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@  $(LPATHS) $(LIBS)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:

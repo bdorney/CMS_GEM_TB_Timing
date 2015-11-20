@@ -1,0 +1,128 @@
+[BEGIN_ANALYSIS_INFO]
+    TDC_Window_Size = '1200'; #Invert_Timing = true -> timing data recorded as t = (TDC_Window_Size - t)
+    Invert_Timing = 'true'; #In common stop TDC trigger is delayed, so t=0 is actually in the PAST
+    #Invert_Timing = 'false'; #In common stop TDC trigger is delayed, so t=0 is actually in the PAST
+    #Match_Arrival_Time = 'true'; #Data from all detectors will be shifted so <t_i> = <t_j> for all i,j
+    Match_Arrival_Time = 'false'; #Data from all detectors will be shifted so <t_i> = <t_j> for all i,j
+    #Cut_MaxDeltaT_Det = '120'; #In Nanoseconds, max diff in detector arrival times
+    #Cut_MaxDeltaT_DetTrig = '140'; #In Nanoseconds, max diff in time between detector & trigger
+    #Cut_MaxDeltaT_PMT = '40'; #In Nanoseconds, max diff in time between non-coincidence determining PMTs
+    #Cut_MaxDeltaT_PMTTrig = '100'; #In Nanoseconds, max diff in time between coincidence determining PMT
+    [BEGIN_OR_INFO]
+        Histo_Name = 'timingHisto_OR';
+        Histo_NumBins = '1200';
+        Histo_BinRange = '0,1200';
+        Histo_XTitle = 'min#left(t_{1}, t_{2}#right) #left(ns#right)';
+        Histo_YTitle = 'Counts #left(N/ns#right)';
+        Perform_Fit = 'true';
+        Fit_Autoranging = 'true';
+        Fit_Formula = '[0]*exp( -0.5 * (x-[1])^2 / [2]^2 )';
+        Fit_Name = 'func_Timing_OR';
+        Fit_Option = 'R';
+        Fit_Param_Map = 'AMPLITUDE, MEAN, SIGMA';
+        Fit_Param_IGuess = 'AMPLITUDE, MEAN, SIGMA';
+    [END_OR_INFO]
+    [BEGIN_AND_INFO]
+        Histo_Name = 'timingHisto_AND';
+        Histo_NumBins = '1200';
+        Histo_BinRange = '0,1200';
+        Histo_XTitle = 'max#left(t_{1}, t_{2}#right) #left(ns#right)';
+        Histo_YTitle = 'Counts #left(N/ns#right)';
+        Perform_Fit = 'true';
+        Fit_Autoranging = 'true';
+        Fit_Formula = '[0]*exp( -0.5 * (x-[1])^2 / [2]^2 )';
+        Fit_Name = 'func_Timing_AND';
+        Fit_Option = 'R';
+        Fit_Param_Map = 'AMPLITUDE, MEAN, SIGMA';
+        Fit_Param_IGuess = 'AMPLITUDE, MEAN, SIGMA';
+    [END_AND_INFO]
+    [BEGIN_DETECTOR_INFO]
+        #The 'Name' field must appear as the first parameter
+        #Name = 'GE11-VI-L-CERN-0001'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
+	Name = 'Drift';        
+	#TDC_Chan = '0';	
+	TDC_Chan = '8';
+        #Histo_Name = 'timingHisto_GE11_1'; #TName of the TH1F created from this detector's data
+	Histo_Name = 'timingHisto_Drift';        
+	Histo_NumBins = '1200';
+        Histo_BinRange = '0,1200';
+        Histo_XTitle = 'time #left(ns#right)';
+        Histo_YTitle = 'Counts #left(N/ns#right)';
+        Perform_Fit = 'true';
+        Fit_Autoranging = 'true'; #true -> The fit range used is {MEAN - 3 * RMS, MEAN + 3 *RMS} where MEAN & RMS are taken from the histogram created from the data set.
+        #Fit_Formula = '[0]*[2]*sqrt(TMath::Pi()/2.)*(TMath::Erf( (12.5 + (x-[1])) / ([2] * sqrt(2.) ) ) - TMath::Erf( ((x-[1]) - 12.5) / ([2] * sqrt(2.) ) ) )';
+	Fit_Formula = '[0]*exp( -0.5 * (x-[1])^2 / [2]^2 )';   
+	#Fit_Name = 'func_Timing_GE11_1';
+	Fit_Name = 'func_Timing_Drift';
+	Fit_Option = 'R'; #default is Chi2 minimization e.g. ('R')
+        Fit_Param_Map = 'AMPLITUDE, MEAN, SIGMA'; #Accepted values are {AMPLITUDE, AREA, MEAN, MVP, NULL, SIGMA}
+        Fit_Param_IGuess = '1, MEAN, SIGMA'; #Accepted input is numeric, or {AMPLITUDE, MEAN, SIGMA}
+    [END_DETECTOR_INFO]
+    [BEGIN_DETECTOR_INFO]
+        #The 'Name' field must appear as the first parameter
+        #Name = 'GE11-VI-L-CERN-0002'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
+	Name = 'Readout';        
+	#TDC_Chan = '8';
+	TDC_Chan = '9';        
+	#Histo_Name = 'timingHisto_GE11_2'; #TName of the TH1F created from this detector's data
+        Histo_Name = 'timingHisto_RO'; #TName of the TH1F created from this detector's data
+        Histo_NumBins = '1200';
+        Histo_BinRange = '0,1200';
+        Histo_XTitle = 'time #left(ns#right)';
+        Histo_YTitle = 'Counts #left(N/ns#right)';
+        Perform_Fit = 'true';
+        Fit_Autoranging = 'true'; #true -> The fit range used is {MEAN - 3 * RMS, MEAN + 3 *RMS} where MEAN & RMS are taken from the histogram created from the data set.
+        #Fit_Formula = '[0]*[2]*sqrt(TMath::Pi()/2.)*(TMath::Erf( (12.5 + (x-[1])) / ([2] * sqrt(2.) ) ) - TMath::Erf( ((x-[1]) - 12.5) / ([2] * sqrt(2.) ) ) )';
+	Fit_Formula = '[0]*exp( -0.5 * (x-[1])^2 / [2]^2 )';        
+	#Fit_Name = 'func_Timing_GE11_2';
+        Fit_Name = 'func_Timing_RO';
+        Fit_Option = 'R'; #default is Chi2 minimization e.g. ('R')
+        Fit_Param_Map = 'AMPLITUDE,MEAN,SIGMA'; #Accepted values are {AMPLITUDE, AREA, MEAN, MVP, NULL, SIGMA}
+        Fit_Param_IGuess = '1,MEAN,SIGMA'; #Accepted input is numeric, or {AMPLITUDE, MEAN, SIGMA}
+    [END_DETECTOR_INFO]
+    [BEGIN_PMT_INFO]
+        Name = 'PMT_1';
+        TDC_Chan = '12';
+	IsTrigger = 'false';
+        Histo_Name = 'timing_PMT_1'; #TName of the TH1F created from this detector's data
+        Histo_NumBins = '400';
+        Histo_BinRange = '0,1200';
+        Histo_XTitle = 'time #left(ns#right)';
+        Histo_YTitle = 'Counts #left(N/ns#right)';
+        Perform_Fit = 'false';
+    [END_PMT_INFO]
+    [BEGIN_PMT_INFO]
+        Name = 'PMT_2';
+        TDC_Chan = '13';
+	IsTrigger = 'false';
+        Histo_Name = 'timing_PMT_2'; #TName of the TH1F created from this detector's data
+        Histo_NumBins = '400';
+        Histo_BinRange = '0,1200';
+        Histo_XTitle = 'time #left(ns#right)';
+        Histo_YTitle = 'Counts #left(N/ns#right)';
+        Perform_Fit = 'false';
+    [END_PMT_INFO]
+    [BEGIN_PMT_INFO]
+        Name = 'PMT_3';
+        TDC_Chan = '14';
+	IsTrigger = 'false';
+        Histo_Name = 'timing_PMT_3'; #TName of the TH1F created from this detector's data
+        Histo_NumBins = '400';
+        Histo_BinRange = '0,1200';
+        Histo_XTitle = 'time #left(ns#right)';
+        Histo_YTitle = 'Counts #left(N/ns#right)';
+        Perform_Fit = 'false';
+    [END_PMT_INFO]
+    [BEGIN_PMT_INFO]
+        #Name = 'PMT_Trig';
+	Name = 'PMT_Finger';        
+	TDC_Chan = '15';
+        IsTrigger = 'true';
+        Histo_Name = 'timing_PMT_Finger'; #TName of the TH1F created from this detector's data
+        Histo_NumBins = '400';
+        Histo_BinRange = '0,1200';
+        Histo_XTitle = 'time #left(ns#right)';
+        Histo_YTitle = 'Counts #left(N/ns#right)';
+        Perform_Fit = 'false';
+    [END_PMT_INFO]
+[END_ANALYSIS_INFO]

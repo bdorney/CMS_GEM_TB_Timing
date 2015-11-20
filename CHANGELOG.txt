@@ -1,10 +1,33 @@
 *****************************************
 *                                       *
-*	CHANGELOG: CMS_GEM_TB_Timing        *
-*	VERSION: 2.1                        *
-*	LAST UPDATE: Oct 17 2015            *
+*	CHANGELOG: CMS_GEM_TB_Timing    *
+*	VERSION: 2.1                    *
+*	LAST UPDATE: Oct 17 2015        *
 *                                       *
 *****************************************
+
+Update: November 19th 2015
+=========================================
+->In Timing::getCommaSeparatedList(std::string) in TimingUtilityFunctions has been changed to Timing::getCharSeparatedList(std::string, char)
+->Here the char is the input delimiter specified by the user.  This makes it more useful (e.g. lists now segmented by ',','|',':',';', etc...)  
+
+Update: November 17th 2015
+=========================================
+->The entire framework has been placed inside the "Timing" namespace.  All code is impacted by this change.
+->Classes previously known as treeAnalyzer and treeAnalyzerTDC renamed to treePlotter and treePlotterTDC as this is more representative of what they do
+->Executable analyzeTree.cpp renamed to plotTree.cpp, similarly for the executable
+->Significant changes to the TRunParameters and treeProducer.  These classes presently are not guaranteed to function (or compile); expect future updates.
+->Several utility headers have been created:
+	include/TimingUtilityTypes.h; for enum, struct, etc...
+	include/TimingUtilityOperators.h; for operators
+	include/TimingUtilityFunctions.h; for functions (also added src/TimingUtilityFunctions.cpp)
+->The TimingRunAnalyzer class has been added to serve as the access point for analysis of all runs:
+	include/TimingRunAnalyzer.h
+	src/TimingRunAnalyzer.h
+	src/singleRunAnalyzer.cpp
+->The TimingRunAnlyzer class will be integrated into treeProducer to perform the analysis run-by-run
+->Users wishing to conduct their own analysis are encouraged to create a class that inherits from TimingRunAnalyzer
+->The singleRunAnalyzer executable now exists to allow the user to analyze one run at a time
 
 Update: October 17th 2015
 =========================================
