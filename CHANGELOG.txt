@@ -2,9 +2,14 @@
 *                                       *
 *	CHANGELOG: CMS_GEM_TB_Timing    *
 *	VERSION: 2.1                    *
-*	LAST UPDATE: Oct 17 2015        *
+*	LAST UPDATE: Nov 25 2015        *
 *                                       *
 *****************************************
+
+Update: November 25th 2015
+=========================================
+->Added singleRunPlotter.cpp to be executed in ROOT to make CMS Style plots.  This macro is designed to be run from ROOT.  It will produce 5 plots: timing distribution for the individual detectors, AND of the detectors, OR of the detectors, and a summary plot. Marco uses tdrstyle.C, CMS_lumi.C, and CMS_lumi.h from https://ghm.web.cern.ch/ghm/plots/
+->Added CMS_lumi.h, CMS_lumi.C, and tdrstyle.C from https://ghm.web.cern.ch/ghm/plots/ to the repository (under /include and /src for *.h and *.C files).
 
 Update: November 19th 2015
 =========================================
