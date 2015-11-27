@@ -1,0 +1,45 @@
+[BEGIN_PROD_INFO]
+	FitOption='NR';
+	PFP_RawData='/afs/cern.ch/user/d/dorney/scratch0/CMS_GEM/CMS_GEM_TB_Timing/data';
+	#-----------------------------	
+	#GE1/1-IV-GIF
+	#-----------------------------
+	PFN_RunList='lists_runs/RunList_2014_GE11IVGIF.txt';
+	OutputRootFileName='TestBeamDataset_TDC_Fall2014_GE11_IV_GIF.root';
+	OutputTreeName='GE11_IV_GIF';
+	#-----------------------------	
+	#GE1/1-IV
+	#-----------------------------
+	#PFN_RunList='lists_runs/RunList_2014_GE11IV.txt';
+	#OutputRootFileName='TestBeamDataset_TDC_Fall2014_GE11_IV.root';
+	#OutputTreeName='GE11_IV';	
+	#-----------------------------	
+	#GE1/1-V
+	#-----------------------------
+	#PFN_RunList='lists_runs/RunList_H2_GE11V.txt';
+	#OutputRootFileName='TestBeamDataset_TDC_Fall2014_GE11_V.root';
+	#OutputTreeName='GE11_V';
+	#-----------------------------
+	VerboseMode_IO='false';
+	VerboseMode_LUT='false';
+	VerboseMode_Parsing='false';
+	VerboseMode_PrintRuns='true';
+[END_PROD_INFO]
+[BEGIN_IGNORED_IDENTIFIERS]
+#List of identifiers in run file names to be ignroed; one parameter per line
+	Trial01    	
+	TDC.ROOT    	
+    	Lat24
+    	Lat26
+    	Lat27
+    	Lat30
+    	Lat31
+    	Ch10
+    	Ch10GE2.root
+    	VFAT0.root
+    	VFAT2.root
+    	VFAT3.root
+    	WithFuncGen
+    	Optimal
+    	values
+[END_IGNORED_IDENTIFIERS]
