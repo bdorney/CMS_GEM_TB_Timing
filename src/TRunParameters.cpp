@@ -11,6 +11,7 @@
 
 using namespace Timing;
 
+using std::cout;
 using std::endl;
 
 //Constructor
@@ -158,13 +159,20 @@ void TRunParameters::setDetParameterFromTree(std::string strDet_Name, std::strin
     }
     
     //Variable Declaration
-    float fParam = -1;   //Hack for ROOT, e.g. can't have float &fInput then pass &fInput below (evaluates to &&fInput which is nonsense?)
-    
+    //float fParam = -1;   //Hack for ROOT, e.g. can't have float &fInput then pass &fInput below (evaluates to &&fInput which is nonsense?)
+    Float_t fParam;    
+
     TFile *file_ROOT_Run = new TFile(run.strRunName.c_str(),"READ","",1);
     
     TTree *tree_ParamDUT = (TTree*) file_ROOT_Run->Get( run.strTreeName_RunParam_DUT.c_str() );
     
-    if (tree_ParamDUT->FindBranch(strBranchName.c_str() ) == nullptr) {
+    TBranch *branch = tree_ParamDUT->Branch(strBranchName.c_str(), &fParam);
+
+	cout<<"strTreeName_RunParam_DUT = " << run.strTreeName_RunParam_DUT << endl;
+	cout<<"branch = " << branch << endl;
+
+    //if (tree_ParamDUT->FindBranch(strBranchName.c_str() ) == nullptr) {
+    if (branch = nullptr){
         std::cout<<"TRunParameters::setDetParameterFromTree() - Input Branch Does Not Exist!!!\n";
         std::cout<<"\t Branch Name = " << strBranchName.c_str() << std::endl;
         std::cout<<"\t Please cross-check input Tree Setup File\n";
@@ -172,25 +180,34 @@ void TRunParameters::setDetParameterFromTree(std::string strDet_Name, std::strin
         
         file_ROOT_Run->Close();
         
-        delete tree_ParamDUT;
+        //delete tree_ParamDUT; //Causes seg fault
         
         return;
     }
     
-    tree_ParamDUT->SetBranchAddress(strBranchName.c_str(), &fParam);
+    //tree_ParamDUT->SetBranchAddress(strBranchName.c_str(), &fParam);
     
+	cout<<"Before: fParam = " << fParam << endl;
+
     //Get fParam
     if (tree_ParamDUT->GetEntries() > 0) {
         tree_ParamDUT->GetEntry(0);
     }
-    
+	
+	//Get fParam
+	//if (branch->GetEntries() > 0) {
+		//branch->GetEntry(0);
+	//}    
+
+	cout<<"After: fParam = " << fParam << endl;
+
     //Now set fInput as fParam, fInput passed by reference so original is now also set!!!
     fInput = fParam;
     
     file_ROOT_Run->Close();
     
-    delete tree_ParamDUT;
-    delete file_ROOT_Run;
+    //delete tree_ParamDUT;
+    //delete file_ROOT_Run;
     
     return;
 } //End setDetParameterFromTree

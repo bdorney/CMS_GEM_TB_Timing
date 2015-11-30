@@ -82,7 +82,7 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     //------------------------------------------------------
     file_ROOT_Run = new TFile(run.strRunName.c_str(),"READ","",1);
 
-    cout<<"TimingRunAnalyzer::analyzeRun() - run.strRunName = " << run.strRunName << endl;
+    //cout<<"TimingRunAnalyzer::analyzeRun() - run.strRunName = " << run.strRunName << endl;
 
     //Check to see if data file opened successfully, if so load the tree
     //------------------------------------------------------
@@ -94,7 +94,7 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
         return;
     } //End Case: failed to load ROOT file
     
-    cout<<" run.strTreeName_Run = " << run.strTreeName_Run << endl;
+    //cout<<" run.strTreeName_Run = " << run.strTreeName_Run << endl;
     
     tree_Run = (TTree*) file_ROOT_Run->Get( run.strTreeName_Run.c_str() );
 
@@ -169,7 +169,7 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     for (int i=0; i < tree_Run->GetEntries(); ++i) { //Loop Over Events
         tree_Run->GetEntry(i);
         
-        if (i % 1000 == 0) cout<<i<<" Events Analyzed\n";
+        if (i % 1000 == 0) cout<<"Run "<< run.iRun<< "; " <<i<<" Events Analyzed\n";
         
         //BEGIN EVENT SELECTION
         //==================================================
@@ -406,12 +406,12 @@ void Timing::TimingRunAnalyzer::analyzeRun(Timing::Run &run){
     //------------------------------------------------------
     
     //Debugging
-    printROOTFileStatus(file_ROOT_Run);
-    cout<<"Timing::TimingRunAnalyzer::analyzeRun() - file_ROOT_Run = " << file_ROOT_Run << endl;
+    //printROOTFileStatus(file_ROOT_Run);
+    //cout<<"Timing::TimingRunAnalyzer::analyzeRun() - file_ROOT_Run = " << file_ROOT_Run << endl;
 
-    cout<<"Timing::TimingRunAnalyzer::analyzeRun() - Trying to close file\n";
+    //cout<<"Timing::TimingRunAnalyzer::analyzeRun() - Trying to close file\n";
     file_ROOT_Run->Close();
-    cout<<"Timing::TimingRunAnalyzer::analyzeRun() - successfully closed file\n";    
+    //cout<<"Timing::TimingRunAnalyzer::analyzeRun() - successfully closed file\n";    
 
     return;
 } //End Timing::TimingRunAnalyzer::analyze()
@@ -714,8 +714,9 @@ void Timing::TimingRunAnalyzer::setAnalysisConfig(string &strInputFile){
                     transform(pair_strParam.first.begin(),pair_strParam.first.end(),pair_strParam.first.begin(),toupper);
                     
                     if ( 0 == pair_strParam.first.compare("NAME") ) { //Case: Name found!
-                        //Store name locally
+                        //Store name locally & convert to upper case
                         strName = pair_strParam.second;
+			transform(strName.begin(), strName.end(), strName.begin(), toupper);
                         
                         //Setup the Histogram struct for analysis
                         HistoSetup hSetup;

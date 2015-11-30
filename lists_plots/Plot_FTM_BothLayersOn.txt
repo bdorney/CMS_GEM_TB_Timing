@@ -1,0 +1,60 @@
+[BEGIN_SELECTION]
+	clone_prev = 'false';
+	identifier = 'FTM_BothLayers_On';
+	selection = 'iRun > 0';
+	[BEGIN_CANVAS]
+ 		#grid_x = 'false';
+		#grid_y = 'true';
+		latex_line = 'GLOBAL_SELECTION'; #this will draw the selection string above
+		latex_line_ndcpos_x = '0.5';
+		latex_line_ndcpos_y = '0.3';
+		#latex_line = 'CMS Preliminary';
+		#latex_line_ndcpos_x = '0.1';
+		#latex_line_ndcpos_y = '0.907';
+		#latex_line = 'CMS Cordinates are #left(#rho,#eta,#phi#right) and p_{T}'; #Here the "#" character is NOT a comment
+		#latex_line_ndcpos_x = '0.3';
+		#latex_line_ndcpos_y = '0.5';
+		leg_ndcpos_x1 = '0.2';
+		leg_ndcpos_x2 = '0.4';
+		leg_ndcpos_y1 = '0.2';
+		leg_ndcpos_y2 = '0.4';
+		#log_x = 'false';
+		#log_y = 'false';
+		name = 'canvas_FTM_BothLayersOn';
+		title = 'FTM Both Layers On';
+		height = '700';
+		width = '700';
+		[BEGIN_PLOT]
+			color = 'kBlack';
+			#fit_formula = '';	#placeholder, no support yet
+			leg_entry = 'Time Response - Drift';
+			name = 'FTM_TimeResp_Drift';
+			name_root_file = 'TestBeamDataset_TDC_Fall2015_FTM_Drift.root';
+			name_tree = 'FTM_Drift';
+			#option_draw = 'APL';	#This is the first plot, so we have the "A" option present
+			option_draw = 'AP';	#This is the first plot, so we have the "A" option present
+			#option_fit = '';	#placeholder, no support yet
+			#point_labels = '';
+			#point_labels_angle = '45';
+			#point_labels_type = 'int';
+			selection = 'iRun == 1 || iRun == 6 || iRun == 11 || iRun == 16 || iRun == 21 || iRun == 26 || iRun == 31 || iRun == 36';
+			size_line = '3';
+			size_marker = '0.9';
+			style_line = '1';
+			style_marker = '21';
+			var_indep = 'fDet_VDrift';		
+			#var_indep = '(fDet_VDrift - fDet_VG1_Top) / 250e-6';
+			#var_indep_err = 'TBranch_Name_5';
+			var_dep = 'fTDC_Histo_RMS';
+			var_dep_assoc = 'func_TDC_Gaus';
+			#var_dep_err = 'fTDC_Fit_Sigma_Err';
+			x_range_min = '1200';
+			x_range_max = '1650';
+			x_title = 'V_{Drift} #left(V#right)';
+			#x_title = 'E_{Drift} #left(V/m#right)';
+			y_range_min = '0';
+			y_range_max = '50';
+			y_title = 'Time Resolution #left(ns#right)';
+		[END_PLOT]
+	[END_CANVAS]
+[END_SELECTION]

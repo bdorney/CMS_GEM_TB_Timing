@@ -10,7 +10,7 @@
     #Cut_MaxDeltaT_PMTTrig = '100'; #In Nanoseconds, max diff in time between coincidence determining PMT
     [BEGIN_OR_INFO]
         Histo_Name = 'timingHisto_OR';
-        Histo_NumBins = '400';
+        Histo_NumBins = '1200';
         Histo_BinRange = '0,1200';
         Histo_XTitle = 'min#left(t_{1}, t_{2}#right) #left(ns#right)';
         Histo_YTitle = 'Counts #left(N/ns#right)';
@@ -24,7 +24,7 @@
     [END_OR_INFO]
     [BEGIN_AND_INFO]
         Histo_Name = 'timingHisto_AND';
-        Histo_NumBins = '400';
+        Histo_NumBins = '1200';
         Histo_BinRange = '0,1200';
         Histo_XTitle = 'max#left(t_{1}, t_{2}#right) #left(ns#right)';
         Histo_YTitle = 'Counts #left(N/ns#right)';
@@ -38,36 +38,44 @@
     [END_AND_INFO]
     [BEGIN_DETECTOR_INFO]
         #The 'Name' field must appear as the first parameter
-        Name = 'GE11-VI-L-CERN-0001'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
-        TDC_Chan = '0';
-        Histo_Name = 'timingHisto_GE11_1'; #TName of the TH1F created from this detector's data
-        Histo_NumBins = '400';
+        #Name = 'GE11-VI-L-CERN-0001'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
+	Name = 'Drift';        
+	#TDC_Chan = '0';	
+	TDC_Chan = '8';
+        #Histo_Name = 'timingHisto_GE11_1'; #TName of the TH1F created from this detector's data
+	Histo_Name = 'timingHisto_Drift';        
+	Histo_NumBins = '1200';
         Histo_BinRange = '0,1200';
         Histo_XTitle = 'time #left(ns#right)';
         Histo_YTitle = 'Counts #left(N/ns#right)';
         Perform_Fit = 'true';
         Fit_Autoranging = 'true'; #true -> The fit range used is {MEAN - 3 * RMS, MEAN + 3 *RMS} where MEAN & RMS are taken from the histogram created from the data set.
         #Fit_Formula = '[0]*[2]*sqrt(TMath::Pi()/2.)*(TMath::Erf( (12.5 + (x-[1])) / ([2] * sqrt(2.) ) ) - TMath::Erf( ((x-[1]) - 12.5) / ([2] * sqrt(2.) ) ) )';
-	Fit_Formula = '[0]*exp( -0.5 * (x-[1])^2 / [2]^2 )';        
-	Fit_Name = 'func_Timing_GE11_1';
-        Fit_Option = 'R'; #default is Chi2 minimization e.g. ('R')
+	Fit_Formula = '[0]*exp( -0.5 * (x-[1])^2 / [2]^2 )';   
+	#Fit_Name = 'func_Timing_GE11_1';
+	Fit_Name = 'func_Timing_Drift';
+	Fit_Option = 'R'; #default is Chi2 minimization e.g. ('R')
         Fit_Param_Map = 'AMPLITUDE, MEAN, SIGMA'; #Accepted values are {AMPLITUDE, AREA, MEAN, MVP, NULL, SIGMA}
         Fit_Param_IGuess = '1, MEAN, SIGMA'; #Accepted input is numeric, or {AMPLITUDE, MEAN, SIGMA}
     [END_DETECTOR_INFO]
     [BEGIN_DETECTOR_INFO]
         #The 'Name' field must appear as the first parameter
-        Name = 'GE11-VI-L-CERN-0002'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
-        TDC_Chan = '8';
-        Histo_Name = 'timingHisto_GE11_2'; #TName of the TH1F created from this detector's data
-        Histo_NumBins = '400';
+        #Name = 'GE11-VI-L-CERN-0002'; #this string should match EXACTLY one of the detectors defined in the TreeSetupFile
+	Name = 'Readout';        
+	#TDC_Chan = '8';
+	TDC_Chan = '9';        
+	#Histo_Name = 'timingHisto_GE11_2'; #TName of the TH1F created from this detector's data
+        Histo_Name = 'timingHisto_RO'; #TName of the TH1F created from this detector's data
+        Histo_NumBins = '1200';
         Histo_BinRange = '0,1200';
         Histo_XTitle = 'time #left(ns#right)';
         Histo_YTitle = 'Counts #left(N/ns#right)';
         Perform_Fit = 'true';
         Fit_Autoranging = 'true'; #true -> The fit range used is {MEAN - 3 * RMS, MEAN + 3 *RMS} where MEAN & RMS are taken from the histogram created from the data set.
         #Fit_Formula = '[0]*[2]*sqrt(TMath::Pi()/2.)*(TMath::Erf( (12.5 + (x-[1])) / ([2] * sqrt(2.) ) ) - TMath::Erf( ((x-[1]) - 12.5) / ([2] * sqrt(2.) ) ) )';
-	Fit_Formula = '[0]*exp( -0.5 * (x-[1])^2 / [2]^2 )';        
-	Fit_Name = 'func_Timing_GE11_2';
+	Fit_Formula = '[0]*exp( -0.5 * (x-[1])^2 / [2]^2 )';
+	#Fit_Name = 'func_Timing_GE11_2';
+        Fit_Name = 'func_Timing_RO';
         Fit_Option = 'R'; #default is Chi2 minimization e.g. ('R')
         Fit_Param_Map = 'AMPLITUDE,MEAN,SIGMA'; #Accepted values are {AMPLITUDE, AREA, MEAN, MVP, NULL, SIGMA}
         Fit_Param_IGuess = '1,MEAN,SIGMA'; #Accepted input is numeric, or {AMPLITUDE, MEAN, SIGMA}
@@ -75,7 +83,7 @@
     [BEGIN_PMT_INFO]
         Name = 'PMT_1';
         TDC_Chan = '12';
-        IsTrigger = 'false';
+	IsTrigger = 'false';
         Histo_Name = 'timing_PMT_1'; #TName of the TH1F created from this detector's data
         Histo_NumBins = '1200';
         Histo_BinRange = '0,1200';
@@ -86,7 +94,7 @@
     [BEGIN_PMT_INFO]
         Name = 'PMT_2';
         TDC_Chan = '13';
-        IsTrigger = 'false';
+	IsTrigger = 'false';
         Histo_Name = 'timing_PMT_2'; #TName of the TH1F created from this detector's data
         Histo_NumBins = '1200';
         Histo_BinRange = '0,1200';
@@ -97,7 +105,7 @@
     [BEGIN_PMT_INFO]
         Name = 'PMT_3';
         TDC_Chan = '14';
-        IsTrigger = 'false';
+	IsTrigger = 'false';
         Histo_Name = 'timing_PMT_3'; #TName of the TH1F created from this detector's data
         Histo_NumBins = '1200';
         Histo_BinRange = '0,1200';
@@ -106,10 +114,11 @@
         Perform_Fit = 'false';
     [END_PMT_INFO]
     [BEGIN_PMT_INFO]
-        Name = 'PMT_Trig';
-        TDC_Chan = '15';
+        #Name = 'PMT_Trig';
+	Name = 'PMT_Finger';        
+	TDC_Chan = '15';
         IsTrigger = 'true';
-        Histo_Name = 'timing_PMT_Trig'; #TName of the TH1F created from this detector's data
+        Histo_Name = 'timing_PMT_Finger'; #TName of the TH1F created from this detector's data
         Histo_NumBins = '1200';
         Histo_BinRange = '0,1200';
         Histo_XTitle = 'time #left(ns#right)';

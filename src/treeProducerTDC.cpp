@@ -166,6 +166,9 @@ void treeProducerTDC::readRuns(string inputTreeName, string outputDataFile){
 //This should solve the implementation problem of how to load the detectors when it is unknown how many the user will want to analyze!!
 //Just need to sit down and execute the above!!!
 //Write the tree
+//Note the TH1F, TH2F, and TF1 objects below are really std::shared_ptr<X> objects (for X the type)
+//To store them in a TTree correctly you need to apply the operators "&*" in this order 
+//The * gets the object pointed to be the shared_ptr, then & to make it a ref for ROOT) 
 void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
     //Variable Declaration
     string line;
@@ -245,8 +248,8 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
             treeInput.Branch( ((*iterDet).first + "_iTDC_Histo_nPks").c_str(), &((*iterDet).second).timingResults.iTDC_Histo_nPks, ((*iterDet).first + "_iTDC_Histo_nPks/I").c_str() );
             
             //TDC Info - ROOT Objects
-            treeInput.Branch( ((*iterDet).first + "_func_TDC_Fit").c_str(), &((*iterDet).second).timingResults.func_TDC_Fit, 3200, 0);
-            treeInput.Branch( ((*iterDet).first + "hTDC_Histo").c_str(), &((*iterDet).second).timingResults.hTDC_Histo, 3200, 0);
+            //treeInput.Branch( ((*iterDet).first + "_func_TDC_Fit").c_str(), &*((*iterDet).second).timingResults.func_TDC_Fit, 3200, 0);
+            //treeInput.Branch( ((*iterDet).first + "hTDC_Histo").c_str(), &*((*iterDet).second).timingResults.hTDC_Histo, 3200, 0);
             
             //TDC Info - Fit Parameters
             for (auto iterFitParam = ((*iterDet).second).timingResults.map_fTDC_Fit_Param.begin();
@@ -275,8 +278,8 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
         treeInput.Branch("fTDC_Histo_Mean_AND",&inputRun.timingResultsAND.fTDC_Histo_Mean,"fTDC_Histo_Mean_AND/F");
         treeInput.Branch("fTDC_Histo_RMS_AND",&inputRun.timingResultsAND.fTDC_Histo_RMS,"fTDC_Histo_RMS_AND/F");
         treeInput.Branch("iTDC_Histo_nPks_AND",&inputRun.timingResultsAND.iTDC_Histo_nPks,"iTDC_Histo_nPks_AND/I");
-        treeInput.Branch("func_TDC_Fit_AND",&inputRun.timingResultsAND.func_TDC_Fit);
-        treeInput.Branch("hTDC_Histo_AND",&inputRun.timingResultsAND.hTDC_Histo);
+        //treeInput.Branch("func_TDC_Fit_AND",&*inputRun.timingResultsAND.func_TDC_Fit);
+        //treeInput.Branch("hTDC_Histo_AND",&*inputRun.timingResultsAND.hTDC_Histo);
         
         for (auto iterFitParam = inputRun.timingResultsAND.map_fTDC_Fit_Param.begin();
              iterFitParam != inputRun.timingResultsAND.map_fTDC_Fit_Param.end();
@@ -300,8 +303,8 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
         treeInput.Branch("fTDC_Histo_Mean_OR",&inputRun.timingResultsOR.fTDC_Histo_Mean,"fTDC_Histo_Mean_OR/F");
         treeInput.Branch("fTDC_Histo_RMS_OR",&inputRun.timingResultsOR.fTDC_Histo_RMS,"fTDC_Histo_RMS_OR/F");
         treeInput.Branch("iTDC_Histo_nPks_OR",&inputRun.timingResultsOR.iTDC_Histo_nPks,"iTDC_Histo_nPks_OR/I");
-        treeInput.Branch("func_TDC_Fit_OR",&inputRun.timingResultsOR.func_TDC_Fit);
-        treeInput.Branch("hTDC_Histo_OR",&inputRun.timingResultsOR.hTDC_Histo);
+        //treeInput.Branch("func_TDC_Fit_OR",&*inputRun.timingResultsOR.func_TDC_Fit);
+        //treeInput.Branch("hTDC_Histo_OR",&*inputRun.timingResultsOR.hTDC_Histo);
         
         for (auto iterFitParam = inputRun.timingResultsOR.map_fTDC_Fit_Param.begin();
              iterFitParam != inputRun.timingResultsOR.map_fTDC_Fit_Param.end();
@@ -318,13 +321,8 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
             treeInput.Branch( ((*iterFitParamErr).first + "_ERR_OR").c_str() ,&((*iterFitParamErr).second), ( ((*iterFitParamErr).first) + "_Err_OR/F" ).c_str() );
         }
         
-	cout<<"treeProducer::writeTree() - inputRun.hTDC_DeltaT = " << inputRun.hTDC_DeltaT << endl;
-	cout<<"treeProducer::writeTree() - &inputRun.hTDC_DeltaT = " << &inputRun.hTDC_DeltaT << endl;
-
-	inputRun.hTDC_DeltaT->Draw();
-        //treeInput.Branch("hTDC_DeltaT",&inputRun.hTDC_DeltaT);
-        treeInput.Branch("hTDC_DeltaT","TH1F",&inputRun.hTDC_DeltaT);
-        treeInput.Branch("hTDC_Correlation",&inputRun.hTDC_Correlation);
+	//treeInput.Branch("hTDC_DeltaT","TH1F",&*inputRun.hTDC_DeltaT);
+        //treeInput.Branch("hTDC_Correlation",&*inputRun.hTDC_Correlation);
     } //End Case: First Run
     
     //Here we are assuming that the user uses the same format for all analyzed events,
@@ -332,6 +330,19 @@ void treeProducerTDC::writeTree(Timing::Run &inputRun, TTree &treeInput){
     
     //Maybe some relinking above the above is necessary....We'll see when it seg faults...
     
+	//Debugging
+	for(auto iterDet = inputRun.map_det.begin(); iterDet != inputRun.map_det.end(); ++iterDet){
+		cout<< ((*iterDet).first) <<".timingResults.func_TDC_Fit = " << ((*iterDet).second).timingResults.func_TDC_Fit << endl;
+		cout<< ((*iterDet).first) <<".timingResults.hTDC_Histo = " << ((*iterDet).second).timingResults.hTDC_Histo << endl;
+	}
+
+		cout<<"inputRun.timingResultsAND.func_TDC_Fit = " << inputRun.timingResultsAND.func_TDC_Fit << endl;
+		cout<<"inputRun.timingResultsAND.hTDC_Histo = " << inputRun.timingResultsAND.hTDC_Histo << endl;
+		cout<<"inputRun.timingResultsOR.func_TDC_Fit = " << inputRun.timingResultsOR.func_TDC_Fit << endl;
+		cout<<"inputRun.timingResultsOR.hTDC_Histo = " << inputRun.timingResultsOR.hTDC_Histo << endl;
+		cout<<"inputRun.hTDC_DeltaT = " << inputRun.hTDC_DeltaT << endl;
+		cout<<"inputRun.hTDC_Correlation = " << inputRun.hTDC_Correlation << endl;
+
     treeInput.Fill();
     
     return;
@@ -418,16 +429,16 @@ void treeProducerTDC::printStoredData(TTree *inputTree){
     
     inputTree->SetBranchAddress("fTDC_NumDeconvo_TimeResp",&run.fTDC_NumDeconvo_TimeResp);
     
-    cout<<"Run Beam Mode DLY | iEta iPhi Imon VDrift Gain f_Ar f_CO f_CF4 | IPreAmpI IPreAmpF IPreAmpO IShaper IShaperFeed IComp MSPL Lat Thresh | Sigma_Histo Sigma_Gaus Sigma_Cont Sigma_Num | Pk1_Pos Pk1_Int Pk2_Pos Pk2_Int Pk3_Pos Pk3_Int\n";
+    cout<<"Run Beam Mode | VDrift VG1T VG1B VG2T VG2B f_Ar f_CO f_CF4 | Thresh | Sigma_Histo Sigma_Gaus\n";
     
     for (int i=0; i < inputTree->GetEntries(); ++i) { //Loop Over Tree Entries
         inputTree->GetEntry(i);
         
-        printf("%i %i %i %4.2f | ",run.iRun, run.iBeam_Type, run.iTrig_Mode, run.fTrig_Delay);
-        printf(" %i %i %4.2f %4.2f %4.2f %4.2f %4.2f %4.2f | ",run.iDet_Eta,run.iDet_Phi,run.fDet_Imon,run.fDet_VDrift,run.fDet_Gain,run.fDet_GasFrac_Ar,run.fDet_GasFrac_CO2,run.fDet_GasFrac_CF4);
-        printf("%i %i %i %i %i %i %i %i %4.2f | ",run.iVFAT_IPreAmpIn,run.iVFAT_IPreAmpFeed,run.iVFAT_IPreAmpOut,run.iVFAT_IShaper,run.iVFAT_IShaperFeed,run.iVFAT_IComp,run.iVFAT_MSPL,run.iVFAT_Latency,run.fVFAT_Thresh);
-        printf(" %4.2f %4.2f %4.2f %4.2f | ",run.fTDC_Histo_RMS,run.fTDC_Fit_Sigma,run.fTDC_Fit_Convo_Sigma,run.fTDC_NumDeconvo_TimeResp);
-        printf(" %4.2f %4.2f %4.2f %4.2f %4.2f %4.2f\n", run.fTDC_Histo_PkPos_1stMax, run.fTDC_Histo_PkInt_1stMax, run.fTDC_Histo_PkPos_2ndMax, run.fTDC_Histo_PkInt_2ndMax, run.fTDC_Histo_PkPos_3rdMax, run.fTDC_Histo_PkInt_3rdMax);
+        printf("%i %i %i | ",run.iRun, run.iBeam_Type, run.iTrig_Mode);
+        printf(" %i %i %4.2f %4.2f %4.2f %4.2f %4.2f %4.2f | ",run.fDet_VDrift,run.fDet_VG1_Top,run.fDet_VG1_Bot,run.fDet_VG2_Top,run.fDet_VG2_Bot,run.fDet_GasFrac_Ar,run.fDet_GasFrac_CO2,run.fDet_GasFrac_CF4);
+        printf(" %4.2f | ",run.fVFAT_Thresh);
+        printf(" %4.2f %4.2f\n",run.fTDC_Histo_RMS,run.fTDC_Fit_Sigma);
+        //printf(" %4.2f %4.2f %4.2f %4.2f %4.2f %4.2f\n", run.fTDC_Histo_PkPos_1stMax, run.fTDC_Histo_PkInt_1stMax, run.fTDC_Histo_PkPos_2ndMax, run.fTDC_Histo_PkInt_2ndMax, run.fTDC_Histo_PkPos_3rdMax, run.fTDC_Histo_PkInt_3rdMax);
     } //End Loop Over Tree Entries
     */
     
@@ -1316,8 +1327,14 @@ void treeProducerTDC::setRun(string inputROOTFileName, string inputLUTFileName, 
                 cout<<"Timing::treeProducerTDC::setRun() - Error, PMT " << (*iterPMTSetup).first << " not found in run\n";
                 cout<<"\tPlease cross-check both your Tree and Analysis Setup files\n";
                 cout<<"\tThe PMTs you declare in each file must have the SAME name\n";
-                cout<<"Skipping!!!\n";
+                cout<<"\tSkipping!!!\n";
                 
+		//Debugging
+		//cout<<"\tStored PMTs:\n";
+		//for(auto iterPMT = run.map_PMT.begin(); iterPMT != run.map_PMT.end(); ++iterPMT){ //Loop Over run.map_PMT
+			//cout<<"\t\t"<<(*iterPMT).first<<endl;
+		//} //End Loop Over run.map_PMT
+
                 continue;
             } //End Case: PMT NOT Found! User has not correctly configured their setup files
         } //End Loop over analysis setup map - PMTs
