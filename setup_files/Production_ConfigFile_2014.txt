@@ -1,0 +1,21 @@
+[BEGIN_PROD_INFO]
+	FitOption='R';
+	PFP_RawData='/afs/cern.ch/user/d/dorney/scratch0/CMS_GEM/CMS_GEM_TB_Timing/data/2014';
+	PFN_RunList='/afs/cern.ch/user/d/dorney/scratch0/CMS_GEM/CMS_GEM_TB_Timing/lists_runs/RunList_H2_GE11V.txt';
+	OutputRootFileName='test.root';
+	OutputTreeName='TESTTREE';
+	VerboseMode_IO='true';
+	VerboseMode_LUT='true';
+	VerboseMode_Parsing='true';
+	VerboseMode_PrintRuns='true';
+[END_PROD_INFO]
+[BEGIN_IGNORED_IDENTIFIERS]
+#List of identifiers in run file names to be ignroed; one parameter per line
+	TDCRun
+	TDC.root
+	Ch10GE3
+	LAT24
+	LAT26
+	LAT27	
+	TRIAL01
+[END_IGNORED_IDENTIFIERS]

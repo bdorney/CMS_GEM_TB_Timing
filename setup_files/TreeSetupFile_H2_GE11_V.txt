@@ -38,7 +38,7 @@ TDC_CH_NUMBER(int)=10:301;
 [AUTO]
 Run(int)=TDCRun:1;
 Beam(string)=Muons,Muon,Pions,Pion,Electrons,Electron,El:2;
-TRIG_MODE(string)=Async,Sync:3;
+#TRIG_MODE(string)=Async,Sync:3;
 TRIG_DELAY(float)=DLYns:4;
 DET_IMON(float)=uA:104;
 VFAT_IPREAMPIN(int)=IPreampIn:204;

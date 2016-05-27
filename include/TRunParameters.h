@@ -101,7 +101,8 @@ struct Run{
     
     int iBeam_Type = 0;     //11->Electron, 13->Muon, 211->Pion
     
-    int iTrig_Mode = -1;     //0->Async, 1->Sync
+    //int iTrig_Mode = -1;     //0->Async, 1->Sync
+    int iTrig_Mode = 0;     //0->Async, 1->Sync
     
     float fTrig_Delay = -1;    //Trigger Delay in ns;
     
